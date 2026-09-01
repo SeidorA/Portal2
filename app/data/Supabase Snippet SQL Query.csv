@@ -1,0 +1,25 @@
+table_name,column_name,data_type
+Planes,id,bigint
+Planes,Name,text
+Planes,Price,text
+Planes,Price Condition,text
+Planes,Short Description,text
+Planes,Features,text
+Planes,Active,boolean
+Usuarios,id,bigint
+Usuarios,Name,text
+Usuarios,Avatar,text
+Usuarios,Compaia,text
+Usuarios,Password,text
+Usuarios,created_at,timestamp with time zone
+profiles,id,uuid
+profiles,email,text
+profiles,updated_at,timestamp with time zone
+profiles,last_activity_at,timestamp with time zone
+roles,id,bigint
+roles,name,text
+roles,created_at,timestamp with time zone
+user_roles,id,bigint
+user_roles,user_id,uuid
+user_roles,role_id,bigint
+user_roles,created_at,timestamp with time zone

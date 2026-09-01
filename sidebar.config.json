@@ -1,0 +1,137 @@
+[
+  {
+    "title": null,
+    "items": [
+      {
+        "label": "Inicio",
+        "icon": "house",
+        "href": "/dashboard",
+        "variant": "info"
+      },
+      {
+        "label": "Oportunidades",
+        "icon": "list",
+        "href": "/oportunidades",
+        "variant": "ghost",
+        "className": "text-neutral-900"
+      }
+    ]
+  },
+  {
+    "title": "Gestión",
+    "items": [
+      {
+        "label": "Usuarios",
+        "icon": "users",
+        "href": "/usuarios",
+        "variant": "ghost"
+      },
+      {
+        "label": "Roles",
+        "icon": "gear",
+        "href": "/roles",
+        "variant": "ghost"
+      },
+      {
+        "label": "Contenido",
+        "icon": "edit",
+        "href": "/contenido",
+        "variant": "ghost"
+      },
+      {
+        "label": "Products",
+        "icon": "plus",
+        "href": "/productos",
+        "variant": "ghost"
+      },
+      {
+        "label": "Documentos",
+        "icon": "file",
+        "href": "/documentos",
+        "variant": "ghost"
+      }
+    ]
+  },
+  {
+    "title": "Preferencias",
+    "items": [
+      {
+        "label": "Perfil",
+        "icon": "user",
+        "href": "/perfil",
+        "variant": "ghost"
+      },
+      {
+        "label": "Configuración",
+        "icon": "wrench",
+        "href": "/configuracion",
+        "variant": "ghost"
+      },
+      {
+        "label": "Developer Settings",
+        "icon": "code",
+        "href": "/developer-settings",
+        "variant": "ghost"
+      }
+    ]
+  },
+  {
+    "title": "Ayuda",
+    "items": [
+      {
+        "label": "Documentación",
+        "icon": "book",
+        "href": "/docs",
+        "variant": "ghost"
+      },
+      {
+        "label": "Sugerencias",
+        "icon": "envelopeOpen",
+        "href": "/sugerencias",
+        "variant": "ghost"
+      },
+      {
+        "label": "Mi portal",
+        "icon": "Daiana",
+        "href": "/mi-portal",
+        "variant": "ghost"
+      }
+    ]
+  },
+  {
+    "title": "Layout",
+    "adminOnly": true,
+    "items": [
+      {
+        "label": "NavBar",
+        "icon": "menu",
+        "href": "/layout/navbar",
+        "variant": "ghost"
+      },
+      {
+        "label": "Bento",
+        "icon": "city",
+        "href": "/layout/bento",
+        "variant": "ghost"
+      },
+      {
+        "label": "Novedades",
+        "icon": "plane",
+        "href": "/layout/novedades",
+        "variant": "ghost"
+      },
+      {
+        "label": "Busqueda",
+        "icon": "search",
+        "href": "/layout/busqueda",
+        "variant": "ghost"
+      },
+      {
+        "label": "Recursos",
+        "icon": "folder",
+        "href": "/layout/recursos",
+        "variant": "ghost"
+      }
+    ]
+  }
+]

@@ -1,0 +1,302 @@
+{
+  "origins": [
+    {
+      "id": "sap4hanna",
+      "title": "SAP HANA",
+      "description": "Create a source with SAP HANA",
+      "iconName": "SAP",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/sap4hanna"
+    },
+    {
+      "id": "sapabap",
+      "title": "SAP ABAP",
+      "description": "Create a node to extract data from a source and load it into a destination.",
+      "iconName": "SAP",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/sapabap"
+    },
+    {
+      "id": "sapbw",
+      "title": "SAP BW",
+      "description": "",
+      "iconName": "SAP",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/sap-bw"
+    },
+    {
+      "id": "sapodata",
+      "title": "SAP OData",
+      "description": "Create a node to extract data from a source and load it into a destination.",
+      "iconName": "SapOdata",
+      "useBrand": false,
+      "link": "/docs/documentation/sections/conections/source/sapodata"
+    },
+    {
+      "id": "erp",
+      "title": "ODATA SAP ERP",
+      "description": "Create a node to extract data from a source and load it into a destination.",
+      "iconName": "SAP",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/erp"
+    },
+    {
+      "id": "businessone",
+      "title": "ODATA SAP Business One",
+      "description": "Create a node to extract data from a source and load it into a destination.",
+      "iconName": "SAP",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/businessone"
+    },
+    {
+      "id": "bydesign",
+      "title": "ODATA SAP ByDesign",
+      "description": "Create a node to extract data from a source and load it into a destination.",
+      "iconName": "SAP",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/bydesign"
+    },
+    {
+      "id": "publice",
+      "title": "SAP S/4HANA Cloud Public Edition",
+      "description": "Create a node to extract data from a source and load it into a destination.",
+      "iconName": "SAPHanaC",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/publice"
+    },
+    {
+      "id": "azuresql",
+      "title": " Azure SQL",
+      "description": " Azure SQL Connection",
+      "iconName": "AzureSql",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/azuresql"
+    },
+    {
+      "id": "ms",
+      "title": "MS SQL Server",
+      "description": "MS SQL Server Connection",
+      "iconName": "MSSQL",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/ms"
+    },
+    {
+      "id": "dynamics-source",
+      "title": "Microsoft Dynamics 365 Source Connection",
+      "description": "Create a node to extract data from a source and load it into a destination.",
+      "iconName": "Dynamics",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/dynamics-source"
+    },
+    {
+      "id": "mysql-source",
+      "title": "MySQL Source Connection",
+      "description": "Create a node to extract data from a source and load it into a destination.",
+      "iconName": "mySQL",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/mysql-source"
+    },
+    {
+      "id": "oracle-source",
+      "title": "Oracle Source Connection",
+      "description": "Create a node to extract data from a source and load it into a destination.",
+      "iconName": "Oracle",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/oracle-source"
+    },
+    {
+      "id": "postgresql-source",
+      "title": "PostgreSQL Source Connection",
+      "description": "Create a connection to a PostgreSQL database.",
+      "iconName": "PostgreSQL",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/postgresql-source"
+    },
+    {
+      "id": "aws-s3-source",
+      "title": "AWS S3 Source Connection",
+      "description": "AWS S3 Source Connection",
+      "iconName": "AWS",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/aws-s3"
+    },
+    {
+      "id": "azure-storage-source",
+      "title": "Azure Storage Source Connection",
+      "description": "Azure Storage Source Connection",
+      "iconName": "Azure",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/azure-storage"
+    },
+    {
+      "id": "gcp-storage-source",
+      "title": "GCP Cloud Storage Source Connection",
+      "description": "",
+      "iconName": "GoogleStorage",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/gcp-storage"
+    },
+    {
+      "id": "sybase-source",
+      "title": "Sybase Source Connection",
+      "description": "",
+      "iconName": "Sybase",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/sybase"
+    },
+    {
+      "id": "db2-source",
+      "title": "IBM DB2 Source Connection",
+      "description": "",
+      "iconName": "IBMDb2",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/source/db2"
+    }
+  ],
+  "destinations": [
+    {
+      "id": "aws",
+      "title": "Amazon S3",
+      "description": "Create a destination to connect to AWS.",
+      "iconName": "S3",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/aws"
+    },
+    {
+      "id": "redshift",
+      "title": "Amazon Redshift",
+      "description": "",
+      "iconName": "AmazonRedshift",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/redshift"
+    },
+    {
+      "id": "snowflake",
+      "title": "Snowflake",
+      "description": "Create a node to export data from a source and load it into a destination.",
+      "iconName": "Snowflake",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/snowflake"
+    },
+    {
+      "id": "Azure",
+      "title": "Azure Storage",
+      "description": "Create a destination to export data to Azure.",
+      "iconName": "Azure",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/Azure"
+    },
+    {
+      "id": "AzureSQL",
+      "title": "Azure SQL Server",
+      "description": "Create a destination to load data into a destination.",
+      "iconName": "AzureSql",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/AzureSQL"
+    },
+    {
+      "id": "teradata",
+      "title": "Teradata",
+      "description": "Create a node to extract data from a source and load it into a destination.",
+      "iconName": "Teradata",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/teradata"
+    },
+    {
+      "id": "databricks",
+      "title": "Databricks",
+      "description": "Create a node to export data from a source and load it into a destination.",
+      "iconName": "Databricks",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/databricks"
+    },
+    {
+      "id": "gcp",
+      "title": "Google Cloud Platform",
+      "description": "Create a node to export data from a source and load it into a destination.",
+      "iconName": "GoogleStorage",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/gcp"
+    },
+    {
+      "id": "gcs",
+      "title": "Google Cloud Big Query",
+      "description": "Create a node to export data from a source and load it into a destination.",
+      "iconName": "GoogleBigquery",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/gcs"
+    },
+    {
+      "id": "sqlserver",
+      "title": "MS SQL Server",
+      "description": "",
+      "iconName": "MSSQL",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/sqlserver"
+    },
+    {
+      "id": "fabric",
+      "title": "Microsoft Fabric",
+      "description": "Create a node to export data from a source and load it into a destination.",
+      "iconName": "Fabric",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/fabric"
+    },
+    {
+      "id": "postgresql-destination",
+      "title": " PostgreSQL Destination",
+      "description": "Connect to a PostgreSQL database to extract or load data. Supports local, remote, and cloud-hosted PostgreSQL instances, including Supabase, Amazon RDS, Azure Database for PostgreSQL, and Google Cloud SQL.",
+      "iconName": "PostgreSQL",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/postgresql-destination"
+    },
+    {
+      "id": "oracle-destination",
+      "title": " Oracle Destination",
+      "description": "",
+      "iconName": "Oracle",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/oracle-destination"
+    },
+    {
+      "id": "mysql-destination",
+      "title": "MySQL Destination Connection",
+      "description": "Create a connection to a MySQL database.",
+      "iconName": "mySQL",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/mysql-destination"
+    },
+    {
+      "id": "hana",
+      "title": "SAP HANA",
+      "description": "Create a destination to load data into a SAP HANA database.",
+      "iconName": "SAP",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/hana"
+    },
+    {
+      "id": "fileserver",
+      "title": " Windows file server ",
+      "description": "Create a node to export data as files into a storage layer such as AWS, Snowflake, Azure, Databricks, and Google Storage.",
+      "iconName": "file",
+      "useBrand": false,
+      "link": "/docs/documentation/sections/conections/detinations/fileserver"
+    },
+    {
+      "id": "db2-destination",
+      "title": "IBM DB2 Destination Connection",
+      "description": "",
+      "iconName": "IBMDb2",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/db2"
+    },
+    {
+      "id": "sybase-destination",
+      "title": "SAP ASE (Sybase) Destination Connection",
+      "description": "",
+      "iconName": "Sybase",
+      "useBrand": true,
+      "link": "/docs/documentation/sections/conections/detinations/sybase"
+    }
+  ]
+}

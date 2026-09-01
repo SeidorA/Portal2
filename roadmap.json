@@ -1,0 +1,438 @@
+{
+  "description": "Roadmap y Timeline integrados de Crestone",
+  "years": [
+    {
+      "year": "2026",
+      "quarters": [
+        {
+          "id": "q1-2026",
+          "name": "Q1 2026",
+          "months": [
+            {
+              "id": "q1-m1",
+              "name": "Enero",
+              "features": [
+                {
+                  "id": "f-odata",
+                  "title": "OData in the app",
+                  "description": "More robust attachments, connections, and navigation. Attachments and their target destination can now be configured directly within **OData**, along with improved URL readability and greater stability in connections, endpoint validation, and pagination.",
+                  "icon": "OData",
+                  "completed": true,
+                  "type": "feature"
+                },
+                {
+                  "id": "f-gen",
+                  "title": "General improvements",
+                  "description": "A more consistent end-to-end flow. The complete OData extraction flow with attachments was optimized, with internal adjustments to ensure stronger consistency across configuration, execution, and final destination.",
+                  "icon": "Crestone",
+                  "isBrand": true,
+                  "completed": true,
+                  "type": "enhancement"
+                }
+              ]
+            },
+            {
+              "id": "q1-m2",
+              "name": "Febrero",
+              "features": [
+                {
+                  "id": "f-attachments",
+                  "title": "End-to-end attachments and better performance",
+                  "description": "The full attachments extraction flow has been implemented, enabling direct delivery to the configured destination, along with automatic generation of a metadata file for traceability. In addition, parallel processing was optimized (default 20 threads) to improve execution times.",
+                  "icon": "image",
+                  "completed": true,
+                  "type": "enhancement"
+                }
+              ]
+            },
+            {
+              "id": "q1-m3",
+              "name": "Marzo",
+              "features": [
+                {
+                  "id": "f-sql",
+                  "title": "SQL as a source",
+                  "description": "Enable SQL Server as a data source to extract tables/views, with support for full and (when applicable) incremental loads, plus flexible connection and query configuration.",
+                  "icon": "AzureSql",
+                  "completed": true,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-jobs",
+                  "title": "Job execution triggers",
+                  "description": "Provide a mechanism to automatically trigger jobs based on events/conditions (e.g., completion of a previous job, data availability, external signal, or schedule), reducing manual execution and improving orchestration.",
+                  "icon": "job",
+                  "completed": true,
+                  "type": "feature"
+                },
+                {
+                  "id": "f-hana",
+                  "title": "HANA as a Destination",
+                  "description": "Load extracted data into SAP HANA, with support for full and, where applicable, incremental loads, along with flexible connection and write configuration options.",
+                  "icon": "SAP",
+                  "completed": true,
+                  "type": "integration"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q2-2026",
+          "name": "Q2 2026",
+          "months": [
+            {
+              "id": "q2-m1",
+              "name": "Abril",
+              "features": [
+                {
+                  "id": "f-sso",
+                  "title": "SSO in Crestone for Microsoft",
+                  "description": "Enable Single Sign-On with Microsoft accounts, allowing users to access Crestone securely and seamlessly while simplifying authentication and user management.",
+                  "icon": "lock",
+                  "completed": true,
+                  "type": "feature"
+                },
+                {
+                  "id": "f-lic",
+                  "title": "Licensing control",
+                  "description": "Implementation of a centralized interface for proactive management of the license lifecycle, including expiration alerts and usage tracking to avoid surprises at contract end.",
+                  "icon": "squareFace",
+                  "completed": true,
+                  "type": "feature"
+                }
+              ]
+            },
+            {
+              "id": "q2-m2",
+              "name": "Mayo",
+              "features": []
+            },
+            {
+              "id": "q2-m3",
+              "name": "Junio",
+              "features": [
+                {
+                  "id": "f-postgres",
+                  "title": "PostgreSQL Integration",
+                  "description": "Enable optimized connection and data extraction with PostgreSQL databases to expand the sources of information supported by the platform.",
+                  "icon": "PostgreSQL",
+                  "completed": true,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-oracle",
+                  "title": "Oracle Integration",
+                  "description": "Deep and optimized integration for efficient data extraction and processing to Oracle databases.",
+                  "icon": "Oracle",
+                  "isBrand": true,
+                  "completed": true,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-sybase",
+                  "title": "Sybase Integration",
+                  "description": "Integration of a dedicated connector for Sybase databases, expanding the ecosystem of legacy and critical databases supported by the platform.",
+                  "icon": "Sybase",
+                  "isBrand": true,
+                  "completed": true,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-mysql",
+                  "title": "MySQL Integration",
+                  "description": "Enable MySQL as a destination in Crestone, allowing customers to load extracted data into MySQL databases and support operational or application-based data scenarios.",
+                  "icon": "mySQL",
+                  "isBrand": true,
+                  "completed": true,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-ibm",
+                  "title": "IBM Integration",
+                  "description": "Enable IBM databases such as DB2 or Informix as data sources, ensuring compatibility with large corporate and mission-critical environments.",
+                  "icon": "IBMDb2",
+                  "completed": true,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-dyn",
+                  "title": "Microsoft Dynamics 365 Integration",
+                  "description": "Enable Microsoft Dynamics 365 as a destination, allowing Crestone to deliver data into business applications that support sales, service and customer processes.",
+                  "icon": "Dynamics",
+                  "isBrand": true,
+                  "completed": true,
+                  "type": "integration"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q3-2026",
+          "name": "Q3 2026",
+          "months": [
+            {
+              "id": "q3-m1",
+              "name": "Julio",
+              "features": [
+                {
+                  "id": "f-aws-storage",
+                  "title": "AWS Storage Integration",
+                  "description": "Enable AWS Storage as a data source, allowing Crestone to read files and datasets from AWS-based storage environments and include them in integration workflows.",
+                  "icon": "AWS",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-azure-storage",
+                  "title": "Azure Storage Integration",
+                  "description": "Enable Azure Storage as a data source, helping customers extract information from Microsoft cloud storage environments with a guided and consistent configuration experience.",
+                  "icon": "Azure",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-gcp-storage",
+                  "title": "Google Cloud Platform Integration",
+                  "description": "Enable Google Cloud Platform as a data source, expanding Crestone’s reach into Google cloud environments and supporting broader cloud-based data integration scenarios.",
+                  "icon": "GoogleStorage",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-sf",
+                  "title": "Salesforce Integration",
+                  "description": "We will establish a deep integration to synchronize key data from Sales Cloud, Service Cloud, and Marketing Cloud.",
+                  "icon": "Saleforce",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-sapbw",
+                  "title": "Integrations SAP BW",
+                  "description": "Implementation of an advanced connection with SAP BW for efficient data extraction from InfoProviders, DSOs, and Cubes, consolidating BI analytical capabilities.",
+                  "icon": "SAP",
+                  "completed": false,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-sapcloud",
+                  "title": "SAP Business Data Cloud Integration",
+                  "description": "Enable SAP Business Data Cloud as both a source and a destination, allowing Crestone to exchange data with SAP’s business data layer and support more flexible analytics scenarios.",
+                  "icon": "SAP",
+                  "completed": false,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-azure-mkt",
+                  "title": "Crestone available on Microsoft Azure Marketplace",
+                  "description": "Make Crestone available through Microsoft Azure Marketplace, simplifying access and adoption for organizations already operating within the Microsoft cloud ecosystem.",
+                  "icon": "Azure",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "feature"
+                },
+                {
+                  "id": "f-ai",
+                  "title": "AI assistant",
+                  "description": "Ease of use one of the pillars of the product is enhanced with the incorporation of artificial intelligence, which assists you in configuration, monitoring, and resolving operational tasks, reducing time and errors.",
+                  "icon": "squareFace",
+                  "completed": false,
+                  "type": "feature"
+                },
+                {
+                  "id": "f-actin",
+                  "title": "ACT·in powered by Crestone (standard extraction layer)",
+                  "description": "act·in solutions will use Crestone as the underlying engine for data extractions and delivery, standardizing connectivity and scheduling while improving reliability and traceability end-to-end.",
+                  "icon": "Crestone",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "feature"
+                }
+              ]
+            },
+            {
+              "id": "q3-m2",
+              "name": "Agosto",
+              "features": [
+                {
+                  "id": "f-concur",
+                  "title": "SAP Concur Integration",
+                  "description": "Enable SAP Concur as a data source, allowing Crestone to extract travel, expense and related business information into data integration workflows.",
+                  "icon": "SAP",
+                  "completed": false,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-realtime",
+                  "title": "Real time connection",
+                  "description": "In addition to traditional transfer scheduling, the ability to operate in real time is added, thus completing a flexible palette of options that adapts to different business scenarios and data volumes.",
+                  "icon": "clock",
+                  "completed": false,
+                  "type": "feature"
+                },
+                {
+                  "id": "f-redshift",
+                  "title": "Amazon Redshift Integration",
+                  "description": "Enable Amazon Redshift as a data source, helping customers extract analytical data from AWS data warehouse environments into Crestone workflows.",
+                  "icon": "AmazonRedshift",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-snow",
+                  "title": "Snowflake Integration",
+                  "description": "Enable Snowflake as a data source, allowing customers to extract data from one of the most widely used cloud data platforms.",
+                  "icon": "Snowflake",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-tera",
+                  "title": "Teradata Integration",
+                  "description": "Enable Teradata as a data source, supporting extraction from enterprise data warehouse environments commonly used in large organizations.",
+                  "icon": "Teradata",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-data",
+                  "title": "Databricks Integration",
+                  "description": "Enable Databricks as a data source, allowing Crestone to connect with advanced analytics and data engineering environments.",
+                  "icon": "Databricks",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-bq",
+                  "title": "Google Cloud BigQuery Integration",
+                  "description": "Enable Google BigQuery as a data source, allowing customers to extract analytical data from Google Cloud’s data warehouse platform.",
+                  "icon": "GoogleBigquery",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "integration"
+                },
+                {
+                  "id": "f-fabric",
+                  "title": "Microsoft Fabric Integration",
+                  "description": "Enable Microsoft Fabric as a data source, helping customers connect data from Microsoft’s analytics ecosystem into Crestone workflows.",
+                  "icon": "Fabric",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "integration"
+                }
+              ]
+            },
+            {
+              "id": "q3-m3",
+              "name": "Septiembre",
+              "features": [
+                {
+                  "id": "f-query",
+                  "title": "Query Designer",
+                  "description": "Incorporation of a visual environment for query design, simplifying the creation and validation of extraction rules without the need for advanced technical knowledge, optimizing user experience and result accuracy.",
+                  "icon": "design",
+                  "completed": false,
+                  "type": "feature"
+                },
+                {
+                  "id": "f-preserve",
+                  "title": "Data Preservation Module",
+                  "description": "Add a data preservation module within Crestone to retain historical information, supporting traceability, continuity and access to prior data states when needed.",
+                  "icon": "newFile",
+                  "completed": false,
+                  "type": "feature"
+                },
+                {
+                  "id": "f-snow-mkt",
+                  "title": "Crestone available on Snowflake Marketplace",
+                  "description": "Crestone will be available for customers to obtain directly from Snowflake Marketplace, simplifying access and purchasing within the Snowflake ecosystem and improving product discoverability.",
+                  "icon": "Snowflake",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "feature"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "q4-2026",
+          "name": "Q4 2026",
+          "months": [
+            {
+              "id": "q4-m1",
+              "name": "Octubre",
+              "features": [
+                {
+                  "id": "f-cloud",
+                  "title": "Cloudera Integration",
+                  "description": "Native and optimized integration with the Cloudera ecosystem for the extraction, processing, and management of large volumes of data, facilitating Big Data analysis.",
+                  "icon": "Cloudera",
+                  "completed": false,
+                  "type": "integration"
+                }
+              ]
+            },
+            {
+              "id": "q4-m2",
+              "name": "Noviembre",
+              "features": [
+                {
+                  "id": "f-etl",
+                  "title": "ETL capabilities",
+                  "description": "Extend Crestone from extraction to an end-to-end ETL platform by adding built-in transformations and orchestration, enabling data cleansing and standardization before delivery to the target system and reducing reliance on external tools.",
+                  "icon": "process",
+                  "completed": false,
+                  "type": "feature"
+                },
+                {
+                  "id": "f-gcp",
+                  "title": "Crestone available on Google Cloud",
+                  "description": "Enable Crestone deployment on Google Cloud, allowing customers to accelerate implementation without changing their cloud strategy and standardize their data operations in GCP.",
+                  "icon": "GCP",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "feature"
+                }
+              ]
+            },
+            {
+              "id": "q4-m3",
+              "name": "Diciembre",
+              "features": [
+                {
+                  "id": "f-aws",
+                  "title": "Crestone available on AWS",
+                  "description": "Enable Crestone deployment on AWS, allowing customers to adopt the platform within their preferred cloud ecosystem while maintaining greater control over data and operations.",
+                  "icon": "AWS",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "feature"
+                },
+                {
+                  "id": "f-db-mkt",
+                  "title": "Crestone available on Databricks Marketplace",
+                  "description": "Crestone will be available for customers to obtain directly from Databricks Marketplace, simplifying access and purchasing within the Databricks ecosystem and improving product discoverability.",
+                  "icon": "Databricks",
+                  "isBrand": true,
+                  "completed": false,
+                  "type": "feature"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

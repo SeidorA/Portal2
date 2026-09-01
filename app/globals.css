@@ -1,26 +1,189 @@
 @import "tailwindcss";
+@import "caralstable/style.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+ 
+  --font-sans: var(--font-poppins);
   --font-mono: var(--font-geist-mono);
+  --font-poppins: var(--font-poppins);
+
+  --color-seidor-main: var(--color-seidor-main);
+  --color-seidor-hard: var(--color-seidor-hard);
+  --color-seidor-light: var(--color-seidor-light);
+  --color-seidor-main-text: var(--color-seidor-main-text);
+
+  --color-neutral-100: var(--color-neutral-100);
+  --color-neutral-400: var(--color-neutral-400);
+  --color-neutral-500: var(--color-neutral-500);
+  --color-neutral-800: var(--color-neutral-800);
+  --color-neutral-900: var(--color-neutral-900);
+  --color-neutral-body: var(--color-neutral-body);
+  --color-container: var(--color-container);
+  --color-full: var(--color-full);
+  --color-container-50: rgba(241, 245, 249, 0.50);
+
+  --color-info-main: var(--color-info-main);
+  --color-info-hard: var(--color-info-hard);
+  --color-info-light: var(--color-info-light);
+
+  --color-success-main: var(--color-success-main);
+  --color-success-hard: var(--color-success-hard);
+  --color-success-light: var(--color-success-light);
+
+  --color-danger-main: var(--color-danger-main);
+  --color-danger-hard: var(--color-danger-hard);
+  --color-danger-light: var(--color-danger-light);
+
+  --color-warning-main: var(--color-warning-main);
+  --color-warning-hard: var(--color-warning-hard);
+  --color-warning-light: var(--color-warning-light);
+
+  --color-indido-main: var(--color-indido-main);
+  --color-indido-hard: var(--color-indido-hard);
+  --color-indido-light: var(--color-indido-light);
+
+  --color-sakura-main: var(--color-sakura-main);
+  --color-sakura-hard: var(--color-sakura-hard);
+  --color-sakura-light: var(--color-sakura-light);
+
+}
+
+:root {
+  --background: var(--color-full);
+  --foreground: var(--color-neutral-900);
+  --container: var(--color-container);
+}
+
+.dark {
+  --background: var(--color-full);
+  --foreground: var(--color-neutral-100);
+  --container: var(--color-container);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: var(--color-full);
+    --foreground: var(--color-neutral-100);
+    --container: var(--color-container);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+
+/* Milkdown Editor Admonitions */
+.milkdown-admonition {
+  display: flex;
+  background-color: var(--color-container-50);
+  margin: 1.5rem 0;
+  border-radius: 0.375rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  position: relative;
+}
+
+/* We create the left colored block using a pseudo-element on the blockquote itself */
+.milkdown-admonition::before {
+  content: '';
+  flex-shrink: 0;
+  width: 3rem; /* 12 in tailwind */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.milkdown-admonition .admonition-icon {
+  position: absolute;
+  left: 0;
+  width: 3rem;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  margin: 0;
+  z-index: 10;
+}
+
+.milkdown-admonition > p {
+  padding: 1rem;
+  flex: 1;
+  margin-left: 3rem;
+}
+
+.milkdown-admonition > p:first-of-type {
+  font-weight: bold;
+  font-size: 1.125rem; /* text-lg */
+  margin-bottom: 0.25rem;
+}
+
+.milkdown-admonition > p:not(:first-of-type) {
+  font-size: 0.875rem; /* text-sm */
+}
+
+.milkdown-admonition-note {
+  background-color: var(--color-neutral-100);
+}
+.milkdown-admonition-note::before { background-color: var(--color-neutral-500); }
+.milkdown-admonition-note > p:first-of-type { color: var(--color-neutral-700); }
+
+.milkdown-admonition-tip {
+  background-color: rgba(34, 197, 94, 0.1);
+}
+.milkdown-admonition-tip::before { background-color: var(--color-success-main, #22c55e); }
+.milkdown-admonition-tip > p:first-of-type { color: var(--color-success-hard); }
+
+.milkdown-admonition-info {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+.milkdown-admonition-info::before { background-color: var(--color-info-main, #3b82f6); }
+.milkdown-admonition-info > p:first-of-type { color: var(--color-info-hard); }
+
+.milkdown-admonition-warning {
+  background-color: rgba(234, 179, 8, 0.1);
+}
+.milkdown-admonition-warning::before { background-color: var(--color-warning-main, #eab308); }
+.milkdown-admonition-warning > p:first-of-type { color: var(--color-warning-hard); }
+
+.milkdown-admonition-caution, .milkdown-admonition-danger {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+.milkdown-admonition-caution::before, .milkdown-admonition-danger::before { background-color: var(--color-danger-main, #ef4444); }
+.milkdown-admonition-caution > p:first-of-type, .milkdown-admonition-danger > p:first-of-type { color: var(--color-danger-hard); }
+
+/* Milkdown Typography Overrides to match Public View */
+.milkdown-container h1,
+.milkdown-container h2,
+.milkdown-container h3,
+.milkdown-container h4,
+.milkdown-container h5,
+.milkdown-container h6 {
+  font-family: var(--font-poppins), sans-serif !important;
+}
+
+.milkdown .ProseMirror {
+  padding: 0 !important;
 }
