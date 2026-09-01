@@ -27,12 +27,12 @@ const renderTitleWithIcon = (Tag: any, children: React.ReactNode, props: any, cl
       if (typeof child === 'string') {
         let match = child.match(/^!icon-([\w-]+)!\s*/i);
         if (match) {
-          iconName = match[1].toLowerCase();
+          iconName = match[1];
           return child.replace(match[0], '');
         }
         match = child.match(/^!brand-([\w-]+)!\s*/i);
         if (match) {
-          iconName = match[1].toLowerCase();
+          iconName = match[1];
           isBrand = true;
           return child.replace(match[0], '');
         }
@@ -45,14 +45,16 @@ const renderTitleWithIcon = (Tag: any, children: React.ReactNode, props: any, cl
 
   return (
     <Tag className={className} {...props}>
-      {iconName && (
-        isBrand ? (
-          <Brand name={iconName as any} className="shrink-0" size={Tag === 'h1' ? 32 : Tag === 'h2' ? 28 : 24} />
-        ) : (
-          <CaralIcon name={iconName as any} className="text-blue-500 shrink-0" size={Tag === 'h1' ? 32 : Tag === 'h2' ? 28 : 24} />
-        )
-      )}
-      <span>{cleanChildren}</span>
+      <span className="inline-flex items-center gap-2 align-middle">
+        {iconName && (
+          isBrand ? (
+            <Brand name={iconName as any} className="shrink-0" size={Tag === 'h1' ? 32 : Tag === 'h2' ? 28 : 24} />
+          ) : (
+            <CaralIcon name={iconName as any} className="text-blue-500 shrink-0" size={Tag === 'h1' ? 32 : Tag === 'h2' ? 28 : 24} />
+          )
+        )}
+        <span>{cleanChildren}</span>
+      </span>
     </Tag>
   );
 };
@@ -375,6 +377,9 @@ export default function MarkdownRenderer({ content, noTableBorders = false }: { 
                 );
               }
             }
+            if (/^!(icon|brand)-([\w-]+)!/i.test(rawText)) {
+              return renderTitleWithIcon('th', children, { ...props }, `border-b-2 border-neutral-200 dark:border-neutral-700 p-2 font-semibold ${className || ''}`);
+            }
             return <th className={`border-b-2 border-neutral-200 dark:border-neutral-700 p-2 font-semibold ${className || ''}`} {...props}>{children}</th>;
           },
           td: ({ node, className, children, ...props }) => {
@@ -389,6 +394,9 @@ export default function MarkdownRenderer({ content, noTableBorders = false }: { 
                   </td>
                 );
               }
+            }
+            if (/^!(icon|brand)-([\w-]+)!/i.test(rawText)) {
+              return renderTitleWithIcon('td', children, { ...props }, `border-b border-neutral-200 dark:border-neutral-800 p-2 ${className || ''}`);
             }
             return <td className={`border-b border-neutral-200 dark:border-neutral-800 p-2 ${className || ''}`} {...props}>{children}</td>;
           },

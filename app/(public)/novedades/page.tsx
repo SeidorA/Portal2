@@ -3,13 +3,14 @@ import { createClient } from '@/utils/supabase/server';
 import Link from 'next/link';
 import Navbar from '@/app/components/Navbar';
 import { Brand, CaralIcon } from 'iconcaral2';
+import { Button } from 'caralstable';
 
 const renderTitle = (title: string, size: number = 24) => {
   if (!title) return title;
   const match = title.match(/^!(icon|brand)-([\w-]+)!\s*(.*)$/i);
   if (match) {
     const isBrand = match[1].toLowerCase() === 'brand';
-    const iconName = match[2].toLowerCase();
+    const iconName = match[2];
     const restOfTitle = match[3];
     return (
       <span className="flex items-center gap-2">
@@ -25,7 +26,8 @@ const renderTitle = (title: string, size: number = 24) => {
   return title;
 };
 
-export default async function PublicNovedadesPage() {
+export default async function PublicNovedadesPage({ searchParams }: { searchParams: Promise<{ product?: string }> }) {
+  const { product: filterProduct } = await searchParams;
   const supabase = await createClient();
 
   // Fetch only published news
@@ -49,49 +51,74 @@ export default async function PublicNovedadesPage() {
       .trim();
   };
 
-  return (
-    <div className="w-full">
-      <Navbar />
-      <div className="flex">
-        <div className="w-64 shrink-0 p-6 bg-container h-[calc(100vh-64px)] border-r border-neutral-200 dark:border-neutral-800 sticky top-[64px] overflow-y-auto">
-          <h3 className="text-lg font-bold mb-4 font-poppins text-neutral-900 dark:text-white">Posteos Recientes</h3>
-          <ul className="flex flex-col gap-4">
-            {novedades?.slice(0, 5).map((novedad: any) => (
-              <li key={novedad.id}>
-                <Link
-                  href={`/novedades/${novedad.id}`}
-                  className="text-sm text-neutral-800 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400 font-poppins line-clamp-2 transition-colors"
-                >
-                  {renderTitle(novedad.title, 20)}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className='max-w-7xl mx-auto py-12 px-4'>
-          <div className="mb-10 text-center">
-            <h1 className="text-4xl md:text-5xl font-poppins font-bold text-neutral-900 dark:text-white mb-4">
-              Novedades
-            </h1>
-            <p className="text-lg text-neutral-600 dark:text-neutral-400 font-poppins max-w-2xl mx-auto">
-              Mantente al día con las últimas actualizaciones, lanzamientos y noticias de nuestros productos.
-            </p>
-          </div>
+  const allNovedades = novedades || [];
+  const recentPosts = allNovedades.slice(0, 5);
 
-          <div className="flex flex-col gap-10">
-            {!novedades || novedades.length === 0 ? (
-              <div className="text-center py-20 bg-neutral-50 dark:bg-neutral-900/50 rounded-2xl border border-neutral-200 dark:border-neutral-800">
-                <h2 className="text-xl font-poppins font-semibold text-neutral-800 dark:text-neutral-200 mb-2">No hay novedades por el momento</h2>
+  // Extract unique products
+  const uniqueProducts = Array.from(
+    new Set(allNovedades.map((n: any) => n.product?.title).filter(Boolean))
+  ) as string[];
+
+  // Filter main list
+  const filteredNovedades = filterProduct
+    ? allNovedades.filter((n: any) => n.product?.title === filterProduct)
+    : allNovedades;
+
+  return (
+    <div className="w-full bg-full min-h-screen">
+      <Navbar />
+
+      <div className="max-w-[1400px] mx-auto py-12 px-4 md:px-8">
+        {/* Header */}
+        <div className="mb-10">
+          <h1 className="text-4xl md:text-5xl font-poppins font-bold text-neutral-900">
+            Novedades
+          </h1>
+          <p className="text-lg text-neutral-800 font-poppins max-w-2xl">
+            Mantente al día con los últimos lanzamientos de productos, actualizaciones técnicas, integraciones y guías de Seidor Analytics.
+          </p>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-3 mb-10">
+          <Link href="/novedades">
+            <Button variant={!filterProduct ? 'primary' : 'light'} className="rounded-full!">
+              Todos
+            </Button>
+          </Link>
+          {uniqueProducts.map((prod) => (
+            <Link key={prod} href={`/novedades?product=${encodeURIComponent(prod)}`}>
+              <Button
+                variant={filterProduct === prod ? 'primary' : 'light'}
+                isPill
+                hasBorder
+                className={`${filterProduct === prod ? '' : 'text-neutral-800 bg-transparent! border border-neutral-800'}`}
+                iconName={prod as any}
+              >
+                {prod}
+              </Button>
+            </Link>
+          ))}
+        </div>
+
+        {/* Main Layout Grid */}
+        <div className="flex sm:flex-col lg:flex-row gap-10 items-start">
+
+          {/* Main Content Area */}
+          <div className="flex-1 w-full grid grid-cols-1 md:grid-cols-2 gap-8">
+            {filteredNovedades.length === 0 ? (
+              <div className="col-span-full text-center py-20 bg-white dark:bg-neutral-800 rounded-3xl border border-neutral-200 dark:border-neutral-700">
+                <h2 className="text-xl font-poppins font-semibold text-neutral-800 dark:text-neutral-200 mb-2">No hay noticias</h2>
                 <p className="text-neutral-500">Vuelve pronto para enterarte de lo nuevo.</p>
               </div>
             ) : (
-              novedades.map((novedad: any) => (
+              filteredNovedades.map((novedad: any) => (
                 <article
                   key={novedad.id}
-                  className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col md:flex-row group"
+                  className="bg-container border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group"
                 >
                   {novedad.cover_image && (
-                    <div className="w-full md:w-2/5 lg:w-1/3 aspect-video md:aspect-auto relative overflow-hidden bg-neutral-100 dark:bg-neutral-800">
+                    <div className="w-full aspect-[16/4] relative overflow-hidden bg-neutral-100 dark:bg-neutral-800">
                       <img
                         src={novedad.cover_image}
                         alt={novedad.title}
@@ -100,34 +127,34 @@ export default async function PublicNovedadesPage() {
                     </div>
                   )}
 
-                  <div className="flex flex-col p-6 md:p-8 flex-1">
-                    <div className="flex items-center gap-3 mb-4">
+                  <div className="flex flex-col p-6 flex-1">
+                    <div className="flex items-center justify-between gap-3 mb-4">
                       {novedad.product?.title && (
-                        <span className="px-3 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-semibold rounded-full font-poppins">
+                        <span className="px-3 py-1 bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-bold rounded-full font-poppins uppercase tracking-wider">
                           {novedad.product.title}
                         </span>
                       )}
-                      <time className="text-sm text-neutral-800 font-medium">
-                        {new Date(novedad.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
+                      <time className="text-[12px] text-neutral-400 dark:text-neutral-100 font-medium">
+                        {new Date(novedad.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
                       </time>
                     </div>
 
-                    <h2 className="text-2xl font-poppins font-bold text-neutral-900 dark:text-white mb-3 group-hover:text-blue-600 transition-colors">
+                    <h2 className="text-xl font-poppins font-bold text-neutral-900 mb-3 group-hover:text-blue-600 transition-colors leading-tight">
                       <Link href={`/novedades/${novedad.id}`} className="focus:outline-none">
-                        {renderTitle(novedad.title, 28)}
+                        {renderTitle(novedad.title, 24)}
                       </Link>
                     </h2>
 
-                    <p className="text-neutral-600 dark:text-neutral-300 line-clamp-3 mb-6 font-poppins leading-relaxed">
+                    <p className="text-neutral-800 line-clamp-3 mb-6 font-poppins text-sm leading-relaxed">
                       {stripMarkdown(novedad.content)}
                     </p>
 
-                    <div className="mt-auto pt-4 flex">
+                    <div className="mt-auto pt-4 border-t border-neutral-100 dark:border-neutral-800">
                       <Link
                         href={`/novedades/${novedad.id}`}
-                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-semibold font-poppins transition-colors"
+                        className="inline-flex items-center gap-2 text-neutral-900 hover:text-blue-600 dark:text-white dark:hover:text-blue-400 font-bold font-poppins text-sm transition-colors"
                       >
-                        Ver más
+                        Leer más
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                         </svg>
@@ -138,6 +165,36 @@ export default async function PublicNovedadesPage() {
               ))
             )}
           </div>
+
+          {/* Sidebar */}
+          <aside className="sm:w-full lg:w-[380px] shrink-0 bg-white dark:bg-neutral-800 p-8 rounded-3xl border border-neutral-200 dark:border-neutral-700 sticky top-[80px]">
+            <div className="flex items-center gap-3 mb-8">
+              <CaralIcon name="newspaper" />
+              <h3 className="text-xl font-bold font-poppins text-neutral-900 dark:text-white">Posteos Recientes</h3>
+            </div>
+            <ul className="flex flex-col gap-6">
+              {recentPosts.map((novedad: any, index: number) => (
+                <li key={novedad.id} className={`group ${index !== recentPosts.length - 1 ? 'border-b border-neutral-100 dark:border-neutral-700 pb-6' : ''}`}>
+                  <Link href={`/novedades/${novedad.id}`} className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      {novedad.product?.title && (
+                        <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider font-poppins">
+                          {novedad.product.title}
+                        </span>
+                      )}
+                      <time className="text-[11px] text-neutral-400 font-medium font-poppins">
+                        {new Date(novedad.created_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </time>
+                    </div>
+                    <span className="text-sm font-semibold text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors leading-snug">
+                      {renderTitle(novedad.title, 18)}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </aside>
+
         </div>
       </div>
     </div>
