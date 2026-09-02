@@ -11,12 +11,11 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Argumentos requeridos en tiempo de compilación por Next.js para los bundles del cliente
-ARG NEXT_PUBLIC_SUPABASE_URL
-ARG NEXT_PUBLIC_SUPABASE_ANON_KEY
+ARG NEXT_PUBLIC_SUPABASE_URL=https://dxuxklcxqzqihuezmabf.supabase.co
+ARG NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_QhSPC_HvS-Z4g4YH7mpBDQ_7dhWhw1g
 
-ENV NEXT_PUBLIC_SUPABASE_URL=$NEXT_PUBLIC_SUPABASE_URL
-ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=$NEXT_PUBLIC_SUPABASE_ANON_KEY
+ENV NEXT_PUBLIC_SUPABASE_URL=${NEXT_PUBLIC_SUPABASE_URL:-https://dxuxklcxqzqihuezmabf.supabase.co}
+ENV NEXT_PUBLIC_SUPABASE_ANON_KEY=${NEXT_PUBLIC_SUPABASE_ANON_KEY:-sb_publishable_QhSPC_HvS-Z4g4YH7mpBDQ_7dhWhw1g}
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build
