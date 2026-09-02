@@ -180,6 +180,7 @@ export default function ProductosPage() {
   const [newIsSuper, setNewIsSuper] = useState(false)
   const [newHideInBento, setNewHideInBento] = useState(false)
   const [newIconName, setNewIconName] = useState('')
+  const [newUseBrand, setNewUseBrand] = useState(false)
   const [newRolePermissions, setNewRolePermissions] = useState<Record<string, string>>({})
 
   // Requisitos State
@@ -267,6 +268,7 @@ export default function ProductosPage() {
     setNewIsSuper(false)
     setNewHideInBento(false)
     setNewIconName('')
+    setNewUseBrand(false)
     setNewRolePermissions({})
     setNewRequirements([])
     setNewReqTitle('')
@@ -308,6 +310,7 @@ export default function ProductosPage() {
           .from('products')
           .update({
             title: newTitle,
+            slug: newLink,
             status: newStatus,
             description: newDesc,
             link: newLink,
@@ -322,7 +325,7 @@ export default function ProductosPage() {
             hide_in_bento: newHideInBento || false,
             requirements: newRequirements,
             features: newFeatures,
-            assets: newAssets
+            assets: { ...newAssets, use_brand: newUseBrand }
           })
           .eq('id', editingId)
         if (error) throw error
@@ -332,6 +335,7 @@ export default function ProductosPage() {
           .insert([
             {
               title: newTitle,
+              slug: newLink,
               status: newStatus,
               description: newDesc,
               link: newLink,
@@ -347,7 +351,7 @@ export default function ProductosPage() {
               hide_in_bento: newHideInBento,
               requirements: newRequirements,
               features: newFeatures,
-              assets: newAssets
+              assets: { ...newAssets, use_brand: newUseBrand }
             }
           ]).select()
         if (error) throw error
@@ -397,7 +401,7 @@ export default function ProductosPage() {
     setNewTitle(p.title || '')
     setNewStatus(p.status || 'Publicada')
     setNewDesc(p.description || '')
-    setNewLink(p.link || '')
+    setNewLink(p.slug || p.link || '')
     setNewLinkDemo(p.link_demo || '')
     setNewLinkLanding(p.link_landing || '')
     setNewLinkDocs(p.link_docs || '')
@@ -405,6 +409,7 @@ export default function ProductosPage() {
     setNewIsSuper(p.is_super || false)
     setNewHideInBento(p.hide_in_bento || false)
     setNewIconName(p.icon_name || '')
+    setNewUseBrand(p.assets?.use_brand ?? true)
     setNewLightImage(p.light_image || '')
     setNewDarkImage(p.dark_image || '')
     setNewRequirements(p.requirements || [])
@@ -487,7 +492,11 @@ export default function ProductosPage() {
                   {/* Replaced Image logic with Circle Icon logic */}
                   {p.icon_name ? (
                     <div className="w-16 h-16 rounded-full bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-800 flex shrink-0 items-center justify-center text-blue-600 dark:text-blue-400">
-                      <Brand name={p.icon_name as any} size={32} />
+                      {(p.assets?.use_brand ?? true) ? (
+                        <Brand name={p.icon_name as any} size={32} />
+                      ) : (
+                        <CaralIcon name={p.icon_name as any} size={32} />
+                      )}
                     </div>
                   ) : (
                     <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex shrink-0 items-center justify-center text-neutral-800 text-xs font-bold uppercase">
@@ -552,7 +561,11 @@ export default function ProductosPage() {
                     className="w-10 h-10 flex items-center justify-center rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
                     {newIconName ? (
-                      <CaralIcon name={newIconName as any} size={20} className="text-blue-600" />
+                      newUseBrand ? (
+                        <Brand name={newIconName as any} size={20} />
+                      ) : (
+                        <CaralIcon name={newIconName as any} size={20} className="text-blue-600" />
+                      )
                     ) : (
                       <CaralIcon name="image" size={20} className="text-neutral-400" />
                     )}
@@ -1813,6 +1826,15 @@ export default function ProductosPage() {
 
         </div>
       </Drawer>
+      <IconPickerModal 
+        isOpen={isIconPickerOpen} 
+        onClose={() => setIsIconPickerOpen(false)} 
+        onSelect={(iconName, isBrand) => { 
+          setNewIconName(iconName)
+          setNewUseBrand(isBrand)
+          setIsIconPickerOpen(false)
+        }} 
+      />
     </div>
   )
 }

@@ -7,6 +7,8 @@ import { useSidebar } from "./SidebarProvider";
 import Avatar from "./Avatar";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "../../utils/supabase/client";
+import { searchGlobal, SearchResult } from "@/app/actions/searchAction";
+import { logSearchEvent } from "@/app/actions/logSearchClickAction";
 
 type NavChildMock = {
   id: string;
@@ -48,6 +50,42 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
   const [themePreference, setThemePreference] = useState<'light' | 'dark' | 'system'>('system');
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+
+  const searchQueryRef = useRef(searchQuery);
+  useEffect(() => {
+    searchQueryRef.current = searchQuery;
+  }, [searchQuery]);
+
+  const handleCloseSearch = (clicked: boolean, url?: string) => {
+    setIsSearchModalOpen(false);
+    const query = searchQueryRef.current.trim();
+    if (query.length >= 3) {
+      logSearchEvent(query, clicked, url).catch(console.error);
+    }
+  };
+
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const response = await searchGlobal(searchQuery);
+        setSearchResults(response.results);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
   const [user, setUser] = useState<any>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
 
@@ -141,7 +179,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
         setIsSearchModalOpen(true);
       }
       if (e.key === 'Escape') {
-        setIsSearchModalOpen(false);
+        handleCloseSearch(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -330,9 +368,9 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
             onClick={() => setIsSearchModalOpen(true)}
             className="flex items-center justify-between border border-neutral-800 rounded-full px-4 py-2 w-[386px] transition-colors cursor-pointer group"
           >
-            <div className="flex items-center gap-2 text-neutral-800 group-hover:text-neutral-500 transition-colors">
+            <div className="flex items-center gap-2 text-neutral-800 group-hover:text-neutral-800 transition-colors">
               <CaralIcon name="search" size="s" />
-              <span className="font-poppins text-p text-neutral-800 group-hover:text-neutral-500">Buscar</span>
+              <span className="font-poppins text-p text-neutral-800 group-hover:text-neutral-800">Buscar</span>
             </div>
             <div className="flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 border rounded-full px-2 py-0.5 text-xs text-neutral-800 dark:text-neutral-400 font-medium">
               ⌘ K
@@ -354,7 +392,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                   isIconButton
                   iconName="book"
                   size="md"
-                  onClick={() => { }}
+                  onClick={() => router.push('/documentacion')}
                 />
               );
             }
@@ -409,7 +447,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                 </div>
 
                 <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-                  <div className="flex gap-1 bg-neutral-500 p-1 rounded-lg">
+                  <div className="flex gap-1 bg-neutral-800 p-1 rounded-lg">
                     <Button
                       variant={themePreference === 'light' ? 'light' : 'ghost'}
                       isIconButton
@@ -461,30 +499,69 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
         </div>
       </div>
 
-      {/* Search Modal Placeholder */}
+      {/* Search Modal */}
       {isSearchModalOpen && (
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-[10vh] bg-black/50 backdrop-blur-sm animate-fade-in">
           {/* Overlay clickable para cerrar */}
-          <div className="absolute inset-0" onClick={() => setIsSearchModalOpen(false)}></div>
+          <div className="absolute inset-0" onClick={() => handleCloseSearch(false)}></div>
 
           <div className="relative bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl w-full max-w-[600px] shadow-2xl overflow-hidden flex flex-col animate-slide-up">
             <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-800/50">
-              <div className="flex items-center gap-3 text-neutral-800">
+              <div className="flex items-center gap-3 text-neutral-800 w-full relative">
                 <CaralIcon name="search" size="s" />
-                <span className="font-poppins text-neutral-700 dark:text-neutral-300 font-medium">Próximamente: Buscador Universal</span>
+                <input
+                  type="text"
+                  placeholder="Busca páginas, documentos, novedades, etc..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full bg-transparent border-none outline-none font-poppins text-neutral-700 dark:text-neutral-300 placeholder-neutral-400"
+                  autoFocus
+                />
               </div>
               <button
-                onClick={() => setIsSearchModalOpen(false)}
-                className="text-xs border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200 px-2 py-1 rounded"
+                onClick={() => handleCloseSearch(false)}
+                className="text-xs border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-800 text-neutral-800 hover:text-neutral-800 dark:hover:text-neutral-200 px-2 py-1 rounded ml-2 whitespace-nowrap"
               >
                 Esc
               </button>
             </div>
-            <div className="p-8 flex flex-col items-center justify-center text-neutral-500 text-center font-poppins gap-4 min-h-[200px]">
-              <div className="bg-neutral-100 dark:bg-neutral-800 p-4 rounded-full">
-                <CaralIcon name="search" size="m" />
-              </div>
-              <p>Aquí irá el futuro buscador. <br /> Estará conectado a todo el portal.</p>
+
+            <div className="flex flex-col overflow-y-auto max-h-[60vh] font-poppins bg-white dark:bg-neutral-900">
+              {isSearching ? (
+                <div className="p-8 text-center text-neutral-800 text-sm">Buscando...</div>
+              ) : searchResults.length > 0 ? (
+                <div className="flex flex-col p-2">
+                  {searchResults.map((res) => (
+                    <div
+                      key={res.id}
+                      onClick={() => {
+                        handleCloseSearch(true, res.url);
+                        router.push(res.url);
+                      }}
+                      className="flex flex-col p-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg cursor-pointer transition-colors"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-medium text-neutral-800 dark:text-neutral-200 text-sm">{res.title}</span>
+                        <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-neutral-500 text-neutral-800">
+                          {res.type}
+                        </span>
+                      </div>
+                      {res.snippet && (
+                        <span className="text-xs text-neutral-800 line-clamp-1">{res.snippet}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : searchQuery.trim() ? (
+                <div className="p-8 text-center text-neutral-800 text-sm">No se encontraron resultados para "{searchQuery}"</div>
+              ) : (
+                <div className="p-8 flex flex-col items-center justify-center text-neutral-400 gap-3">
+                  <div className="bg-neutral-100  p-4 rounded-full">
+                    <CaralIcon name="search" size="m" />
+                  </div>
+                  <p className="text-sm">Escribe para empezar a buscar en el portal</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
