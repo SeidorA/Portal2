@@ -1,0 +1,16 @@
+{
+  "name": "portal-docs-mcp",
+  "version": "1.0.0",
+  "description": "Servidor MCP para la documentación del portal",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "portal-docs-mcp": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.1"
+  }
+}

@@ -1,0 +1,82 @@
+name: Build and Deploy
+
+# Allow the workflow to push commits when needed
+permissions:
+  contents: write
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  docker:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    environment: Portal-Productivo
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and push Docker image to Docker Hub
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./dockerfile
+          push: true
+          build-args: |
+            NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL || secrets.SUPABASE_URL }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY=${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || secrets.SUPABASE_ANON_KEY }}
+          tags: |
+            cloudseidoranalytics/portal2:${{ github.sha }}
+            cloudseidoranalytics/portal2:latest
+
+  update-docker-compose:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    needs: docker
+    environment: Portal-Productivo
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update docker-compose image tag
+        run: |
+          SHA=${{ github.sha }}
+          
+          # Actualizar el tag en docker-compose.yml
+          sed -i "s|cloudseidoranalytics/portal2:.*|cloudseidoranalytics/portal2:${SHA}|g" docker-compose.yml
+          
+          # Mostrar el cambio
+          echo "Contenido actualizado de docker-compose.yml:"
+          cat docker-compose.yml
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          git add docker-compose.yml
+          
+          # Verificar si hay cambios
+          if git diff --cached --quiet; then
+            echo "No hay cambios en docker-compose.yml"
+            exit 0
+          fi
+          
+          git commit -m "chore(ci): actualizar imagen a ${{ github.sha }} [skip ci]"
+          git push origin main

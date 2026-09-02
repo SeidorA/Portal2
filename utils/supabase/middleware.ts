@@ -33,7 +33,12 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser()
 
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login')
-  const isPublicRoute = request.nextUrl.pathname === '/' || request.nextUrl.pathname.startsWith('/test-editor')
+  const isApiRoute = request.nextUrl.pathname.startsWith('/api')
+  const isPublicRoute = 
+    request.nextUrl.pathname === '/' || 
+    request.nextUrl.pathname.startsWith('/test-editor') ||
+    request.nextUrl.pathname.startsWith('/documentacion') ||
+    isApiRoute
   const isProtectedRoute = !isAuthRoute && !isPublicRoute
 
   // Redirigir a login si intenta entrar a ruta protegida sin sesión
