@@ -129,13 +129,33 @@ export default function NavBarConfigPage() {
     setIsSaving(true);
     const supabase = createClient();
 
-    const { error } = await supabase
+    // Verificar si ya existe el registro de navbar
+    const { data: existing } = await supabase
       .from('global_config')
-      .upsert({
-        section: 'navbar',
-        data: { leftItems, rightItems },
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'section' });
+      .select('id')
+      .eq('section', 'navbar')
+      .maybeSingle();
+
+    let error;
+    if (existing?.id) {
+      const res = await supabase
+        .from('global_config')
+        .update({
+          data: { leftItems, rightItems },
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existing.id);
+      error = res.error;
+    } else {
+      const res = await supabase
+        .from('global_config')
+        .insert({
+          section: 'navbar',
+          data: { leftItems, rightItems },
+          updated_at: new Date().toISOString()
+        });
+      error = res.error;
+    }
 
     setIsSaving(false);
     if (error) {

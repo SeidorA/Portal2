@@ -3,6 +3,7 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
 import { CaralIcon, Brand } from 'iconcaral2';
 import { CrestoneConnections } from './CrestoneConnections';
 import DynamicFeature from './DynamicFeature';
@@ -73,7 +74,39 @@ const preprocessAdmonitions = (text: string) => {
 const preprocessCustomComponents = (text: string) => {
   let newText = text.replace(/\\?<CrestoneConnections\s*\/>/gi, '!CRESTONE_CONNECTIONS!');
   newText = newText.replace(/\\?<Archivos\s+source=["']([^"']+)["']\s*\/>/gi, '!ARCHIVOS:$1!');
-  newText = newText.replace(/\\?<DocInsert\s+id=["']([^"']+)["']\s*\/>/gi, '!DOCINSERT:$1!');
+  // DocInsert (supports id and full properties)
+  newText = newText.replace(/\\?<DocInsert\s+([\s\S]*?)\/>/gi, (match, attrsString) => {
+    const attrs: Record<string, string> = {};
+    const attrRegex = /(\w+)\s*=\s*("([^"]*)"|'([^']*)'|\{([^}]*)\})/g;
+    let attrMatch;
+    while ((attrMatch = attrRegex.exec(attrsString)) !== null) {
+      const key = attrMatch[1];
+      let value = attrMatch[3] !== undefined ? attrMatch[3] : (attrMatch[4] !== undefined ? attrMatch[4] : attrMatch[5]);
+      if (value) attrs[key] = value;
+    }
+    const encoded = typeof btoa === 'function' ? btoa(encodeURIComponent(JSON.stringify(attrs))) : '';
+    return `\n\n!DOCINSERT:${encoded}!\n\n`;
+  });
+
+  // BoxDoc (legacy Docusaurus commercial download cards)
+  newText = newText.replace(/\\?<BoxDoc([\s\S]*?)>([\s\S]*?)<\/BoxDoc>/gi, (match, attrsString, body) => {
+    const attrs: Record<string, string> = {};
+    const attrRegex = /(\w+)\s*=\s*("([^"]*)"|'([^']*)'|\{([^}]*)\})/g;
+    let attrMatch;
+    while ((attrMatch = attrRegex.exec(attrsString)) !== null) {
+      const key = attrMatch[1];
+      let value = attrMatch[3] !== undefined ? attrMatch[3] : (attrMatch[4] !== undefined ? attrMatch[4] : attrMatch[5]);
+      if (value) attrs[key] = value;
+    }
+    if (attrs.onDownload && !attrs.downloadUrl) {
+      attrs.downloadUrl = attrs.onDownload;
+    }
+    if (body && !attrs.description) {
+      attrs.description = body.trim();
+    }
+    const encoded = typeof btoa === 'function' ? btoa(encodeURIComponent(JSON.stringify(attrs))) : '';
+    return `\n\n!DOCINSERT:${encoded}!\n\n`;
+  });
 
   newText = newText.replace(/\\?<Webinar\s+([\s\S]*?)\/>/gi, (match, attrsString) => {
     const attrs: Record<string, string> = {};
@@ -95,11 +128,56 @@ const preprocessCustomComponents = (text: string) => {
     return `\n\n!WEBINAR:${encoded}!\n\n`;
   });
 
+  // Normalizar iframes con style={{ ... }} de JSX a HTML estándar
+  newText = newText.replace(/<iframe([\s\S]*?)style=\{\{([\s\S]*?)\}\}([\s\S]*?)>([\s\S]*?)<\/iframe>/gi, (match, before, styleContent, after, inside) => {
+    let styleStr = styleContent
+      .replace(/aspectRatio:\s*['"]([^'"]+)['"]/gi, 'aspect-ratio: $1')
+      .replace(/borderRadius:\s*['"]([^'"]+)['"]/gi, 'border-radius: $1')
+      .replace(/,\s*/g, '; ')
+      .replace(/['"]/g, '')
+      .trim();
+    if (!styleStr.includes('aspect-ratio')) {
+      styleStr = `aspect-ratio: 16/9; ${styleStr}`;
+    }
+    return `<iframe${before}style="${styleStr}"${after}>${inside}</iframe>`;
+  });
+
   return newText;
 };
 
 const preprocessLineBreaks = (text: string) => {
-  return text.replace(/<br\s*\/?>/gi, '  \n');
+  return text.split('\n').map(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+      return line; // No romper la sintaxis de tablas Markdown
+    }
+    return line.replace(/<br\s*\/?>/gi, '  \n');
+  }).join('\n');
+};
+
+const renderTableCellContent = (children: any): any => {
+  if (typeof children === 'string') {
+    if (/<br\s*\/?>/i.test(children)) {
+      const parts = children.split(/<br\s*\/?>/i);
+      return parts.map((part, i) => (
+        <React.Fragment key={i}>
+          {i > 0 && <br />}
+          {part}
+        </React.Fragment>
+      ));
+    }
+    return children;
+  }
+  if (Array.isArray(children)) {
+    return children.map(renderTableCellContent);
+  }
+  if (React.isValidElement(children) && (children as any).props?.children) {
+    return React.cloneElement(children as any, {
+      ...(children as any).props,
+      children: renderTableCellContent((children as any).props.children)
+    });
+  }
+  return children;
 };
 
 export default function MarkdownRenderer({ content, noTableBorders = false }: { content: string, noTableBorders?: boolean }) {
@@ -115,10 +193,16 @@ export default function MarkdownRenderer({ content, noTableBorders = false }: { 
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeRaw]}
         components={{
           table: ({ node, ...props }) => <div className="overflow-x-auto"><table className={`min-w-full ${noTableBorders ? 'border-none' : ''}`} {...props} /></div>,
-          th: ({ node, ...props }) => <th className={`${noTableBorders ? 'border-none p-2' : ''}`} {...props} />,
-          td: ({ node, ...props }) => <td className={`${noTableBorders ? 'border-none p-2' : ''}`} {...props} />,
+          th: ({ node, children, ...props }) => <th className={`${noTableBorders ? 'border-none p-2' : ''}`} {...props}>{renderTableCellContent(children)}</th>,
+          td: ({ node, children, ...props }) => <td className={`${noTableBorders ? 'border-none p-2' : ''}`} {...props}>{renderTableCellContent(children)}</td>,
+          iframe: ({ node, style, ...props }) => (
+            <div className="w-full aspect-video rounded-xl overflow-hidden my-6 shadow-md border border-neutral-200 dark:border-neutral-800">
+              <iframe className="w-full h-full border-0" {...props} />
+            </div>
+          ),
           p: ({ node, children, ...props }) => {
             const rawText = extractText(children).trim();
             if (rawText === '!CRESTONE_CONNECTIONS!') {
@@ -140,7 +224,17 @@ export default function MarkdownRenderer({ content, noTableBorders = false }: { 
             if (rawText.startsWith('!DOCINSERT:')) {
               const match = rawText.match(/^!DOCINSERT:(.+)!$/);
               if (match) {
-                return <DocInsert id={match[1]} />;
+                try {
+                  const decoded = decodeURIComponent(typeof atob === 'function' ? atob(match[1]) : '');
+                  if (decoded.startsWith('{')) {
+                    const props = JSON.parse(decoded);
+                    return <DocInsert {...props} />;
+                  } else {
+                    return <DocInsert id={match[1]} />;
+                  }
+                } catch {
+                  return <DocInsert id={match[1]} />;
+                }
               }
             }
             if (rawText.startsWith('!WEBINAR:')) {

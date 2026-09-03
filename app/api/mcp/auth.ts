@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/utils/supabase/admin';
 import { NextRequest } from 'next/server';
 
 // Usamos el cliente admin de supabase para buscar la llave sin RLS 
@@ -15,10 +15,7 @@ export async function authenticateMcpRequest(request: NextRequest) {
   const token = authHeader.split(' ')[1];
 
   // Necesitamos usar la llave de servicio para saltarnos el RLS, ya que la petición no tiene cookies de sesión.
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const supabase = createAdminClient();
 
   // Buscar la API key en la base de datos
   const { data: apiKey, error } = await supabase

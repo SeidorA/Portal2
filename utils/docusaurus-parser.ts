@@ -90,7 +90,24 @@ export function parseDocusaurusMarkdown(rawMd: string, filename: string): Parsed
     return `![${alt}](${cleanSrc}#align-center)`;
   });
 
-  // Cleanup extra newlines
+  // 5. Transform Table Lists (Replace markdown dashes inside table cells with bullet points to prevent ProseMirror table ejection)
+  content = content.split('\n').map(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('|') && trimmed.endsWith('|')) {
+      if (/^\|[\s\-:|]+\|$/.test(trimmed)) return line;
+      let fixed = line.replace(/\|\s*-\s+/g, '| • ');
+      fixed = fixed.replace(/<br\s*\/?>\s*-\s+/gi, '<br/>• ');
+      return fixed;
+    }
+    return line;
+  }).join('\n');
+
+  // 6. Normalize JSX iframes with style={{...}} to responsive classes
+  content = content.replace(/<iframe([\s\S]*?)style=\{\{([\s\S]*?)\}\}([\s\S]*?)>([\s\S]*?)<\/iframe>/gi, (match, before, styleContent, after, inside) => {
+    return `<iframe${before}class="aspect-video w-full rounded-xl"${after}>${inside}</iframe>`;
+  });
+
+  // 7. Cleanup extra newlines
   content = content.replace(/\n{3,}/g, '\n\n').trim();
 
   // Extract properties

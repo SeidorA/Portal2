@@ -17,7 +17,7 @@ export async function login(formData: FormData) {
 
   if (error) {
     console.error('Supabase Auth Error:', error.message)
-    return redirect('/login?message=Could not authenticate user')
+    return redirect(`/login?message=${encodeURIComponent(error.message)}`)
   }
 
   const { data: { user } } = await supabase.auth.getUser()

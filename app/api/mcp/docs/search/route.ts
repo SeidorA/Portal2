@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateMcpRequest } from '@/app/api/mcp/auth';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 export async function GET(request: NextRequest) {
   // 1. Authenticate Request
@@ -17,10 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Use service role to fetch data since user session doesn't exist
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const supabase = createAdminClient();
 
   // Search in title, description and content
   const { data: docs, error } = await supabase

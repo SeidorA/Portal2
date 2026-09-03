@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateMcpRequest } from '@/app/api/mcp/auth';
-import { createClient } from '@supabase/supabase-js';
+import { createAdminClient } from '@/utils/supabase/admin';
 
 export async function POST(request: NextRequest) {
   // 1. Authenticate Request
@@ -27,10 +27,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Faltan parámetros requeridos (id, content)' }, { status: 400 });
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const supabase = createAdminClient();
 
   // Update document
   const { error } = await supabase

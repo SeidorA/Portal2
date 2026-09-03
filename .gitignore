@@ -43,3 +43,9 @@ next-env.d.ts
 
 # assets
 /assets
+
+# migrations, working data & local tooling
+/scripts/
+/data/
+/sql/
+/docs/
