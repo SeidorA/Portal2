@@ -19,18 +19,23 @@ export async function GET(request: Request) {
   }
 
   if (code) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      const { data: { user } } = await supabase.auth.getUser();
-      let targetPath = next;
-      if (user?.user_metadata?.default_screen && next === '/dashboard') {
-        targetPath = user.user_metadata.default_screen === 'dashboard' ? '/dashboard' : `/${user.user_metadata.default_screen}`;
+    try {
+      const supabase = await createClient();
+      const { error } = await supabase.auth.exchangeCodeForSession(code);
+      if (!error) {
+        const { data: { user } } = await supabase.auth.getUser();
+        let targetPath = next;
+        if (user?.user_metadata?.default_screen && next === '/dashboard') {
+          targetPath = user.user_metadata.default_screen === 'dashboard' ? '/dashboard' : `/${user.user_metadata.default_screen}`;
+        }
+        return NextResponse.redirect(`${origin}${targetPath}`);
+      } else {
+        console.error('Error exchanging code for session:', error.message);
+        return NextResponse.redirect(`${origin}/login?message=${encodeURIComponent(error.message)}`);
       }
-      return NextResponse.redirect(`${origin}${targetPath}`);
-    } else {
-      console.error('Error exchanging code for session:', error.message);
-      return NextResponse.redirect(`${origin}/login?message=${encodeURIComponent(error.message)}`);
+    } catch (err: any) {
+      console.error('Critical exception in auth callback:', err);
+      return NextResponse.redirect(`${origin}/login?message=${encodeURIComponent(err.message || 'Error durante la autenticacion')}`);
     }
   }
 
