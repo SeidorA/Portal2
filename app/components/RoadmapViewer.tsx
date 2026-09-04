@@ -36,7 +36,34 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
   }
 
   const [showPast, setShowPast] = useState(false);
-  const [viewMode, setViewMode] = useState<'cards' | 'timeline'>('timeline');
+  const [viewMode, setViewMode] = useState<'cards' | 'timeline'>(() => {
+    if (typeof window !== 'undefined') {
+      const savedPref = localStorage.getItem('roadmap_preferred_view');
+      if (savedPref === 'cards' || savedPref === 'timeline') {
+        return savedPref;
+      }
+    }
+    return data?.defaultView || 'timeline';
+  });
+
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedPref = localStorage.getItem('roadmap_preferred_view');
+      if (savedPref === 'cards' || savedPref === 'timeline') {
+        setViewMode(savedPref);
+      } else if (data?.defaultView) {
+        setViewMode(data.defaultView);
+      }
+    }
+  }, [data?.defaultView]);
+
+  const handleTabChange = (index: number) => {
+    const selectedMode = index === 0 ? 'cards' : 'timeline';
+    setViewMode(selectedMode);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('roadmap_preferred_view', selectedMode);
+    }
+  };
 
   const currentYear = new Date().getFullYear();
   const currentQ = Math.floor(new Date().getMonth() / 3) + 1;
@@ -122,7 +149,7 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
           <Tabs
             tabs={[{ label: 'Vista por Trimestre' }, { label: 'Línea de Tiempo' }]}
             activeIndex={viewMode === 'cards' ? 0 : 1}
-            onChange={(index) => setViewMode(index === 0 ? 'cards' : 'timeline')}
+            onChange={handleTabChange}
           />
         </div>
       </div>

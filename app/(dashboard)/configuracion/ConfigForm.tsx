@@ -15,6 +15,7 @@ export default function ConfigForm({ user, allowedScreens }: { user: any, allowe
     default_screen: meta.default_screen || 'dashboard',
     language: meta.language || 'es',
     theme: meta.theme || 'system',
+    roadmap_view: meta.roadmap_view || (typeof window !== 'undefined' ? localStorage.getItem('roadmap_preferred_view') || 'timeline' : 'timeline'),
     full_name: meta.full_name || meta.name || meta.display_name || '',
     phone: meta.phone || meta.phone_number || '',
     company: meta.company || '',
@@ -30,12 +31,17 @@ export default function ConfigForm({ user, allowedScreens }: { user: any, allowe
     setSuccessMsg('');
 
     try {
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('roadmap_preferred_view', formData.roadmap_view);
+      }
+
       // Update the user's raw_user_meta_data in Supabase Auth
       const { error } = await supabase.auth.updateUser({
         data: {
           default_screen: formData.default_screen,
           language: formData.language,
           theme: formData.theme,
+          roadmap_view: formData.roadmap_view,
           full_name: formData.full_name,
           phone: formData.phone,
           company: formData.company
@@ -108,6 +114,20 @@ export default function ConfigForm({ user, allowedScreens }: { user: any, allowe
                   <option value="dark">Oscuro</option>
                 </select>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">Vista de Roadmap Preferida</label>
+              <select
+                name="roadmap_view"
+                value={formData.roadmap_view}
+                onChange={handleChange}
+                className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-inherit focus:ring-2 focus:ring-info-main/50 outline-none transition-all"
+              >
+                <option value="timeline">Línea de Tiempo (Predeterminada)</option>
+                <option value="cards">Vista por Trimestre (Tarjetas)</option>
+              </select>
+              <p className="text-xs text-neutral-500 mt-1">Cómo prefieres visualizar inicialmente los roadmaps en la documentación.</p>
             </div>
           </div>
         </div>

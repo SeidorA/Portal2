@@ -32,6 +32,7 @@ export interface RoadmapYear {
 
 export interface RoadmapData {
   description: string;
+  defaultView?: 'cards' | 'timeline';
   years: RoadmapYear[];
 }
 
@@ -238,13 +239,28 @@ export default function RoadmapEditor({ content, onChange }: RoadmapEditorProps)
         </button>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <label className="font-semibold">Descripción del Roadmap</label>
-        <textarea 
-          className="border border-neutral-300 dark:border-neutral-700 rounded-md p-2 bg-transparent w-full min-h-[60px]"
-          value={data.description}
-          onChange={e => save({ ...data, description: e.target.value })}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="md:col-span-2 flex flex-col gap-2">
+          <label className="font-semibold text-sm">Descripción del Roadmap</label>
+          <textarea 
+            className="border border-neutral-300 dark:border-neutral-700 rounded-md p-2 bg-transparent w-full min-h-[60px]"
+            value={data.description}
+            onChange={e => save({ ...data, description: e.target.value })}
+            placeholder="Breve descripción del roadmap..."
+          />
+        </div>
+        <div className="flex flex-col gap-2">
+          <label className="font-semibold text-sm">Vista por Defecto al Abrir</label>
+          <select
+            className="border border-neutral-300 dark:border-neutral-700 rounded-md p-2.5 bg-white dark:bg-neutral-900 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+            value={data.defaultView || 'timeline'}
+            onChange={e => save({ ...data, defaultView: e.target.value as 'cards' | 'timeline' })}
+          >
+            <option value="timeline">Línea de Tiempo</option>
+            <option value="cards">Vista por Trimestre</option>
+          </select>
+          <p className="text-xs text-neutral-500">Define cómo se mostrará inicialmente este roadmap.</p>
+        </div>
       </div>
 
       {activeView === 'visual' && (
