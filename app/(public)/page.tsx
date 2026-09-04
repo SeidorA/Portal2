@@ -11,8 +11,8 @@ export default async function Home() {
   const bentoConfig = await getBentoConfig();
   const { data: products } = await supabase.from('products').select('*').order('order_index', { ascending: true }).order('created_at', { ascending: false });
 
-  const ownTechProducts = products?.filter(p => p.category === 'own_tech') || [];
-  const actinProducts = products?.filter(p => p.category === 'actin') || [];
+  const ownTechProducts = products?.filter(p => p.category === 'own_tech' && !p.hide_in_bento) || [];
+  const actinProducts = products?.filter(p => p.category === 'actin' && !p.hide_in_bento) || [];
 
   return (
     <>

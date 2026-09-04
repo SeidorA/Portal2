@@ -2,9 +2,11 @@ import React from 'react';
 import Products from '../../components/home/Products';
 import Actin from '../../components/home/Actin';
 import { createClient } from '@/utils/supabase/server';
+import { getBentoConfig } from '../../actions/bentoConfig';
 
 export default async function Dashboard() {
   const supabase = await createClient();
+  const bentoConfig = await getBentoConfig();
   const { data: { user } } = await supabase.auth.getUser();
   
   let userName = "Usuario";
@@ -30,8 +32,8 @@ export default async function Dashboard() {
       </div>
 
       <div className="flex flex-col gap-12">
-        <Products products={ownTechProducts} />
-        <Actin products={actinProducts} />
+        <Products products={ownTechProducts} cols={bentoConfig.ownTechCols} />
+        <Actin products={actinProducts} cols={bentoConfig.actinCols} />
       </div>
     </div>
   );
