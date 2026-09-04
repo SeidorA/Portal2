@@ -80,3 +80,14 @@ jobs:
           
           git commit -m "chore(ci): actualizar imagen a ${{ github.sha }} [skip ci]"
           git push origin main
+
+      - name: Trigger Portainer Webhook
+        run: |
+          WEBHOOK_URL="${{ secrets.PORTAINER_WEBHOOK || secrets.PORTAINER_WEBHOOK_URL }}"
+          if [ -n "$WEBHOOK_URL" ]; then
+            echo "Notificando a Portainer para desplegar la nueva version..."
+            curl -X POST -f -s -S -k "$WEBHOOK_URL"
+            echo "Webhook de Portainer ejecutado exitosamente."
+          else
+            echo "Aviso: Secret PORTAINER_WEBHOOK no configurado. Omitiendo notificación a Portainer."
+          fi
