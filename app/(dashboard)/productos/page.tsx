@@ -1704,7 +1704,6 @@ export default function ProductosPage() {
                             <Button variant="light" hasBorder onClick={() => {
                               setNewFeatTitle('')
                               setNewFeatDesc('')
-                              setNewFeatCategory('feature')
                               setNewFeatMandatory(false)
                               setNewFeatType('text')
                               setNewFeatOptions([])
