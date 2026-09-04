@@ -48,12 +48,21 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
     return false;
   };
 
+  const quarterHasFeatures = (q: any) => {
+    return q.months?.some((m: any) =>
+      m.features && m.features.some((f: any) => f.title && f.title.trim() !== '')
+    ) ?? false;
+  };
+
   const hasPastQuarters = data.years.some(y =>
-    y.quarters.some((q, qi) => isPastQuarter(y.year, qi))
+    y.quarters.some((q, qi) => isPastQuarter(y.year, qi) && quarterHasFeatures(q))
   );
 
   const visibleYears = data.years.map(y => {
     const visibleQuarters = y.quarters.filter((q, qi) => {
+      // Si el Q no tiene información en ningún mes, no mostrarlo directamente
+      if (!quarterHasFeatures(q)) return false;
+
       const isPast = isPastQuarter(y.year, qi);
       return showPast ? isPast : !isPast;
     });
@@ -119,6 +128,11 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
       </div>
 
       {viewMode === 'cards' ? (
+        visibleYears.length === 0 ? (
+          <div className="p-8 text-center text-neutral-500 dark:text-neutral-400 italic bg-neutral-50 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">
+            No hay iniciativas programadas para este período.
+          </div>
+        ) : (
         <div className="flex flex-col gap-16">
           {visibleYears.map((y, yi) => (
             <div key={yi} className="flex flex-col gap-8">
@@ -225,7 +239,13 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
             </div>
           ))}
         </div>
+        )
       ) : (
+        visibleYears.length === 0 ? (
+          <div className="p-8 text-center text-neutral-500 dark:text-neutral-400 italic bg-neutral-50 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 w-full max-w-5xl mx-auto">
+            No hay iniciativas programadas para este período.
+          </div>
+        ) : (
         <div className="flex flex-col w-full max-w-5xl mx-auto">
           {visibleYears.map((y, yi) => (
             <React.Fragment key={yi}>
@@ -294,6 +314,7 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
             </React.Fragment>
           ))}
         </div>
+        )
       )}
     </div>
   );
