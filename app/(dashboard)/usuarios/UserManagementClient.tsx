@@ -18,14 +18,14 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
   const supabase = createClient();
   const router = useRouter();
 
-  const handleRoleChange = async (userId: string, newRoleId: number | null) => {
+  const handleRoleChange = async (userId: string, newRoleId: string | number | null) => {
     setLoading(true);
     try {
-      // 1. Remove all existing roles for this user
+      // 1. Remove all existing roles for this user (checking both profile_id and user_id)
       const { error: delError } = await supabase
         .from('user_roles')
         .delete()
-        .eq('user_id', userId);
+        .or(`profile_id.eq.${userId},user_id.eq.${userId}`);
 
       if (delError) throw delError;
 
@@ -35,11 +35,15 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
       if (newRoleId !== null) {
         const { error: insError } = await supabase
           .from('user_roles')
-          .insert({ user_id: userId, role_id: newRoleId });
+          .insert({
+            profile_id: userId,
+            user_id: userId,
+            role_id: newRoleId
+          });
 
         if (insError) throw insError;
 
-        const roleName = availableRoles.find(r => r.id === newRoleId)?.name;
+        const roleName = availableRoles.find(r => String(r.id) === String(newRoleId))?.name;
         newRoleObj = { id: newRoleId, name: roleName };
       }
 
@@ -182,7 +186,7 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
                       value={profile.roles && profile.roles.length > 0 ? profile.roles[0].id : ''}
                       onChange={(e) => {
                         const val = e.target.value;
-                        handleRoleChange(profile.id, val ? Number(val) : null);
+                        handleRoleChange(profile.id, val ? (isNaN(Number(val)) ? val : Number(val)) : null);
                       }}
                       className={`
                       px-3 py-2 text-sm font-medium rounded-md border transition-all cursor-pointer
