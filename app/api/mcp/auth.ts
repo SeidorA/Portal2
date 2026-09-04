@@ -25,16 +25,21 @@ export async function authenticateMcpRequest(request: NextRequest) {
     .single();
 
   if (error || !apiKey) {
+    console.error('[MCP Auth] Error validating token:', error || 'Token not found');
     return { error: 'Unauthorized: Invalid token', status: 401 };
   }
 
   // Verificamos si el usuario es Admin
-  const { data: userRoles } = await supabase
+  const { data: userRoles, error: rolesError } = await supabase
     .from('user_roles')
     .select('role_id, roles(name)')
-    .eq('profile_id', apiKey.user_id);
+    .or(`profile_id.eq.${apiKey.user_id},user_id.eq.${apiKey.user_id}`);
 
-  const isAdmin = userRoles?.some(ur => (ur.roles as any)?.name === 'admin') || false;
+  if (rolesError) {
+    console.error('[MCP Auth] Error fetching roles:', rolesError);
+  }
+
+  const isAdmin = userRoles?.some(ur => (ur.roles as any)?.name?.toLowerCase() === 'admin') || false;
 
   return {
     user_id: apiKey.user_id,
