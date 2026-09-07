@@ -39,41 +39,19 @@ export default function LoginMicrosoftButton() {
   };
 
   return (
-    <div className="w-full my-3">
+    <div className="w-full my-2">
       <button
         type="button"
         onClick={handleLogin}
         disabled={loading}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '12px',
-          padding: '12px 24px',
-          backgroundColor: '#0078d4',
-          color: '#ffffff',
-          border: 'none',
-          borderRadius: '6px',
-          cursor: loading ? 'not-allowed' : 'pointer',
-          fontSize: '15px',
-          fontWeight: '600',
-          width: '100%',
-          boxShadow: '0 2px 6px rgba(0, 0, 0, 0.15)',
-          transition: 'background-color 0.2s, opacity 0.2s',
-          opacity: loading ? 0.7 : 1,
-        }}
-        onMouseOver={(e) => {
-          if (!loading) e.currentTarget.style.backgroundColor = '#005a9e';
-        }}
-        onMouseOut={(e) => {
-          if (!loading) e.currentTarget.style.backgroundColor = '#0078d4';
-        }}
+        className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#0072CA]! hover:bg-[#005ea6]! text-white! rounded-xl font-poppins font-medium text-sm transition-all duration-200 shadow-sm hover:shadow disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+        style={{ backgroundColor: '#0072CA' }}
       >
         {loading ? (
           <span>Conectando con Microsoft...</span>
         ) : (
           <>
-            <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
               <path d="M0 0H10V10H0V0Z" fill="#F25022" />
               <path d="M11 0H21V10H11V0Z" fill="#7FBA00" />
               <path d="M0 11H10V21H0V11Z" fill="#00A4EF" />
@@ -84,7 +62,7 @@ export default function LoginMicrosoftButton() {
         )}
       </button>
       {error && (
-        <div className="p-3 mt-3 bg-red-50 border border-red-200 text-red-700 text-xs rounded-md text-center font-medium">
+        <div className="p-3 mt-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs rounded-xl text-center font-medium">
           {error}
         </div>
       )}
