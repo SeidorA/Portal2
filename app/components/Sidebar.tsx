@@ -3,29 +3,13 @@
 import React from "react";
 import { Button } from "caralstable";
 import sidebarConfig from "../../sidebar.config.json";
-import { useSidebar } from "./SidebarProvider";
+import { useSidebar, SidebarItem, SidebarSection } from "./SidebarProvider";
 import { createClient } from "@/utils/supabase/client";
 
 import { useRouter, usePathname } from "next/navigation";
 import { Brand, CaralIcon } from "iconcaral2";
 
-// Definimos los tipos para la configuración importada
-export type SidebarItem = {
-  label: string;
-  icon: string | null;
-  href?: string;
-  isBrand?: boolean;
-  variant?: "info" | "ghost" | "default" | "success" | "warning" | "danger" | "indido" | "sakura" | "light" | "carbon" | "tab";
-  className?: string;
-  children?: SidebarItem[];
-  adminOnly?: boolean;
-};
-
-export type SidebarSection = {
-  title: string | null;
-  items: SidebarItem[];
-  adminOnly?: boolean;
-};
+export type { SidebarItem, SidebarSection };
 
 const checkActive = (node: SidebarItem, currentPath: string): boolean => {
   if (node.href && node.href === currentPath) return true;
@@ -35,7 +19,19 @@ const checkActive = (node: SidebarItem, currentPath: string): boolean => {
   return false;
 };
 
-const SidebarItemNode = ({ item, level = 0, pathname, router }: { item: SidebarItem, level?: number, pathname: string, router: any }) => {
+export const SidebarItemNode = ({
+  item,
+  level = 0,
+  pathname,
+  router,
+  onNavigate,
+}: {
+  item: SidebarItem;
+  level?: number;
+  pathname: string;
+  router: any;
+  onNavigate?: () => void;
+}) => {
   const [isOpen, setIsOpen] = React.useState(false);
 
   React.useEffect(() => {
@@ -52,6 +48,7 @@ const SidebarItemNode = ({ item, level = 0, pathname, router }: { item: SidebarI
       setIsOpen(!isOpen);
     } else if (item.href) {
       router.push(item.href);
+      if (onNavigate) onNavigate();
     }
   };
 
@@ -83,7 +80,7 @@ const SidebarItemNode = ({ item, level = 0, pathname, router }: { item: SidebarI
       {isFolder && isOpen && (
         <div className="flex flex-col w-full mt-1">
           {item.children!.map((child, idx) => (
-            <SidebarItemNode key={idx} item={child} level={level + 1} pathname={pathname} router={router} />
+            <SidebarItemNode key={idx} item={child} level={level + 1} pathname={pathname} router={router} onNavigate={onNavigate} />
           ))}
         </div>
       )}
@@ -91,9 +88,21 @@ const SidebarItemNode = ({ item, level = 0, pathname, router }: { item: SidebarI
   );
 };
 
-export default function Sidebar({ dynamicSections, allowedPaths, isAdmin = false, showLogout = false }: { dynamicSections?: SidebarSection[], allowedPaths?: string[], isAdmin?: boolean, showLogout?: boolean }) {
+export default function Sidebar({
+  dynamicSections,
+  allowedPaths,
+  isAdmin = false,
+  showLogout = false,
+  className = "",
+}: {
+  dynamicSections?: SidebarSection[];
+  allowedPaths?: string[];
+  isAdmin?: boolean;
+  showLogout?: boolean;
+  className?: string;
+}) {
   const sections = dynamicSections || (sidebarConfig as SidebarSection[]);
-  const { isSidebarOpen } = useSidebar();
+  const { isSidebarOpen, setSidebarSections } = useSidebar();
   const router = useRouter();
   const pathname = usePathname();
   const supabase = createClient();
@@ -101,24 +110,36 @@ export default function Sidebar({ dynamicSections, allowedPaths, isAdmin = false
   // Filtramos las secciones y elementos en base a allowedPaths
   const publicScreens = ["/dashboard", "/perfil"];
   
-  const filteredSections = sections
-    .filter(section => {
-      if (section.adminOnly && !isAdmin) return false;
-      return true;
-    })
-    .map(section => {
-      return {
-        ...section,
-        items: section.items.filter(item => {
-          if (item.adminOnly && !isAdmin) return false;
-          if (isAdmin) return true; // El Admin ve todo
-          if (!item.href) return true; // Si es una carpeta, la dejamos y evaluaremos sus hijos si es necesario
-          if (publicScreens.some(p => item.href === p || item.href?.startsWith(p + "/"))) return true;
-          if (!allowedPaths) return true; // Si no pasamos allowedPaths, asumimos que mostramos todo
-          return allowedPaths.some(p => item.href === p || item.href?.startsWith(p + "/"));
-        })
-      };
-    }).filter(section => section.items.length > 0); // Ocultar secciones vacías
+  const filteredSections = React.useMemo(() => {
+    return sections
+      .filter(section => {
+        if (section.adminOnly && !isAdmin) return false;
+        return true;
+      })
+      .map(section => {
+        return {
+          ...section,
+          items: section.items.filter(item => {
+            if (item.adminOnly && !isAdmin) return false;
+            if (isAdmin) return true; // El Admin ve todo
+            if (!item.href) return true; // Si es una carpeta, la dejamos y evaluaremos sus hijos si es necesario
+            if (publicScreens.some(p => item.href === p || item.href?.startsWith(p + "/"))) return true;
+            if (!allowedPaths) return true; // Si no pasamos allowedPaths, asumimos que mostramos todo
+            return allowedPaths.some(p => item.href === p || item.href?.startsWith(p + "/"));
+          })
+        };
+      }).filter(section => section.items.length > 0); // Ocultar secciones vacías
+  }, [sections, isAdmin, allowedPaths]);
+
+  React.useEffect(() => {
+    setSidebarSections(filteredSections);
+  }, [filteredSections, setSidebarSections]);
+
+  React.useEffect(() => {
+    return () => {
+      setSidebarSections(null);
+    };
+  }, [setSidebarSections]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -127,10 +148,17 @@ export default function Sidebar({ dynamicSections, allowedPaths, isAdmin = false
   };
 
   return (
-    <div
-      className={`transition-all duration-300 ease-in-out h-full border-neutral-400 shrink-0 bg-container overflow-y-auto overflow-x-hidden
-        ${isSidebarOpen ? "w-[250px] p-4 border-r" : "w-0 p-0 border-r-0"}
-      `}
+    <aside
+      style={{
+        width: isSidebarOpen ? 250 : 0,
+        minWidth: isSidebarOpen ? 250 : 0,
+        maxWidth: isSidebarOpen ? 250 : 0,
+      }}
+      className={`hidden md:!block transition-all duration-300 ease-in-out border-neutral-400 shrink-0 bg-container overflow-y-auto overflow-x-hidden ${className || "h-full"} ${
+        isSidebarOpen
+          ? "p-4 border-r opacity-100"
+          : "!p-0 !border-0 opacity-0 invisible pointer-events-none"
+      }`}
     >
       <div className="flex flex-col gap-4">
         {filteredSections.map((section, sectionIndex) => (
@@ -161,6 +189,6 @@ export default function Sidebar({ dynamicSections, allowedPaths, isAdmin = false
           </Button>
         </div>
       )}
-    </div>
+    </aside>
   );
 }

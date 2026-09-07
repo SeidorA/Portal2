@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { CaralIcon, Brand } from "iconcaral2";
 import { Button } from "caralstable";
 import { useSidebar } from "./SidebarProvider";
+import { SidebarItemNode } from "./Sidebar";
 import Avatar from "./Avatar";
 import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "../../utils/supabase/client";
@@ -50,6 +51,8 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
   const [themePreference, setThemePreference] = useState<'light' | 'dark' | 'system'>('system');
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [expandedMobileDropdowns, setExpandedMobileDropdowns] = useState<{ [id: string]: boolean }>({});
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -108,18 +111,40 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
       if (navbarRef.current && !navbarRef.current.contains(event.target as Node)) {
         setLockedDropdown(null);
         setActiveDropdown(null);
+        setIsMobileMenuOpen(false);
       }
     };
-    if (lockedDropdown) {
+    if (lockedDropdown || isMobileMenuOpen) {
       document.addEventListener("mousedown", handleClickOutside);
     }
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [lockedDropdown]);
+  }, [lockedDropdown, isMobileMenuOpen]);
 
-  const { isSidebarOpen, toggleSidebar } = useSidebar();
+  const { isSidebarOpen, toggleSidebar, sidebarSections } = useSidebar();
   const pathname = usePathname();
+  const [mobileMenuView, setMobileMenuView] = useState<"nav" | "sidebar">("sidebar");
+
+  const hasDocSidebar = Boolean(sidebarSections && sidebarSections.length > 0);
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setActiveDropdown(null);
+    setLockedDropdown(null);
+    if (hasDocSidebar) {
+      setMobileMenuView("sidebar");
+    } else {
+      setMobileMenuView("nav");
+    }
+  }, [pathname, hasDocSidebar]);
+
+  const toggleMobileDropdown = (id: string) => {
+    setExpandedMobileDropdowns(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
   useEffect(() => {
     const supabase = createClient();
@@ -339,164 +364,426 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
     );
   };
 
-  const shouldShowToggle = showSidebarToggle || pathname.startsWith("/docs");
+  const shouldShowToggle =
+    showSidebarToggle ||
+    pathname.startsWith("/docs") ||
+    pathname.startsWith("/documentacion") ||
+    hasDocSidebar;
 
   return (
     <>
-      <div ref={navbarRef} className="sticky top-0 z-50 bg-container! flex items-center justify-between px-4 py-2 w-full shrink-0 border-b border-neutral-400">
-        {/* Sección Izquierda */}
-        <div className="flex items-center gap-4 w-[33.33%]">
-          {shouldShowToggle && (
-            <Button
-              variant={isSidebarOpen ? "ghost" : "info"}
-              isIconButton
-              iconName="closeSidebarRigt"
-              onClick={toggleSidebar}
-            />
-          )}
-          <a href="/" className="flex items-center gap-2">
-            <img src={isDarkMode ? "/portalDark.png" : "/portalLigth.png"} alt="portalSeidor" />
-          </a>
-          <div className="flex items-center gap-2">
-            {leftItems.map(item => renderNavItem(item))}
+      <div ref={navbarRef} className="sticky top-0 z-50 bg-container! w-full shrink-0 border-b border-neutral-400">
+        <div className="flex items-center justify-between px-3 sm:px-4 py-2 w-full">
+          {/* Sección Izquierda: Menú Hamburguesa (mobile), Sidebar Toggle (docs), Logo y Navegación Desktop */}
+          <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 shrink-0">
+            {/* Botón hamburguesa para móvil */}
+            <div className="flex md:!hidden">
+              <Button
+                variant="ghost"
+                isIconButton
+                iconName={isMobileMenuOpen ? "x" : "menu"}
+                onClick={() => {
+                  if (!isMobileMenuOpen && hasDocSidebar) {
+                    setMobileMenuView("sidebar");
+                  }
+                  setIsMobileMenuOpen(!isMobileMenuOpen);
+                }}
+                aria-label="Abrir menú"
+              />
+            </div>
+
+            {shouldShowToggle && (
+              <div className="hidden md:!flex">
+                <Button
+                  variant={isSidebarOpen ? "info" : "ghost"}
+                  isIconButton
+                  iconName="closeSidebarRigt"
+                  onClick={toggleSidebar}
+                  aria-label={isSidebarOpen ? "Ocultar menú lateral" : "Mostrar menú lateral"}
+                />
+              </div>
+            )}
+            <a href="/" className="flex items-center gap-2 shrink-0">
+              <img
+                src={isDarkMode ? "/portalDark.png" : "/portalLigth.png"}
+                alt="portalSeidor"
+                className="h-7 sm:h-8 w-auto object-contain"
+              />
+            </a>
+            <div className="hidden md:!flex items-center gap-2">
+              {leftItems.map(item => renderNavItem(item))}
+            </div>
+          </div>
+
+          {/* Buscador Central (Desktop & Tablet) */}
+          <div className="hidden md:!flex flex-1 justify-center max-w-md mx-4">
+            <button
+              onClick={() => setIsSearchModalOpen(true)}
+              className="flex items-center justify-between border border-neutral-800 rounded-full px-4 py-2 w-full transition-colors cursor-pointer group hover:border-neutral-900"
+            >
+              <div className="flex items-center gap-2 text-neutral-800 group-hover:text-neutral-900 transition-colors">
+                <CaralIcon name="search" size="s" />
+                <span className="font-poppins text-p text-neutral-800 group-hover:text-neutral-900">Buscar</span>
+              </div>
+              <div className="flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 border rounded-full px-2 py-0.5 text-xs text-neutral-800 dark:text-neutral-400 font-medium shrink-0">
+                ⌘ K
+              </div>
+            </button>
+          </div>
+
+          {/* Sección Derecha: Icono de Búsqueda Móvil, Docs y Perfil */}
+          <div className="flex items-center gap-1.5 sm:gap-3 relative shrink-0 justify-end">
+            {/* Icono de búsqueda exclusivo para móvil */}
+            <div className="flex md:!hidden">
+              <Button
+                variant="ghost"
+                isIconButton
+                iconName="search"
+                size="md"
+                onClick={() => setIsSearchModalOpen(true)}
+                aria-label="Buscar"
+              />
+            </div>
+
+            {rightItems.map(item => {
+              const isAvatar = item.type === "avatar";
+              const isDocs = item.id === "documentacion" || item.title.toLowerCase().includes("documentación");
+
+              if (isDocs) {
+                return (
+                  <div key={item.id} className="hidden sm:!flex">
+                    <Button
+                      variant="ghost"
+                      isIconButton
+                      iconName="book"
+                      size="md"
+                      onClick={() => router.push('/documentacion')}
+                    />
+                  </div>
+                );
+              }
+
+              if (isAvatar) {
+                return (
+                  <React.Fragment key={item.id}>
+                    {isLoadingUser ? (
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-neutral-200 dark:bg-neutral-800 animate-pulse shrink-0 z-50 relative"></div>
+                    ) : user ? (
+                      <div className="z-50 relative">
+                        <Avatar
+                          type="initials"
+                          initials={user.email ? user.email.substring(0, 2).toUpperCase() : "UP"}
+                          backgroundColor="bg-blue-500"
+                          textColor="text-white"
+                          onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                        />
+                      </div>
+                    ) : (
+                      <Button iconName="arrowRight" variant="info" onClick={() => router.push('/login')}>
+                        Log in
+                      </Button>
+                    )}
+                  </React.Fragment>
+                );
+              }
+
+              return (
+                <div key={item.id} className="hidden sm:!flex">
+                  {renderNavItem(item)}
+                </div>
+              );
+            })}
+
+            {/* Profile Dropdown Menu */}
+            {isProfileMenuOpen && user && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setIsProfileMenuOpen(false)}></div>
+                <div className="absolute top-14 right-0 max-w-[calc(100vw-1.5rem)] w-80 bg-container border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-lg py-2 flex flex-col z-50 animate-fade-in font-poppins">
+                  <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 mb-1">
+                    <div className="flex items-center gap-3">
+                      <Avatar
+                        type="initials"
+                        initials={user?.email ? user.email.substring(0, 2).toUpperCase() : "UP"}
+                        backgroundColor="bg-blue-500"
+                        textColor="text-white"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-neutral-900 truncate">{user?.user_metadata?.full_name || user?.user_metadata?.name || (user?.email ? user.email.split('@')[0] : 'Usuario de Prueba')}</p>
+                        <p className="text-xs text-neutral-800 truncate">{user?.email || 'usuario@ejemplo.com'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
+                    <div className="flex gap-1 bg-neutral-800 p-1 rounded-lg">
+                      <Button
+                        variant={themePreference === 'light' ? 'light' : 'ghost'}
+                        isIconButton
+                        iconName="sunBright"
+                        className={`w-full text-xs ${themePreference === 'light' ? 'border border-neutral-300 dark:border-neutral-600 shadow-sm' : ''}`}
+                        onClick={() => handleThemeChange('light')}
+                      >
+                        Claro
+                      </Button>
+                      <Button
+                        variant={themePreference === 'dark' ? 'carbon' : 'ghost'}
+                        isIconButton
+                        iconName="sunMoon"
+                        className={`w-full text-xs ${themePreference === 'dark' ? 'border border-neutral-300 dark:border-neutral-600 shadow-sm bg-transparent!' : ''}`}
+                        onClick={() => handleThemeChange('dark')}
+                      >
+                        Oscuro
+                      </Button>
+                      <Button
+                        variant={themePreference === 'system' ? 'light' : 'ghost'}
+                        isIconButton
+                        iconName="screenView"
+                        className={`w-full text-xs ${themePreference === 'system' ? 'border border-neutral-300 dark:border-neutral-600 shadow-sm bg-transparent!' : ''}`}
+                        onClick={() => handleThemeChange('system')}
+                      >
+                        Sistema
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="p-4 flex flex-col gap-2 border-b border-neutral-200 dark:border-neutral-800">
+                    <Button iconName="user" onClick={() => router.push('/perfil')} className="justify-start!" variant="ghost">Perfil</Button>
+                    <Button iconName="city" onClick={() => router.push('/dashboard')} className="justify-start!" variant="ghost">Dashboard</Button>
+                    <Button iconName="wrench" onClick={() => router.push('/configuracion')} className="justify-start!" variant="ghost">Configuracion</Button>
+                    <Button iconName="globe" className="justify-start!" variant="ghost"><div className="w-full text-start">Español</div> <CaralIcon name="chevronRigth" size="m" /></Button>
+                    <Button iconName="command" className="justify-start!" variant="ghost" > Versión </Button>
+                  </div>
+
+                  <div className="p-4">
+                    <Button onClick={handleLogout} className="justify-start! w-full" iconName="arrowLeft" variant="danger" hasBorder>Cerrar Sesión</Button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        <div className="w-[33.33%] flex justify-center">
-          {/* Buscador Central */}
-          <button
-            onClick={() => setIsSearchModalOpen(true)}
-            className="flex items-center justify-between border border-neutral-800 rounded-full px-4 py-2 w-[386px] transition-colors cursor-pointer group"
-          >
-            <div className="flex items-center gap-2 text-neutral-800 group-hover:text-neutral-800 transition-colors">
-              <CaralIcon name="search" size="s" />
-              <span className="font-poppins text-p text-neutral-800 group-hover:text-neutral-800">Buscar</span>
-            </div>
-            <div className="flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 border rounded-full px-2 py-0.5 text-xs text-neutral-800 dark:text-neutral-400 font-medium">
-              ⌘ K
-            </div>
-          </button>
-        </div>
+        {/* Mobile Navigation Drawer / Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:!hidden border-t border-neutral-200 dark:border-neutral-800 bg-container shadow-xl overflow-y-auto h-screen animate-slide-up">
+            <div className="flex flex-col p-4 gap-2 font-poppins pb-24">
+              {/* VISTA 1: Documentación / Sidebar */}
+              {hasDocSidebar && mobileMenuView === "sidebar" ? (
+                <div className="flex flex-col gap-3">
+                  {/* Botón superior para volver a navegación */}
+                  <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-neutral-800">
+                    <button
+                      onClick={() => setMobileMenuView("nav")}
+                      className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:text-info-main transition-colors cursor-pointer py-1.5 px-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                    >
+                      <CaralIcon name="chevronLeft" size="s" />
+                      <span>Volver a navegación</span>
+                    </button>
+                    <span className="text-xs font-medium text-neutral-400">
+                      Documentación
+                    </span>
+                  </div>
 
-        {/* Sección Derecha */}
-        <div className="flex items-center gap-4 relative w-[33.33%] justify-end">
-          {rightItems.map(item => {
-            const isAvatar = item.type === "avatar";
-            const isDocs = item.id === "documentacion" || item.title.toLowerCase().includes("documentación");
-
-            if (isDocs) {
-              return (
-                <Button
-                  key={item.id}
-                  variant="ghost"
-                  isIconButton
-                  iconName="book"
-                  size="md"
-                  onClick={() => router.push('/documentacion')}
-                />
-              );
-            }
-
-            if (isAvatar) {
-              return (
-                <React.Fragment key={item.id}>
-                  {isLoadingUser ? (
-                    <div className="w-10 h-10 rounded-full bg-neutral-200 dark:bg-neutral-800 animate-pulse shrink-0 z-50 relative"></div>
-                  ) : user ? (
-                    <div className="z-50 relative">
-                      <Avatar
-                        type="initials"
-                        initials={user.email ? user.email.substring(0, 2).toUpperCase() : "UP"}
-                        backgroundColor="bg-blue-500"
-                        textColor="text-white"
-                        onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                      />
+                  {/* Secciones de la Sidebar */}
+                  <div className="flex flex-col gap-4">
+                    {sidebarSections?.map((section, sectionIndex) => (
+                      <React.Fragment key={sectionIndex}>
+                        {sectionIndex > 0 && (
+                          <hr className="border-neutral-200 dark:border-neutral-700 my-1" />
+                        )}
+                        <div className="flex flex-col gap-1 w-full">
+                          {section.title && (
+                            <span className="text-neutral-700 dark:text-neutral-300 text-xs uppercase tracking-wider font-semibold font-poppins py-1 px-2">
+                              {section.title}
+                            </span>
+                          )}
+                          {section.items.map((item, itemIndex) => (
+                            <SidebarItemNode
+                              key={itemIndex}
+                              item={item}
+                              pathname={pathname}
+                              router={router}
+                              onNavigate={() => setIsMobileMenuOpen(false)}
+                            />
+                          ))}
+                        </div>
+                      </React.Fragment>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                /* VISTA 2: Navegación Global */
+                <div className="flex flex-col gap-1.5">
+                  {/* Botón para volver al contenido del documento (si existe sidebar) */}
+                  {hasDocSidebar && (
+                    <div className="flex items-center justify-between pb-3 border-b border-neutral-200 dark:border-neutral-800 mb-2">
+                      <button
+                        onClick={() => setMobileMenuView("sidebar")}
+                        className="flex items-center justify-between w-full p-2.5 rounded-xl bg-info-light/20 text-info-hard dark:text-info-light font-medium text-sm transition-colors cursor-pointer hover:bg-info-light/30"
+                      >
+                        <div className="flex items-center gap-2">
+                          <CaralIcon name="book" size="s" />
+                          <span>Ver contenido del documento</span>
+                        </div>
+                        <CaralIcon name="chevronRigth" size="s" />
+                      </button>
                     </div>
-                  ) : (
-                    <Button iconName="arrowRight" variant="info" onClick={() => router.push('/login')}>
-                      Log in
-                    </Button>
                   )}
-                </React.Fragment>
-              );
-            }
 
-            return renderNavItem(item);
-          })}
+                  {leftItems.map((item) => {
+                    if (item.type === "dropdown") {
+                      const isExpanded = !!expandedMobileDropdowns[item.id];
+                      return (
+                        <div key={item.id} className="flex flex-col rounded-xl overflow-hidden bg-neutral-50/70 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-800">
+                          <button
+                            onClick={() => toggleMobileDropdown(item.id)}
+                            className="flex items-center justify-between p-3 text-left w-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer"
+                          >
+                            <div className="flex items-center gap-2.5 font-medium text-neutral-900 dark:text-neutral-100 text-sm">
+                              {item.iconName && (
+                                <div className="shrink-0">
+                                  {item.isBrand ? <Brand name={item.iconName as any} size="s" /> : <CaralIcon name={item.iconName as any} size="s" />}
+                                </div>
+                              )}
+                              <span>{item.title}</span>
+                            </div>
+                            <div className={`transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}>
+                              <CaralIcon name="chevronDown" size="s" />
+                            </div>
+                          </button>
 
-          {/* Profile Dropdown Menu */}
-          {isProfileMenuOpen && user && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setIsProfileMenuOpen(false)}></div>
-              <div className="absolute top-14 right-0 w-80 bg-container border border-neutral-200 dark:border-neutral-800 rounded-lg shadow-lg py-2 flex flex-col z-50 animate-fade-in font-poppins">
+                          {isExpanded && (
+                            <div className="px-3 pb-3 flex flex-col gap-2 border-t border-neutral-200 dark:border-neutral-800 pt-2 bg-neutral-200/50">
+                              {Array.from({ length: item.cols || 1 }).map((_, colIndex) => (
+                                <React.Fragment key={colIndex}>
+                                  {(item.children?.[colIndex] || []).map((child) => (
+                                    <React.Fragment key={child.id}>
+                                      {child.type === 'titulo' && (
+                                        <h4 className="font-semibold text-neutral-800 text-xs uppercase tracking-wider mt-2 px-1">
+                                          {child.title}
+                                        </h4>
+                                      )}
+                                      {child.type === 'divisor' && (
+                                        <div className="h-px bg-neutral-300 w-full my-1"></div>
+                                      )}
+                                      {(child.type === 'link interno' || child.type === 'link externo') && (
+                                        <div
+                                          className="flex items-start gap-2.5 p-2.5 rounded-lg hover:bg-seidor-light/20 cursor-pointer transition-colors"
+                                          onClick={() => {
+                                            if (child.type === 'link externo' && child.url) {
+                                              window.open(child.url, '_blank');
+                                            } else if (child.type === 'link interno' && child.producto && child.pagina) {
+                                              router.push(`/docs/${child.producto}/${child.pagina}`);
+                                            } else if (child.url) {
+                                              router.push(child.url);
+                                            }
+                                            setIsMobileMenuOpen(false);
+                                          }}
+                                        >
+                                          {child.iconName && (
+                                            <div className="text-info-main mt-0.5 shrink-0">
+                                              {child.isBrand ? (
+                                                <Brand name={child.iconName as any} size="s" />
+                                              ) : (
+                                                <CaralIcon name={child.iconName as any} size="s" />
+                                              )}
+                                            </div>
+                                          )}
+                                          <div className="flex flex-col">
+                                            <span className="font-semibold text-neutral-900 text-sm">
+                                              {child.title}
+                                            </span>
+                                            {child.description && (
+                                              <span className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5 line-clamp-2 leading-relaxed">
+                                                {child.description}
+                                              </span>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+                                      {child.type === 'espectacular' && (
+                                        <div className="flex flex-col bg-neutral-50 dark:bg-neutral-800/50 rounded-xl overflow-hidden mt-2 border border-neutral-200 dark:border-neutral-700">
+                                          {child.imageUrl && (
+                                            <div className="w-full h-28 relative">
+                                              <img src={child.imageUrl} alt={child.title || "Espectacular"} className="w-full h-full object-cover" />
+                                            </div>
+                                          )}
+                                          <div className="p-3 flex flex-col gap-1.5">
+                                            {child.title && <h4 className="font-semibold text-neutral-900 dark:text-white text-sm">{child.title}</h4>}
+                                            {child.description && <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">{child.description}</p>}
+                                            {child.buttonText && (
+                                              <Button
+                                                variant="info"
+                                                size="sm"
+                                                className="mt-1.5 w-full justify-center"
+                                                onClick={() => {
+                                                  if (child.linkType === 'externo' && child.url) {
+                                                    window.open(child.url, '_blank');
+                                                  } else if ((!child.linkType || child.linkType === 'interno') && child.producto && child.pagina) {
+                                                    router.push(`/docs/${child.producto}/${child.pagina}`);
+                                                  }
+                                                  setIsMobileMenuOpen(false);
+                                                }}
+                                              >
+                                                {child.buttonText}
+                                              </Button>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </React.Fragment>
+                                  ))}
+                                </React.Fragment>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    }
 
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          if (item.type === 'link externo' && item.url) {
+                            window.open(item.url, '_blank');
+                          } else if (item.type === 'link interno' && item.producto && item.pagina) {
+                            router.push(`/docs/${item.producto}/${item.pagina}`);
+                          } else if (item.url) {
+                            router.push(item.url);
+                          }
+                          setIsMobileMenuOpen(false);
+                        }}
+                        className="flex items-center gap-2.5 p-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 font-medium text-neutral-900 dark:text-neutral-100 text-sm transition-colors text-left cursor-pointer"
+                      >
+                        {item.iconName && (
+                          <div className="shrink-0">
+                            {item.isBrand ? <Brand name={item.iconName as any} size="s" /> : <CaralIcon name={item.iconName as any} size="s" />}
+                          </div>
+                        )}
+                        <span>{item.title}</span>
+                      </button>
+                    );
+                  })}
 
-                <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800 mb-1">
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      type="initials"
-                      initials={user?.email ? user.email.substring(0, 2).toUpperCase() : "UP"}
-                      backgroundColor="bg-blue-500  "
-                      textColor="text-white"
-                    />
-                    <div>
-                      <p className="text-sm font-semibold text-neutral-900">{user?.user_metadata?.full_name || user?.user_metadata?.name || (user?.email ? user.email.split('@')[0] : 'Usuario de Prueba')}</p>
-                      <p className="text-xs text-neutral-800">{user?.email || 'usuario@ejemplo.com'}</p>
+                  {/* Documentación Interna in mobile menu */}
+                  <button
+                    onClick={() => {
+                      router.push('/documentacion');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-2.5 p-3 rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 font-medium text-neutral-900 dark:text-neutral-100 text-sm transition-colors text-left cursor-pointer"
+                  >
+                    <div className="shrink-0 text-info-main">
+                      <CaralIcon name="book" size="s" />
                     </div>
-                  </div>
+                    <span>Documentación interna</span>
+                  </button>
                 </div>
-
-                <div className="px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
-                  <div className="flex gap-1 bg-neutral-800 p-1 rounded-lg">
-                    <Button
-                      variant={themePreference === 'light' ? 'light' : 'ghost'}
-                      isIconButton
-                      iconName="sunBright"
-                      className={`w-full text-xs ${themePreference === 'light' ? 'border border-neutral-300 dark:border-neutral-600 shadow-sm' : ''}`}
-                      onClick={() => handleThemeChange('light')}
-                    >
-                      Claro
-                    </Button>
-                    <Button
-                      variant={themePreference === 'dark' ? 'carbon' : 'ghost'}
-                      isIconButton
-                      iconName="sunMoon"
-                      className={`w-full text-xs ${themePreference === 'dark' ? 'border border-neutral-300 dark:border-neutral-600 shadow-sm bg-transparent!' : ''}`}
-                      onClick={() => handleThemeChange('dark')}
-                    >
-                      Oscuro
-                    </Button>
-                    <Button
-                      variant={themePreference === 'system' ? 'light' : 'ghost'}
-                      isIconButton
-                      iconName="screenView"
-                      className={`w-full text-xs ${themePreference === 'system' ? 'border border-neutral-300 dark:border-neutral-600 shadow-sm bg-transparent!' : ''}`}
-                      onClick={() => handleThemeChange('system')}
-                    >
-                      Sistema
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="p-4 flex flex-col gap-2 border border-neutral-200 dark:border-neutral-800">
-                  <Button iconName="user" onClick={() => router.push('/perfil')} className="justify-start!" variant="ghost">Perfil</Button>
-                  <Button iconName="city" onClick={() => router.push('/dashboard')} className="justify-start!" variant="ghost">Dashboard</Button>
-                  <Button iconName="wrench" onClick={() => router.push('/configuracion')} className="justify-start!" variant="ghost">Configuracion</Button>
-                  <Button iconName="globe" className="justify-start!" variant="ghost"><div className="w-full text-start">Español</div> <CaralIcon name="chevronRigth" size="m" /></Button>
-                  <Button iconName="command" className="justify-start!" variant="ghost" > Versión </Button>
-
-                </div>
-
-
-                <div className="p-4">
-                  <Button onClick={handleLogout} className="justify-start! w-full" iconName="arrowLeft" variant="danger" hasBorder  >Cerrar Sesión</Button>
-                </div>
-
-
-              </div>
-            </>
-          )}
-        </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Search Modal */}

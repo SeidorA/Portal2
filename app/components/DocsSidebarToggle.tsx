@@ -10,7 +10,7 @@ export default function DocsSidebarToggle() {
   return (
     <div className="mr-4 pr-4 border-r border-neutral-300 dark:border-neutral-700">
       <Button
-        variant={isSidebarOpen ? "ghost" : "info"}
+        variant={isSidebarOpen ? "info" : "ghost"}
         isIconButton
         iconName="closeSidebarRigt"
         onClick={toggleSidebar}

@@ -7,7 +7,6 @@ import ReleaseNoteViewer from '@/app/components/ReleaseNoteViewer';
 import BattlecardViewer from '@/app/components/BattlecardViewer';
 import Sidebar, { SidebarSection } from '@/app/components/Sidebar';
 import Link from 'next/link';
-import DocsSidebarToggle from '@/app/components/DocsSidebarToggle';
 import { Button } from 'caralstable';
 import TableOfContents from '@/app/components/TableOfContents';
 import { Metadata } from 'next';
@@ -197,7 +196,7 @@ export default async function DocumentViewerPage({
   if (topTabs.length > 0 && topTabs[0]?.id === activeModule) {
     const defaultIcon = product.icon_name || 'apps';
     const linkItems: any[] = [];
-    
+
     if (product.link_demo && product.link_demo.trim() !== '' && product.link_demo !== '#') {
       linkItems.push({
         label: 'Live Demo',
@@ -207,7 +206,7 @@ export default async function DocumentViewerPage({
         variant: 'ghost'
       });
     }
-    
+
     if (product.link_landing && product.link_landing.trim() !== '' && product.link_landing !== '#') {
       linkItems.push({
         label: 'Landing page',
@@ -217,7 +216,7 @@ export default async function DocumentViewerPage({
         variant: 'ghost'
       });
     }
-    
+
     if (product.link_docs && product.link_docs.trim() !== '' && product.link_docs !== '#') {
       linkItems.push({
         label: 'Documentation',
@@ -281,18 +280,19 @@ export default async function DocumentViewerPage({
 
       <div className="flex w-full h-full min-h-screen items-start">
         {/* SIDEBAR (Dynamic) */}
-        <div className="sticky top-[60px] h-[calc(100vh-60px)] shrink-0">
-          <Sidebar dynamicSections={sidebarDynamicSections} />
-        </div>
+        <Sidebar
+          dynamicSections={sidebarDynamicSections}
+          className="sticky top-[60px] h-[calc(100vh-60px)]"
+        />
 
         {/* MAIN CONTENT WRAPPER */}
         <div className="flex-1 flex flex-col min-w-0">
 
           {/* DOCUMENT & TOC AREA */}
-          <div className="flex flex-1 max-w-8xl mx-auto w-full px-8 md:px-0 pb-10 gap-10 items-start relative">
+          <div className="flex flex-1 max-w-8xl mx-auto w-full lg:px-8 md:px-0 pb-10 gap-10 items-start relative">
 
             {/* MARKDOWN CONTENT */}
-            <main className="flex-1 min-w-0 px-10">
+            <main className="flex-1 min-w-0 px-6">
 
               <div className="mb-8 flex justify-between items-center gap-4">
                 <div>

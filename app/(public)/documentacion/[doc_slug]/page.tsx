@@ -227,13 +227,14 @@ export default async function PortalDocumentViewerPage({
       </header>
 
       <div className="flex w-full h-full min-h-screen items-start">
-        <div className="sticky top-[60px] h-[calc(100vh-60px)] shrink-0">
-          <Sidebar dynamicSections={sidebarDynamicSections} />
-        </div>
+        <Sidebar
+          dynamicSections={sidebarDynamicSections}
+          className="sticky top-[60px] h-[calc(100vh-60px)]"
+        />
 
         <div className="flex-1 flex flex-col min-w-0">
-          <div className="flex flex-1 max-w-8xl mx-auto w-full px-8 md:px-0 pb-10 gap-10 items-start relative">
-            <main className="flex-1 min-w-0 px-10">
+          <div className="flex flex-1 max-w-8xl mx-auto w-full lg:px-8 md:px-0 pb-10 gap-10 items-start relative">
+            <main className="flex-1 min-w-0 lg:px-10 md:px-5 sm:px-2">
               <div className="mb-8 flex justify-between items-center gap-4 pt-10">
                 <div>
                   <h1 className="text-4xl font-poppins font-bold text-neutral-900 mb-4 dark:text-white flex items-center gap-4">

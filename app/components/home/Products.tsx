@@ -36,7 +36,7 @@ export default function Products({ products = [], cols = 4 }: { products?: Produ
 
   return (
     <div className="w-full flex flex-col pt-10 pb-2.5">
-      <div className="w-full mb-6">
+      <div className="w-full mb-6 p-2">
         <h3 className="font-poppins font-bold text-neutral-900 dark:text-white">
           Productos
         </h3>
@@ -44,7 +44,7 @@ export default function Products({ products = [], cols = 4 }: { products?: Produ
 
       {/* Contenedor Parent con blur2.png */}
       <div
-        className={`grid grid-cols-1 md:grid-cols-2 ${cols === 2 ? 'lg:grid-cols-2' : cols === 3 ? 'lg:grid-cols-3' : cols === 5 ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-[10px] bg-center bg-no-repeat w-full`}
+        className={`grid grid-cols-1 p-2 md:grid-cols-2 ${cols === 2 ? 'lg:grid-cols-2' : cols === 3 ? 'lg:grid-cols-3' : cols === 5 ? 'lg:grid-cols-5' : 'lg:grid-cols-4'} gap-[10px] bg-center bg-no-repeat w-full`}
         style={{ backgroundImage: "url('/img/blur2.png')", backgroundSize: 'contain' }}
       >
         {products.map((product, idx) => {
@@ -64,10 +64,10 @@ export default function Products({ products = [], cols = 4 }: { products?: Produ
                 shadow-[0_4px_6px_rgba(0,0,0,0.1)]
                 hover:backdrop-blur-[40px] hover:shadow-[0_0_17px_0_rgba(0,0,0,0.2)]
                 transition-all duration-1000 text-neutral-900 
-                ${product.is_super ? 'lg:col-span-2 flex-row' : 'flex-col'}
+                ${product.is_super ? 'col-span-1 lg:col-span-2 flex-col lg:!flex-row' : 'flex-col'}
               `}
             >
-              <div className={`flex flex-col flex-1 p-[10px] ${product.is_super ? 'w-1/2' : 'w-full px-4 pt-4'}`}>
+              <div className="flex flex-col flex-1 p-[10px] w-full">
                 <div className="flex items-center gap-[10px] mb-2">
                   <div className='bg-neutral-100 p-[5px] rounded-full text-neutral-900 flex shrink-0'>
                     {product.icon_name ? (
@@ -84,7 +84,7 @@ export default function Products({ products = [], cols = 4 }: { products?: Produ
                   {product.description}
                 </p>
               </div>
-              <div className={`flex items-center justify-center ${product.is_super ? 'w-auto' : 'w-full'}`}>
+              <div className={`flex items-center justify-center ${product.is_super ? 'sm:w-full lg:w-auto' : 'w-full'}`}>
                 <img
                   src={imgSrc}
                   alt={product.title}
