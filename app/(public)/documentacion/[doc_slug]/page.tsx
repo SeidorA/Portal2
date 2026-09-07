@@ -204,7 +204,7 @@ export default async function PortalDocumentViewerPage({
   return (
     <div className="h-full w-full">
       <header className="h-[60px] bg-container/50 border-b border-neutral-800/50 dark:border-neutral-800/50 backdrop-blur-md sticky top-0 z-10 flex items-end px-8 gap-6">
-        <div className="font-bold font-poppins text-lg mr-4 border-r border-neutral-300 dark:border-neutral-700 pr-6 pb-4">
+        <div className="hidden md:!block font-bold font-poppins text-lg mr-4 border-r border-neutral-300 dark:border-neutral-700 pr-6 pb-4">
           Documentación
         </div>
         <nav className="flex gap-1 items-center">
@@ -257,11 +257,11 @@ export default async function PortalDocumentViewerPage({
                 </div>
 
                 {user && (
-                  <Link href={`/contenido/edit/${currentDoc.id}`}>
+                  <Link href={`/contenido/edit/${currentDoc.id}`} className="hidden md:!block shrink-0">
                     <Button
                       variant="ghost"
                       iconName='edit'
-                      className="shrink-0 flex items-center gap-2 border border-neutral-200 dark:border-neutral-700">
+                      className="flex items-center gap-2 border border-neutral-200 dark:border-neutral-700">
                       Editar entrada
                     </Button>
                   </Link>

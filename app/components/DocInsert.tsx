@@ -91,9 +91,9 @@ export default function DocInsert({
     : (doc.content?.metadata?.restriction || 'public');
 
   return (
-    <div className="flex lg:flex-row sm:flex-col w-full bg-container border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden my-6 shadow-sm hover:shadow-md transition-shadow">
+    <div className="flex flex-col md:!flex-row w-full bg-container border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden my-6 shadow-sm hover:shadow-md transition-shadow">
       {/* Cover Image / Brand Side */}
-      <div className="lg:w-70 sm:w-full  aspect-1/1 sm:aspect-3/1 relative bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-950 flex-shrink-0 flex items-center justify-center p-6 text-white overflow-hidden group">
+      <div className="w-full md:!w-70 aspect-3/1 md:aspect-1/1 relative bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-950 flex-shrink-0 flex items-center justify-center p-6 text-white overflow-hidden group">
         {coverImage ? (
           <>
             <img
@@ -132,7 +132,7 @@ export default function DocInsert({
               </span>
             )}
             {language && (
-              <span className="inline-block px-2.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 rounded-md text-[11px] font-medium">
+              <span className="inline-block px-2.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 rounded-md text-[11px] font-medium">
                 {language}
               </span>
             )}
@@ -153,7 +153,7 @@ export default function DocInsert({
           </h3>
         </div>
 
-        <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-6 flex-1 line-clamp-3 leading-relaxed">
+        <p className="text-sm text-neutral-800 mb-6 flex-1 line-clamp-3 leading-relaxed">
           {description}
         </p>
 

@@ -267,47 +267,64 @@ export default function BattlecardViewer({ content, productTitle, productIcon, p
       </div>
 
       {!isExpanded && !isPrintMode && (
-        <div className="flex lg:flex-row md:flex-col gap-6 w-full rounded-2xl p-4 bg-container border border-neutral-100 dark:border-neutral-800 shadow-sm mt-4">
+        <div className="flex flex-col md:!flex-row w-full bg-container border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden my-6 shadow-sm hover:shadow-md transition-shadow">
           {/* Left Side: Background Image and Logos */}
           <div
-            className="lg:w-[25%]! md:w-full aspect-square shrink-0 rounded-xl overflow-hidden relative flex items-center justify-center gap-4 p-4 shadow-inner"
+            className="w-full md:!w-70 aspect-3/1 md:aspect-1/1 relative bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-950 flex-shrink-0 flex items-center justify-center p-6 text-white overflow-hidden group"
             style={{ backgroundImage: 'url(/img/haz/j.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}
           >
-            <div className={`w-16 h-16 md:w-20 md:h-20 rounded-xl flex items-center justify-center text-white ${customIconUrl ? 'p-1' : ''}`}>
-              {customIconUrl ? <img src={customIconUrl} className="w-full h-full object-contain drop-shadow-md" /> : productIcon ? <Brand name={productIcon as any} size={64} /> : <CaralIcon name="store" size={64} />}
+            <div className="flex items-center justify-center gap-3 sm:gap-4 z-10 transition-transform duration-500 group-hover:scale-105">
+              <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center text-white ${customIconUrl ? 'p-1' : ''}`}>
+                {customIconUrl ? <img src={customIconUrl} className="w-full h-full object-contain drop-shadow-md" /> : productIcon ? <Brand name={productIcon as any} size={56} /> : <CaralIcon name="store" size={56} />}
+              </div>
+              <span className="text-white font-extrabold text-2xl sm:text-3xl font-poppins drop-shadow-md">VS</span>
+              <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white rounded-xl flex items-center justify-center p-2 shadow-lg">
+                {competitorLogoUrl ? <img src={competitorLogoUrl} className="w-full h-full object-contain" /> : <span className="font-bold text-neutral-500 text-2xl sm:text-3xl">{competidor.charAt(0)}</span>}
+              </div>
             </div>
-            <span className="text-white font-extrabold text-3xl font-poppins drop-shadow-md">VS</span>
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-white rounded-xl flex items-center justify-center p-2 shadow-lg">
-              {competitorLogoUrl ? <img src={competitorLogoUrl} className="w-full h-full object-contain" /> : <span className="font-bold text-neutral-500 text-3xl">{competidor.charAt(0)}</span>}
+
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent flex items-end p-4 pointer-events-none">
+              <span className="text-white font-bold text-sm leading-tight line-clamp-2 drop-shadow-md">
+                Battle Card
+              </span>
             </div>
           </div>
 
           {/* Right Side: Content */}
-          <div className="flex flex-col flex-1 py-2 pr-2">
+          <div className="p-6 flex flex-col flex-1 w-full min-h-[160px]">
             <div className="mb-2">
-              <span className="inline-block border border-red-200 text-red-500 bg-red-50 dark:bg-red-900/10 dark:border-red-900/50 dark:text-red-400 px-4 py-1 rounded-full text-[10px] font-medium tracking-wider mb-4">
-                Uso interno
-              </span>
-              <h2 className="text-2xl font-bold font-poppins text-neutral-900 dark:text-white mb-3">
-                Battle Card
-              </h2>
-              <div className="text-sm text-neutral-800 leading-relaxed line-clamp-5">
-                {resumen || 'No hay resumen disponible para esta comparativa.'}
+              <div className="flex flex-wrap items-center gap-2 mb-3">
+                <span className="inline-block px-2.5 py-0.5 bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400 rounded-md text-[11px] font-semibold border border-red-100 dark:border-red-900/30">
+                  Uso interno
+                </span>
               </div>
+              <h3 className="text-lg font-bold font-poppins text-neutral-900 dark:text-white line-clamp-2 mb-1">
+                Battle Card
+              </h3>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3 mt-auto pt-6">
-              <Button variant="info" onClick={() => setIsExpanded(true)} className="flex items-center gap-2">
-                <CaralIcon name="book" size={16} /> Ver ahora
+            <p className="text-sm text-neutral-800 mb-6 flex-1 line-clamp-3 leading-relaxed">
+              {resumen || 'No hay resumen disponible para esta comparativa.'}
+            </p>
+
+            <div className="flex flex-wrap items-center gap-3 mt-auto pt-2">
+              <Button
+                variant="info"
+                onClick={() => setIsExpanded(true)}
+                className="px-5 text-sm flex items-center gap-2"
+                iconName="book"
+              >
+                Ver ahora
               </Button>
               <Button
                 type="button"
                 onClick={handleExportPDF}
                 disabled={isExporting}
-                className="flex items-center gap-2 text-white border-transparent"
+                className="px-5 text-sm flex items-center gap-2 text-white border-transparent"
                 style={{ backgroundColor: '#07153a' }}
+                iconName={isExporting ? "sync" : "arrowDownToLine"}
               >
-                {isExporting ? <><CaralIcon name="sync" className="animate-spin" size={16} /> Exportando...</> : <><CaralIcon name="arrowDownToLine" size={16} /> Descargar</>}
+                {isExporting ? 'Exportando...' : 'Descargar'}
               </Button>
             </div>
           </div>
