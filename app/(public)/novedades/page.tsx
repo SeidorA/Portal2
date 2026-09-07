@@ -45,6 +45,7 @@ export default async function PublicNovedadesPage({ searchParams }: { searchPara
   const stripMarkdown = (md: string) => {
     if (!md) return '';
     return md
+      .replace(/<!--[\s\S]*?-->/g, '') // comments / style config
       .replace(/!\[.*?\]\(.*?\)/g, '') // images
       .replace(/\[(.*?)\]\(.*?\)/g, '$1') // links
       .replace(/[#*`_]/g, '') // headings, bold, italic, code

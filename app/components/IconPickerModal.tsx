@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Tabs, Toggle } from 'caralstable';
+import { createPortal } from 'react-dom';
+import { Button } from 'caralstable';
 import { CaralIcon, Brand } from 'iconcaral2';
 import iconCategoriesData from '@/app/data/iconCategories.json';
 
@@ -24,6 +25,7 @@ export default function IconPickerModal({
   initialIconName = '',
   initialIsBrand = false,
 }: IconPickerModalProps) {
+  const [mounted, setMounted] = useState(false);
   const categories: Category[] = iconCategoriesData;
   const [isBrand, setIsBrand] = useState(initialIsBrand);
   const visibleCategories = categories.filter(c => !isBrand || c.hasBrand);
@@ -32,11 +34,14 @@ export default function IconPickerModal({
   const [selectedIcon, setSelectedIcon] = useState(initialIconName);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (isOpen) {
       setSelectedIcon(initialIconName);
       setIsBrand(initialIsBrand);
       setSearchQuery('');
-      // The activeCategory will be updated by the next effect if needed
     }
   }, [isOpen, initialIconName, initialIsBrand]);
 
@@ -49,11 +54,9 @@ export default function IconPickerModal({
   const displayedIcons = React.useMemo(() => {
     let icons: string[] = [];
     if (searchQuery.trim()) {
-      // Si hay búsqueda, buscamos en todas las categorías visibles
       const allIcons = Array.from(new Set(visibleCategories.flatMap(c => c.icons)));
       icons = allIcons.filter(icon => icon.toLowerCase().includes(searchQuery.toLowerCase()));
     } else {
-      // Filtramos por categoría activa
       const cat = visibleCategories.find(c => c.category === activeCategory);
       icons = cat ? cat.icons : [];
     }
@@ -65,19 +68,28 @@ export default function IconPickerModal({
     onClose();
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-2xl w-full max-w-5xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
-
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div
+        className="bg-white dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-xl shadow-2xl w-full max-w-5xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header Custom del Modal */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-800">
           <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">Seleccionar Ícono</h2>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 dark:hover:text-white rounded-lg transition-colors"
+            className="p-2 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 dark:hover:text-white rounded-lg transition-colors cursor-pointer"
           >
             <CaralIcon name="x" size={20} />
           </button>
@@ -86,16 +98,32 @@ export default function IconPickerModal({
         <div className="p-6 flex flex-col h-[600px]">
           {/* Header / Filtros */}
           <div className="flex flex-col gap-4 mb-4 shrink-0">
-            {/* Categorías (Tabs) */}
+            {/* Categorías (Tabs seguras con type="button") */}
             <div className="w-full overflow-x-auto scrollbar-thin pb-2">
-              <Tabs
-                tabs={visibleCategories.map(cat => ({ label: cat.category }))}
-                activeIndex={visibleCategories.findIndex(c => c.category === activeCategory) >= 0 ? visibleCategories.findIndex(c => c.category === activeCategory) : 0}
-                onChange={(index) => {
-                  setActiveCategory(visibleCategories[index].category);
-                  setSearchQuery('');
-                }}
-              />
+              <div className="bg-neutral-100 dark:bg-neutral-800/80 p-1 rounded-lg inline-flex gap-1">
+                {visibleCategories.map((cat) => {
+                  const isActive = cat.category === activeCategory;
+                  return (
+                    <button
+                      key={cat.category}
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setActiveCategory(cat.category);
+                        setSearchQuery('');
+                      }}
+                      className={`px-3 py-1.5 rounded-md text-xs font-medium font-poppins transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                        isActive
+                          ? 'bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white shadow-sm font-semibold'
+                          : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white hover:bg-neutral-200/60 dark:hover:bg-neutral-700/60'
+                      }`}
+                    >
+                      {cat.category}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Búsqueda */}
@@ -107,6 +135,9 @@ export default function IconPickerModal({
                 type="text"
                 placeholder="Buscar ícono..."
                 value={searchQuery}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') e.preventDefault();
+                }}
                 onChange={e => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 bg-neutral-50 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
@@ -125,11 +156,16 @@ export default function IconPickerModal({
                   <button
                     key={icon}
                     type="button"
-                    onClick={() => setSelectedIcon(icon)}
-                    className={`flex flex-col items-center justify-center p-3 rounded-lg gap-2 transition-all ${selectedIcon === icon
-                      ? 'bg-blue-100 dark:bg-blue-900/40 ring-2 ring-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'bg-white dark:bg-neutral-950 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-800'
-                      }`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setSelectedIcon(icon);
+                    }}
+                    className={`flex flex-col items-center justify-center p-3 rounded-lg gap-2 transition-all cursor-pointer ${
+                      selectedIcon === icon
+                        ? 'bg-blue-100 dark:bg-blue-900/40 ring-2 ring-blue-500 text-blue-600 dark:text-blue-400'
+                        : 'bg-white dark:bg-neutral-950 hover:bg-neutral-100 dark:hover:bg-neutral-800 border border-neutral-200 dark:border-neutral-800'
+                    }`}
                     title={icon}
                   >
                     {isBrand ? (
@@ -145,11 +181,23 @@ export default function IconPickerModal({
 
           {/* Footer (Toggle & Botones) */}
           <div className="flex items-center justify-between mt-6 shrink-0 pt-4 border-t border-neutral-200 dark:border-neutral-800">
-            <Toggle
-              checked={isBrand}
-              onChange={setIsBrand}
-              label={isBrand ? 'Modo Color (Brand)' : 'Modo Monocromático'}
-            />
+            {/* Toggle con button explícito type="button" para evitar submits accidentales */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsBrand(!isBrand);
+              }}
+              className="inline-flex items-center gap-3 cursor-pointer select-none group"
+            >
+              <div className={`relative inline-block w-11 h-6 rounded-full transition-colors duration-200 ease-in-out ${isBrand ? 'bg-seidor-main' : 'bg-neutral-300 dark:bg-neutral-700'}`}>
+                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ease-in-out transform ${isBrand ? 'translate-x-5' : 'translate-x-0'}`} />
+              </div>
+              <span className="font-poppins text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                {isBrand ? 'Modo Color (Brand)' : 'Modo Monocromático'}
+              </span>
+            </button>
 
             <div className="flex gap-2">
               <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
@@ -160,6 +208,7 @@ export default function IconPickerModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

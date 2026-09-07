@@ -41,6 +41,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname === '/' || 
     request.nextUrl.pathname.startsWith('/test-editor') ||
     request.nextUrl.pathname.startsWith('/documentacion') ||
+    request.nextUrl.pathname.startsWith('/novedades') ||
     request.nextUrl.pathname.startsWith('/auth') ||
     isApiRoute
   const isProtectedRoute = !isAuthRoute && !isPublicRoute

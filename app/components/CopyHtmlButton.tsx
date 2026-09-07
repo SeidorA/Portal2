@@ -2,29 +2,39 @@
 
 import React, { useState } from 'react';
 import { Button } from 'caralstable';
+import { NovedadStyleConfig } from '@/app/utils/novedadStyle';
 
-export default function CopyHtmlButton({ targetId }: { targetId: string }) {
+interface CopyHtmlButtonProps {
+  targetId: string;
+  styleConfig?: NovedadStyleConfig;
+}
+
+export default function CopyHtmlButton({ targetId, styleConfig }: CopyHtmlButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const applyInlineStyles = (element: HTMLElement) => {
+    const textColor = styleConfig?.textColor || '#000000';
+    const bodyTextColor = styleConfig?.textColor || '#333333';
+    const mutedTextColor = styleConfig?.textColor ? `${styleConfig.textColor}99` : '#666666';
+
     const styles: Record<string, string> = {
-      H1: "color:#000000; font-weight:700; font-family:Poppins,Arial,sans-serif; font-size:32px; line-height:40px; margin-bottom:20px; margin-top:20px; text-align:left;",
-      H2: "color:#000000; font-weight:600; font-family:Poppins,Arial,sans-serif; font-size:24px; line-height:32px; margin-bottom:15px; margin-top:20px; text-align:left;",
-      H3: "color:#000000; font-weight:600; font-family:Poppins,Arial,sans-serif; font-size:20px; line-height:28px; margin-bottom:12px; margin-top:15px; text-align:left;",
-      H4: "color:#000000; font-weight:600; font-family:Poppins,Arial,sans-serif; font-size:18px; line-height:26px; margin-bottom:12px; margin-top:12px; text-align:left;",
-      P: "color:#333333; font-family:Poppins,Arial,sans-serif; font-size:16px; line-height:24px; margin-bottom:16px; margin-top:0; text-align:left;",
+      H1: `color:${textColor}; font-weight:700; font-family:Poppins,Arial,sans-serif; font-size:32px; line-height:40px; margin-bottom:20px; margin-top:20px; text-align:left;`,
+      H2: `color:${textColor}; font-weight:600; font-family:Poppins,Arial,sans-serif; font-size:24px; line-height:32px; margin-bottom:15px; margin-top:20px; text-align:left;`,
+      H3: `color:${textColor}; font-weight:600; font-family:Poppins,Arial,sans-serif; font-size:20px; line-height:28px; margin-bottom:12px; margin-top:15px; text-align:left;`,
+      H4: `color:${textColor}; font-weight:600; font-family:Poppins,Arial,sans-serif; font-size:18px; line-height:26px; margin-bottom:12px; margin-top:12px; text-align:left;`,
+      P: `color:${bodyTextColor}; font-family:Poppins,Arial,sans-serif; font-size:16px; line-height:24px; margin-bottom:16px; margin-top:0; text-align:left;`,
       A: "color:#2563eb; text-decoration:underline; font-family:Poppins,Arial,sans-serif;",
       IMG: "max-width:100%; height:auto; display:block; margin-top:15px; margin-bottom:15px; border-radius: 8px;",
-      UL: "color:#333333; font-family:Poppins,Arial,sans-serif; font-size:16px; line-height:24px; margin-bottom:16px; padding-left: 20px;",
-      OL: "color:#333333; font-family:Poppins,Arial,sans-serif; font-size:16px; line-height:24px; margin-bottom:16px; padding-left: 20px;",
+      UL: `color:${bodyTextColor}; font-family:Poppins,Arial,sans-serif; font-size:16px; line-height:24px; margin-bottom:16px; padding-left: 20px;`,
+      OL: `color:${bodyTextColor}; font-family:Poppins,Arial,sans-serif; font-size:16px; line-height:24px; margin-bottom:16px; padding-left: 20px;`,
       LI: "margin-bottom:8px;",
-      STRONG: "font-weight:700; color:#000000;",
+      STRONG: `font-weight:700; color:${textColor};`,
       TABLE: "width:100%; max-width: 100%; border-collapse:collapse; margin-bottom:20px; font-family:Poppins,Arial,sans-serif;",
-      TH: "padding:12px; border-bottom:2px solid #e5e5e5; text-align:left; font-weight:600; color:#000000; font-size:16px;",
-      TD: "padding:12px; border-bottom:1px solid #e5e5e5; color:#333333; font-size:16px;",
+      TH: `padding:12px; border-bottom:2px solid #e5e5e5; text-align:left; font-weight:600; color:${textColor}; font-size:16px;`,
+      TD: `padding:12px; border-bottom:1px solid #e5e5e5; color:${bodyTextColor}; font-size:16px;`,
       SPAN: "display:inline-block; vertical-align:middle;",
       SVG: "vertical-align:middle; display:inline-block;",
-      TIME: "color:#666666; font-size:14px; font-family:Poppins,Arial,sans-serif; display:block; margin-bottom:20px;",
+      TIME: `color:${mutedTextColor}; font-size:14px; font-family:Poppins,Arial,sans-serif; display:block; margin-bottom:20px;`,
       BLOCKQUOTE: "border-left: 4px solid #3b82f6; padding-left: 15px; font-style: italic; color: #555555; background-color: #f0fdfa; padding-top: 10px; padding-bottom: 10px; margin-bottom: 20px;"
     };
 
@@ -50,12 +60,18 @@ export default function CopyHtmlButton({ targetId }: { targetId: string }) {
       }
     });
 
-    // Also apply a general style to the container itself
-    element.style.cssText = "font-family:Poppins,Arial,sans-serif; background-color:#ffffff; padding:0;";
+    const finalBg = styleConfig?.bgColor || '#ffffff';
+    const finalBgImg = styleConfig?.bgImage ? `background-image:url('${styleConfig.bgImage}'); background-size:cover; background-position:center;` : '';
+    element.style.cssText = `font-family:Poppins,Arial,sans-serif; background-color:${finalBg}; ${finalBgImg} color:${bodyTextColor}; padding:0;`;
     element.removeAttribute('class');
   };
 
   const wrapInEmailTemplate = (innerHtml: string) => {
+    const finalBg = styleConfig?.bgColor || '#ffffff';
+    const finalTextColor = styleConfig?.textColor || '#000000';
+    const bgAttr = styleConfig?.bgImage ? `background="${styleConfig.bgImage}"` : '';
+    const bgStyle = styleConfig?.bgImage ? `background-image: url('${styleConfig.bgImage}'); background-size: cover; background-position: center;` : '';
+
     return `<!doctype html>
 <html lang="es" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
 <head>
@@ -99,13 +115,13 @@ img { -ms-interpolation-mode:bicubic; }
 <div style="background-color:#ffffff; padding-top: 20px; padding-bottom: 20px;">
 <!--[if gte mso 9]>
   <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
-  <v:fill type="tile" color="#ffffff"/>
+  <v:fill type="tile" color="${finalBg}"/>
   </v:background>
 <![endif]-->
 <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff">
 <tr><td valign="top" align="center">
-  <table bgcolor="#ffffff" style="margin:0 auto; max-width:834px;" align="center" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container">
-  <tr><td width="100%" style="padding:20px; text-align:left; background-color:#ffffff; color:#000000; border-radius:12px;">
+  <table bgcolor="${finalBg}" ${bgAttr} style="margin:0 auto; max-width:834px; background-color:${finalBg}; ${bgStyle}" align="center" cellspacing="0" cellpadding="0" border="0" width="100%" class="email-container">
+  <tr><td width="100%" bgcolor="${finalBg}" style="padding:20px; text-align:left; background-color:${finalBg}; ${bgStyle} color:${finalTextColor}; border-radius:12px;">
     ${innerHtml}
   </td></tr>
   </table>
@@ -183,6 +199,19 @@ img { -ms-interpolation-mode:bicubic; }
       // Clone node for manipulation
       const clone = element.cloneNode(true) as HTMLElement;
 
+      // Remove any copy buttons or excluded elements from the clone
+      clone.querySelectorAll('[data-copy-exclude="true"], [data-copy-button="true"], .copy-exclude').forEach((el) => el.remove());
+      clone.querySelectorAll('button').forEach((btn) => {
+        if (btn.textContent?.includes('Copiar') || btn.textContent?.includes('Copiado')) {
+          const parent = btn.parentElement;
+          if (parent && parent !== clone && parent.children.length === 1) {
+            parent.remove();
+          } else {
+            btn.remove();
+          }
+        }
+      });
+
       // Temporarily append clone to body to get computed styles for SVGs
       clone.style.position = 'absolute';
       clone.style.left = '-9999px';
@@ -218,13 +247,16 @@ img { -ms-interpolation-mode:bicubic; }
   };
 
   return (
-    <Button
-      variant="ghost"
-      iconName={copied ? 'check' : 'code'}
-      onClick={handleCopy}
-      className="border border-neutral-800 w-full"
-    >
-      {copied ? 'Código Copiado!' : 'Copiar HTML'}
-    </Button>
+    <div data-copy-exclude="true" className="w-full">
+      <Button
+        variant="ghost"
+        iconName={copied ? 'check' : 'code'}
+        onClick={handleCopy}
+        className="border border-neutral-800 w-full"
+        data-copy-exclude="true"
+      >
+        {copied ? 'Código Copiado!' : 'Copiar HTML'}
+      </Button>
+    </div>
   );
 }

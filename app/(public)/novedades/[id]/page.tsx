@@ -8,6 +8,7 @@ import Navbar from '@/app/components/Navbar';
 import { Brand, CaralIcon } from 'iconcaral2';
 import TableOfContents from '@/app/components/TableOfContents';
 import CopyHtmlButton from '@/app/components/CopyHtmlButton';
+import { extractNovedadStyle } from '@/app/utils/novedadStyle';
 
 const renderTitle = (title: string, size: number = 24) => {
   if (!title) return title;
@@ -44,10 +45,12 @@ export default async function NovedadDetailPage({ params }: { params: Promise<{ 
     notFound();
   }
 
+  const { content: cleanContent, style: customStyle } = extractNovedadStyle(novedad.content);
+
   const toc: { level: number, title: string, id: string }[] = [];
   const headingRegex = /(?:^|\n)(#{2,3})\s+([^\n]+)/g;
   let matchHeadings;
-  while ((matchHeadings = headingRegex.exec(novedad.content)) !== null) {
+  while ((matchHeadings = headingRegex.exec(cleanContent)) !== null) {
     const level = matchHeadings[1].length;
     let title = matchHeadings[2].trim();
     if (title.endsWith('\r')) title = title.slice(0, -1);
@@ -70,7 +73,20 @@ export default async function NovedadDetailPage({ params }: { params: Promise<{ 
         </div>
         <div className="flex w-full justify-between gap-10 items-start">
 
-          <article id="article-content" className="flex-1 flex flex-col min-w-0 bg-container pt-10 border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-sm">
+          <article
+            id="article-content"
+            style={{
+              ...(customStyle.bgColor ? { backgroundColor: customStyle.bgColor } : {}),
+              ...(customStyle.bgImage ? {
+                backgroundImage: `url('${customStyle.bgImage}')`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat'
+              } : {}),
+              ...(customStyle.textColor ? { color: customStyle.textColor } : {})
+            }}
+            className={`flex-1 flex flex-col min-w-0 ${customStyle.bgColor ? '' : 'bg-container'} pt-10 border border-neutral-200 dark:border-neutral-800 rounded-3xl overflow-hidden shadow-sm`}
+          >
             {novedad.cover_image && (
               <div className="w-full h-auto">
                 <img
@@ -88,21 +104,30 @@ export default async function NovedadDetailPage({ params }: { params: Promise<{ 
                     {novedad.product.title}
                   </span>
                 )}
-                <time className="text-sm text-neutral-800 dark:text-neutral-400 font-medium font-poppins">
+                <time
+                  style={{ color: customStyle.textColor ? `${customStyle.textColor}b3` : undefined }}
+                  className={`text-sm ${customStyle.textColor ? '' : 'text-neutral-800 dark:text-neutral-400'} font-medium font-poppins`}
+                >
                   {new Date(novedad.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
                 </time>
               </div>
 
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-poppins font-bold text-neutral-900 dark:text-white mb-10 leading-tight">
+              <h1
+                style={{ color: customStyle.textColor || undefined }}
+                className={`text-3xl md:text-4xl lg:text-5xl font-poppins font-bold ${customStyle.textColor ? '' : 'text-neutral-900 dark:text-white'} mb-10 leading-tight`}
+              >
                 {renderTitle(novedad.title, 40)}
               </h1>
 
-              <div className="prose dark:prose-invert prose-lg max-w-none prose-headings:font-poppins prose-a:text-blue-600 dark:prose-a:text-blue-400">
-                <MarkdownRenderer content={novedad.content} />
+              <div
+                style={{ color: customStyle.textColor || undefined }}
+                className={`prose dark:prose-invert prose-lg max-w-none prose-headings:font-poppins ${customStyle.textColor ? '[&_h1]:text-inherit [&_h2]:text-inherit [&_h3]:text-inherit [&_h4]:text-inherit [&_p]:text-inherit [&_li]:text-inherit [&_strong]:text-inherit' : ''} prose-a:text-blue-600 dark:prose-a:text-blue-400`}
+              >
+                <MarkdownRenderer content={cleanContent} />
               </div>
             </div>
-            <div className="m-4">
-              <CopyHtmlButton targetId="article-content" />
+            <div className="m-4" data-copy-exclude="true">
+              <CopyHtmlButton targetId="article-content" styleConfig={customStyle} />
             </div>
           </article>
 

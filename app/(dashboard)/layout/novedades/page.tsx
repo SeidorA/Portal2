@@ -6,6 +6,7 @@ import { Button, Drawer } from 'caralstable';
 import { CaralIcon } from 'iconcaral2';
 import FileUploader from '@/app/components/FileUploader';
 import { MilkdownEditorWrapper } from '@/app/components/Editor/MilkdownEditor';
+import { extractNovedadStyle, injectNovedadStyle } from '@/app/utils/novedadStyle';
 
 type Novedad = {
   id: string;
@@ -31,10 +32,13 @@ export default function NovedadesPage() {
   // Editor State
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   const [currentId, setCurrentId] = useState<string | null>(null);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
+  const [bgColor, setBgColor] = useState('');
+  const [bgImage, setBgImage] = useState('');
+  const [textColor, setTextColor] = useState('');
   const [coverImage, setCoverImage] = useState('');
   const [productId, setProductId] = useState('');
   const [status, setStatus] = useState<'draft' | 'published'>('published');
@@ -53,7 +57,7 @@ export default function NovedadesPage() {
         .from('products')
         .select('id, title')
         .order('title', { ascending: true });
-      
+
       if (prodData) setProducts(prodData);
 
       // Fetch Novedades
@@ -78,7 +82,11 @@ export default function NovedadesPage() {
     if (n) {
       setCurrentId(n.id);
       setTitle(n.title);
-      setContent(n.content);
+      const { content: cleanContent, style } = extractNovedadStyle(n.content);
+      setContent(cleanContent);
+      setBgColor(style.bgColor || '');
+      setBgImage(style.bgImage || '');
+      setTextColor(style.textColor || '');
       setCoverImage(n.cover_image || '');
       setProductId(n.product_id || '');
       setStatus(n.status || 'published');
@@ -86,6 +94,9 @@ export default function NovedadesPage() {
       setCurrentId(null);
       setTitle('');
       setContent('');
+      setBgColor('');
+      setBgImage('');
+      setTextColor('');
       setCoverImage('');
       setProductId(products.length > 0 ? products[0].id : '');
       setStatus('published');
@@ -98,18 +109,24 @@ export default function NovedadesPage() {
     setCurrentId(null);
   };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title || !productId || !content) {
+  const handleSave = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!title.trim() || !productId || !content.trim()) {
       alert("Título, producto y contenido son requeridos.");
       return;
     }
 
     setIsSaving(true);
     try {
+      const finalContent = injectNovedadStyle(content, {
+        bgColor,
+        bgImage,
+        textColor,
+      });
+
       const payload = {
         title,
-        content,
+        content: finalContent,
         cover_image: coverImage,
         product_id: productId,
         status
@@ -217,7 +234,7 @@ export default function NovedadesPage() {
         size="l"
         className="dark:bg-neutral-900 dark:text-white p-0 flex flex-col"
       >
-        <form onSubmit={handleSave} className="flex flex-col h-full relative">
+        <div className="flex flex-col h-full relative">
           {/* Header */}
           <div className="flex-none p-6 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between sticky top-0 bg-white dark:bg-neutral-900 z-10">
             <h2 className="text-xl font-poppins font-bold text-neutral-900 dark:text-white">
@@ -225,7 +242,7 @@ export default function NovedadesPage() {
             </h2>
             <div className="flex items-center gap-2">
               <Button type="button" variant="ghost" onClick={closeDrawer}>Cancelar</Button>
-              <Button type="submit" color="primary" loading={isSaving}>Guardar</Button>
+              <Button type="button" color="primary" loading={isSaving} onClick={handleSave}>Guardar</Button>
             </div>
           </div>
 
@@ -235,8 +252,8 @@ export default function NovedadesPage() {
               <label className="font-poppins font-medium text-sm text-neutral-700 dark:text-neutral-300">
                 Título de la Novedad
               </label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
@@ -250,7 +267,7 @@ export default function NovedadesPage() {
                 <label className="font-poppins font-medium text-sm text-neutral-700 dark:text-neutral-300">
                   Producto Asociado
                 </label>
-                <select 
+                <select
                   value={productId}
                   onChange={(e) => setProductId(e.target.value)}
                   required
@@ -267,7 +284,7 @@ export default function NovedadesPage() {
                 <label className="font-poppins font-medium text-sm text-neutral-700 dark:text-neutral-300">
                   Estado
                 </label>
-                <select 
+                <select
                   value={status}
                   onChange={(e) => setStatus(e.target.value as 'draft' | 'published')}
                   className="w-full bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg px-4 py-2 outline-none focus:border-blue-500"
@@ -278,44 +295,256 @@ export default function NovedadesPage() {
               </div>
             </div>
 
+            {/* Personalización de la Entrada (Fondo y Texto) */}
+            <div className="flex flex-col gap-4 p-5 bg-neutral-50 dark:bg-neutral-800/40 border border-neutral-200 dark:border-neutral-700/80 rounded-xl">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-base">🎨</span>
+                  <label className="font-poppins font-semibold text-sm text-neutral-900 dark:text-white">
+                    Personalización de Entrada (Fondo y Texto)
+                  </label>
+                </div>
+                {(bgColor || bgImage || textColor) && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setBgColor('');
+                      setBgImage('');
+                      setTextColor('');
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium hover:underline cursor-pointer"
+                  >
+                    Restablecer valores por defecto
+                  </button>
+                )}
+              </div>
+              <p className="text-xs text-neutral-500 dark:text-neutral-400 -mt-2">
+                Opcional. Configura el fondo y color de texto tanto para la vista web como para el correo copiado. Si no se modifican, se mantienen los valores por defecto actuales.
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                {/* Color de Fondo */}
+                <div className="flex flex-col gap-2">
+                  <label className="font-poppins font-medium text-xs text-neutral-700 dark:text-neutral-300">
+                    Color de Fondo
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={bgColor || '#ffffff'}
+                      onChange={(e) => setBgColor(e.target.value)}
+                      className="w-10 h-10 rounded-lg border border-neutral-300 dark:border-neutral-700 cursor-pointer p-0.5 bg-white dark:bg-neutral-800"
+                      title="Seleccionar color de fondo"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Por defecto (Auto)"
+                      value={bgColor}
+                      onChange={(e) => setBgColor(e.target.value)}
+                      className="flex-1 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-xs font-mono outline-none focus:border-blue-500"
+                    />
+                    {bgColor && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setBgColor('');
+                        }}
+                        className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 px-2 py-1 cursor-pointer"
+                        title="Limpiar color"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                  {/* Presets de fondo */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] text-neutral-400">Presets:</span>
+                    {[
+                      { name: 'Blanco', color: '#ffffff' },
+                      { name: 'Gris Claro', color: '#f8fafc' },
+                      { name: 'Crema', color: '#fffbeb' },
+                      { name: 'Azul Soft', color: '#f0f9ff' },
+                      { name: 'Azul Marino', color: '#0f172a' },
+                      { name: 'Dark', color: '#18181b' },
+                    ].map((p) => (
+                      <button
+                        key={p.color}
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setBgColor(p.color);
+                        }}
+                        className="w-5 h-5 rounded-full border border-neutral-300 dark:border-neutral-600 cursor-pointer hover:scale-110 transition-transform shadow-xs"
+                        style={{ backgroundColor: p.color }}
+                        title={p.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+
+                {/* Color de Texto */}
+                <div className="flex flex-col gap-2">
+                  <label className="font-poppins font-medium text-xs text-neutral-700 dark:text-neutral-300">
+                    Color de Texto
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={textColor || '#000000'}
+                      onChange={(e) => setTextColor(e.target.value)}
+                      className="w-10 h-10 rounded-lg border border-neutral-300 dark:border-neutral-700 cursor-pointer p-0.5 bg-white dark:bg-neutral-800"
+                      title="Seleccionar color de texto"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Por defecto (Auto)"
+                      value={textColor}
+                      onChange={(e) => setTextColor(e.target.value)}
+                      className="flex-1 bg-white dark:bg-neutral-800 border border-neutral-300 dark:border-neutral-700 rounded-lg px-3 py-2 text-xs font-mono outline-none focus:border-blue-500"
+                    />
+                    {textColor && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setTextColor('');
+                        }}
+                        className="text-xs text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 px-2 py-1 cursor-pointer"
+                        title="Limpiar color"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                  {/* Presets de texto */}
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-[10px] text-neutral-400">Presets:</span>
+                    {[
+                      { name: 'Negro', color: '#000000' },
+                      { name: 'Gris Oscuro', color: '#334155' },
+                      { name: 'Blanco', color: '#ffffff' },
+                      { name: 'Gris Claro', color: '#e2e8f0' },
+                      { name: 'Azul Seidor', color: '#0072CA' },
+                    ].map((p) => (
+                      <button
+                        key={p.color}
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setTextColor(p.color);
+                        }}
+                        className="w-5 h-5 rounded-full border border-neutral-300 dark:border-neutral-600 cursor-pointer hover:scale-110 transition-transform shadow-xs"
+                        style={{ backgroundColor: p.color }}
+                        title={p.name}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Imagen / Patrón de Fondo */}
+              <div className="flex flex-col gap-2 pt-2 border-t border-neutral-200 dark:border-neutral-700/60">
+                <label className="font-poppins font-medium text-xs text-neutral-700 dark:text-neutral-300">
+                  Imagen o Patrón de Fondo (Opcional)
+                </label>
+                <div className="flex flex-col gap-2">
+                  <FileUploader
+                    onUploadSuccess={(url) => setBgImage(url)}
+                    accept="image/*"
+                    bucket="portal-assets"
+                  />
+                  {bgImage && (
+                    <div className="relative w-full h-24 bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700 flex items-center justify-center">
+                      <img src={bgImage} alt="Fondo" className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => setBgImage('')}
+                        className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80 transition-colors"
+                        title="Quitar fondo"
+                      >
+                        <CaralIcon name="x" size="s" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Mini Preview Card */}
+              {(bgColor || bgImage || textColor) && (
+                <div className="mt-2 flex flex-col gap-1.5">
+                  <span className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
+                    Vista previa de estilo
+                  </span>
+                  <div
+                    style={{
+                      backgroundColor: bgColor || undefined,
+                      backgroundImage: bgImage ? `url('${bgImage}')` : undefined,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      color: textColor || undefined
+                    }}
+                    className={`p-4 rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm ${bgColor ? '' : 'bg-white dark:bg-neutral-900'}`}
+                  >
+                    <div className="flex items-center gap-2 mb-2 opacity-80 text-xs">
+                      <span className="px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-500 font-medium">Producto</span>
+                      <span>Fecha</span>
+                    </div>
+                    <h4 style={{ color: textColor || undefined }} className="font-bold text-base mb-1">
+                      {title || 'Título de ejemplo de la novedad'}
+                    </h4>
+                    <p style={{ color: textColor ? `${textColor}cc` : undefined }} className="text-xs opacity-90">
+                      Así se visualizará el fondo y texto de tu novedad tanto en el portal como en el correo copiado.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="flex flex-col gap-2">
               <label className="font-poppins font-medium text-sm text-neutral-700 dark:text-neutral-300">
                 Imagen de Portada (Opcional)
               </label>
-              <FileUploader 
-                onUploadSuccess={(url) => setCoverImage(url)} 
+              <FileUploader
+                onUploadSuccess={(url) => setCoverImage(url)}
                 accept="image/*"
                 bucket="portal-assets"
               />
               {coverImage && (
                 <div className="mt-2 relative w-full h-48 bg-neutral-100 dark:bg-neutral-800 rounded-lg overflow-hidden border border-neutral-200 dark:border-neutral-700">
                   <img src={coverImage} alt="Portada" className="w-full h-full object-cover" />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     onClick={() => setCoverImage('')}
                     className="absolute top-2 right-2 bg-black/50 text-white rounded-full p-1 hover:bg-black/70"
                   >
-                    <CaralIcon name="close" size="s" />
+                    <CaralIcon name="x" size="s" />
                   </button>
                 </div>
               )}
             </div>
 
-            <div className="flex flex-col gap-2 flex-1 min-h-[500px]">
+            <div className="flex flex-col gap-2 flex-1 min-h-[700px]">
               <label className="font-poppins font-medium text-sm text-neutral-700 dark:text-neutral-300">
                 Contenido (Markdown)
               </label>
               <div className="flex-1 border border-neutral-300 dark:border-neutral-700 rounded-lg overflow-y-auto bg-white dark:bg-neutral-900 prose dark:prose-invert max-w-none">
                 {isDrawerOpen && (
-                  <MilkdownEditorWrapper 
-                    content={content} 
-                    onChange={setContent} 
+                  <MilkdownEditorWrapper
+                    content={content}
+                    onChange={setContent}
                   />
                 )}
               </div>
             </div>
           </div>
-        </form>
+        </div>
       </Drawer>
     </div>
   );
