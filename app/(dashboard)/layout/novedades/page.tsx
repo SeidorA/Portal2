@@ -154,6 +154,9 @@ export default function NovedadesPage() {
     try {
       const { error } = await supabase.from('novedades').delete().eq('id', id);
       if (error) throw error;
+      if (currentId === id) {
+        closeDrawer();
+      }
       fetchData();
     } catch (e: any) {
       alert("Error eliminando: " + e.message);
@@ -212,11 +215,17 @@ export default function NovedadesPage() {
                       {new Date(n.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-right flex justify-end gap-2">
-                      <Button variant="ghost" size="s" onClick={() => openDrawer(n)}>
+                      <Button variant="ghost" size="s" onClick={() => openDrawer(n)} title="Editar">
                         <CaralIcon name="edit" size="s" />
                       </Button>
-                      <Button variant="ghost" size="s" color="danger" onClick={() => handleDelete(n.id)}>
-                        <CaralIcon name="delete" size="s" />
+                      <Button
+                        variant="ghost"
+                        size="s"
+                        className="text-danger-main hover:bg-danger-main/10 hover:text-danger-hard!"
+                        onClick={() => handleDelete(n.id)}
+                        title="Eliminar"
+                      >
+                        <CaralIcon name="trash" size="s" />
                       </Button>
                     </td>
                   </tr>
@@ -241,6 +250,17 @@ export default function NovedadesPage() {
               {currentId ? 'Editar Novedad' : 'Nueva Novedad'}
             </h2>
             <div className="flex items-center gap-2">
+              {currentId && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="text-danger-main hover:bg-danger-main/10 hover:text-danger-hard!"
+                  onClick={() => handleDelete(currentId)}
+                >
+                  <CaralIcon name="trash" size="s" />
+                  Eliminar
+                </Button>
+              )}
               <Button type="button" variant="ghost" onClick={closeDrawer}>Cancelar</Button>
               <Button type="button" color="primary" loading={isSaving} onClick={handleSave}>Guardar</Button>
             </div>
@@ -543,6 +563,30 @@ export default function NovedadesPage() {
                 )}
               </div>
             </div>
+
+            {/* Zona de peligro */}
+            {currentId && (
+              <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-800">
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white">Zona de peligro</h3>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">Esta acción no se puede deshacer.</p>
+
+                <div className="border border-red-200 dark:border-red-900/50 bg-[#FDEEED] dark:bg-red-950/20 rounded-xl p-4 flex items-center justify-between gap-4">
+                  <div>
+                    <h4 className="font-bold text-[#641A1B] dark:text-red-400 mb-1 text-sm">Eliminar esta Novedad</h4>
+                    <p className="text-xs text-[#641A1B] dark:text-red-500">La entrada de novedad se eliminará permanentemente de la base de datos.</p>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => handleDelete(currentId)}
+                    variant="danger"
+                    className="shrink-0"
+                  >
+                    <CaralIcon name="trash" size="s" />
+                    Eliminar
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </Drawer>
