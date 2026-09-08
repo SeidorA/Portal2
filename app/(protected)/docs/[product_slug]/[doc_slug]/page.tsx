@@ -367,8 +367,10 @@ export default async function DocumentViewerPage({
 
             </main>
 
-            {/* TABLE OF CONTENTS (Right Sticky Sidebar) */}
-            {!currentDoc.hide_toc && currentDoc.type !== 'release_note' && currentDoc.type !== 'roadmap' && currentDoc.type !== 'battlecard' && <TableOfContents toc={toc} />}
+              {/* TABLE OF CONTENTS (Right Sticky Sidebar) */}
+              {!currentDoc.hide_toc && currentDoc.type !== 'release_note' && currentDoc.type !== 'roadmap' && currentDoc.type !== 'battlecard' && (
+                <TableOfContents toc={toc} rawContent={currentDoc.content} />
+              )}
 
           </div>
         </div>

@@ -74,15 +74,6 @@ export default async function UsuariosPage() {
 
   return (
     <div className="max-w-7xl mx-auto w-full p-8 pt-12 animate-fade-in pb-20">
-      <div className="mb-12">
-        <h1 className="text-4xl font-poppins font-extrabold text-neutral-900 tracking-tight">
-          Gestión de Usuarios
-        </h1>
-        <p className="text-lg text-neutral-800 leading-relaxed">
-          Asigna roles y administra los accesos a los distintos productos y módulos del portal.
-        </p>
-      </div>
-
       <UserManagementClient
         initialProfiles={formattedProfiles}
         availableRoles={roles || []}

@@ -302,7 +302,9 @@ export default async function PortalDocumentViewerPage({
               </div>
             </main>
 
-            {!currentDoc.hide_toc && currentDoc.type !== 'release_note' && currentDoc.type !== 'roadmap' && currentDoc.type !== 'battlecard' && <TableOfContents toc={toc} />}
+            {!currentDoc.hide_toc && currentDoc.type !== 'release_note' && currentDoc.type !== 'roadmap' && currentDoc.type !== 'battlecard' && (
+              <TableOfContents toc={toc} rawContent={currentDoc.content} />
+            )}
           </div>
         </div>
       </div>

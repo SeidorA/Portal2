@@ -10,6 +10,8 @@ import DynamicFeature from './DynamicFeature';
 import Archivos from './Archivos';
 import Webinar from './Webinar';
 import DocInsert from './DocInsert';
+import { useTranslation } from '@/app/context/LanguageContext';
+import { extractLanguageContent } from '@/utils/multilingual-content';
 
 const extractText = (children: any): string => {
   if (typeof children === 'string') return children;
@@ -49,9 +51,9 @@ const renderTitleWithIcon = (Tag: any, children: React.ReactNode, props: any, cl
       <span className="inline-flex items-center gap-2 align-middle">
         {iconName && (
           isBrand ? (
-            <Brand name={iconName as any} className="shrink-0" size={Tag === 'h1' ? 32 : Tag === 'h2' ? 28 : 24} />
+            <Brand name={iconName as any} classname="shrink-0" size={Tag === 'h1' ? 32 : Tag === 'h2' ? 28 : 24} />
           ) : (
-            <CaralIcon name={iconName as any} className="text-blue-500 shrink-0" size={Tag === 'h1' ? 32 : Tag === 'h2' ? 28 : 24} />
+            <CaralIcon name={iconName as any} classname="text-blue-500 shrink-0" size={Tag === 'h1' ? 32 : Tag === 'h2' ? 28 : 24} />
           )
         )}
         <span>{cleanChildren}</span>
@@ -66,7 +68,7 @@ const preprocessAdmonitions = (text: string) => {
     const rawTitle = title1 || title2;
     const safeTitle = rawTitle ? rawTitle.trim() : type.toUpperCase();
     const encodedTitle = encodeURIComponent(safeTitle);
-    const bodyWithQuotes = body.split('\n').map(line => `> ${line}`).join('\n');
+    const bodyWithQuotes = body.split('\n').map((line: string) => `> ${line}`).join('\n');
     return `> !ADMONITION:${type}:${encodedTitle}!\n${bodyWithQuotes}`;
   });
 };
@@ -180,8 +182,11 @@ const renderTableCellContent = (children: any): any => {
   return children;
 };
 
-export default function MarkdownRenderer({ content, noTableBorders = false }: { content: string, noTableBorders?: boolean }) {
-  const processedContent = preprocessLineBreaks(preprocessCustomComponents(preprocessAdmonitions(content)));
+export default function MarkdownRenderer({ content, noTableBorders = false, lang }: { content: string, noTableBorders?: boolean, lang?: 'es' | 'en' }) {
+  const { language } = useTranslation();
+  const activeLang = lang || (language as 'es' | 'en') || 'es';
+  const localizedContent = extractLanguageContent(content || '', activeLang);
+  const processedContent = preprocessLineBreaks(preprocessCustomComponents(preprocessAdmonitions(localizedContent)));
 
   return (
     <div className={`prose prose-neutral dark:prose-invert max-w-none 
@@ -195,9 +200,6 @@ export default function MarkdownRenderer({ content, noTableBorders = false }: { 
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
-          table: ({ node, ...props }) => <div className="overflow-x-auto"><table className={`min-w-full ${noTableBorders ? 'border-none' : ''}`} {...props} /></div>,
-          th: ({ node, children, ...props }) => <th className={`${noTableBorders ? 'border-none p-2' : ''}`} {...props}>{renderTableCellContent(children)}</th>,
-          td: ({ node, children, ...props }) => <td className={`${noTableBorders ? 'border-none p-2' : ''}`} {...props}>{renderTableCellContent(children)}</td>,
           iframe: ({ node, style, ...props }) => (
             <div className="w-full aspect-video rounded-xl overflow-hidden my-6 shadow-md border border-neutral-200 dark:border-neutral-800">
               <iframe className="w-full h-full border-0" {...props} />
@@ -437,7 +439,8 @@ export default function MarkdownRenderer({ content, noTableBorders = false }: { 
           },
           img: ({ node, src, alt, ...props }) => {
             if (!src) return <img alt={alt} {...props} />;
-            const [url, hash] = src.split('#');
+            const srcStr = typeof src === 'string' ? src : '';
+            const [url, hash] = srcStr.split('#');
             let alignClass = '';
             if (hash === 'align-center') alignClass = 'mx-auto block';
             else if (hash === 'align-left') alignClass = 'mr-auto block';
@@ -451,11 +454,11 @@ export default function MarkdownRenderer({ content, noTableBorders = false }: { 
               styleObj.width = `${scale * 100}%`;
             }
 
-            return <img src={url} alt={alt} className={`${alignClass} max-w-full`} style={styleObj} {...props} />;
+            return <img src={url || srcStr} alt={alt} className={`${alignClass} max-w-full`} style={styleObj} {...props} />;
           },
           table: ({ node, ...props }) => (
             <div className="overflow-x-auto my-6">
-              <table className="w-full text-left border-collapse" {...props} />
+              <table className={`w-full text-left border-collapse ${noTableBorders ? 'border-none' : ''}`} {...props} />
             </div>
           ),
           th: ({ node, className, children, ...props }) => {
@@ -465,16 +468,16 @@ export default function MarkdownRenderer({ content, noTableBorders = false }: { 
               if (match) {
                 const [, productId, featureTitle, format] = match;
                 return (
-                  <th className={`border-b-2 border-neutral-200 dark:border-neutral-700 p-2 font-semibold ${className || ''}`} {...props}>
+                  <th className={`${noTableBorders ? 'border-none' : 'border-b-2 border-neutral-200 dark:border-neutral-700'} p-2 font-semibold ${className || ''}`} {...props}>
                     <DynamicFeature productId={productId} featureTitle={featureTitle} format={format as any} />
                   </th>
                 );
               }
             }
             if (/^!(icon|brand)-([\w-]+)!/i.test(rawText)) {
-              return renderTitleWithIcon('th', children, { ...props }, `border-b-2 border-neutral-200 dark:border-neutral-700 p-2 font-semibold ${className || ''}`);
+              return renderTitleWithIcon('th', children, { ...props }, `${noTableBorders ? 'border-none' : 'border-b-2 border-neutral-200 dark:border-neutral-700'} p-2 font-semibold ${className || ''}`);
             }
-            return <th className={`border-b-2 border-neutral-200 dark:border-neutral-700 p-2 font-semibold ${className || ''}`} {...props}>{children}</th>;
+            return <th className={`${noTableBorders ? 'border-none' : 'border-b-2 border-neutral-200 dark:border-neutral-700'} p-2 font-semibold ${className || ''}`} {...props}>{renderTableCellContent(children)}</th>;
           },
           td: ({ node, className, children, ...props }) => {
             const rawText = extractText(children).trim();
@@ -483,16 +486,16 @@ export default function MarkdownRenderer({ content, noTableBorders = false }: { 
               if (match) {
                 const [, productId, featureTitle, format] = match;
                 return (
-                  <td className={`border-b border-neutral-200 dark:border-neutral-800 p-2 ${className || ''}`} {...props}>
+                  <td className={`${noTableBorders ? 'border-none' : 'border-b border-neutral-200 dark:border-neutral-800'} p-2 ${className || ''}`} {...props}>
                     <DynamicFeature productId={productId} featureTitle={featureTitle} format={format as any} />
                   </td>
                 );
               }
             }
             if (/^!(icon|brand)-([\w-]+)!/i.test(rawText)) {
-              return renderTitleWithIcon('td', children, { ...props }, `border-b border-neutral-200 dark:border-neutral-800 p-2 ${className || ''}`);
+              return renderTitleWithIcon('td', children, { ...props }, `${noTableBorders ? 'border-none' : 'border-b border-neutral-200 dark:border-neutral-800'} p-2 ${className || ''}`);
             }
-            return <td className={`border-b border-neutral-200 dark:border-neutral-800 p-2 ${className || ''}`} {...props}>{children}</td>;
+            return <td className={`${noTableBorders ? 'border-none' : 'border-b border-neutral-200 dark:border-neutral-800'} p-2 ${className || ''}`} {...props}>{renderTableCellContent(children)}</td>;
           },
           ul: ({ node, className, ...props }) => <ul style={{ listStyleType: 'disc', paddingLeft: '1.5rem' }} className={`my-4 space-y-2 text-neutral-700 dark:text-neutral-300 ${className || ''}`} {...props} />,
           ol: ({ node, className, ...props }) => <ol style={{ listStyleType: 'decimal', paddingLeft: '1.5rem' }} className={`my-4 space-y-2 text-neutral-700 dark:text-neutral-300 ${className || ''}`} {...props} />,

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Button } from 'caralstable';
 import { NovedadStyleConfig } from '@/app/utils/novedadStyle';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 interface CopyHtmlButtonProps {
   targetId: string;
@@ -10,6 +11,7 @@ interface CopyHtmlButtonProps {
 }
 
 export default function CopyHtmlButton({ targetId, styleConfig }: CopyHtmlButtonProps) {
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   const applyInlineStyles = (element: HTMLElement) => {
@@ -242,7 +244,7 @@ img { -ms-interpolation-mode:bicubic; }
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy: ', err);
-      alert('Error al copiar el contenido');
+      alert(t("news.copyError", "Error al copiar el contenido"));
     }
   };
 
@@ -255,7 +257,7 @@ img { -ms-interpolation-mode:bicubic; }
         className="border border-neutral-800 w-full"
         data-copy-exclude="true"
       >
-        {copied ? 'Código Copiado!' : 'Copiar HTML'}
+        {copied ? t("news.copiedHtml", "Código Copiado!") : t("news.copyHtml", "Copiar HTML")}
       </Button>
     </div>
   );

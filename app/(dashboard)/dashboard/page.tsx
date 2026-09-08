@@ -3,6 +3,7 @@ import Products from '../../components/home/Products';
 import Actin from '../../components/home/Actin';
 import { createClient } from '@/utils/supabase/server';
 import { getBentoConfig } from '../../actions/bentoConfig';
+import DashboardGreeting from './DashboardGreeting';
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -22,14 +23,7 @@ export default async function Dashboard() {
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-[32px] text-neutral-900 dark:text-white font-poppins font-bold">
-          Hola, {userName} 👋
-        </h1>
-        <p className="text-p text-neutral-600 dark:text-neutral-400 font-poppins mt-2">
-          Bienvenido a tu panel principal. Desde aquí puedes acceder rápidamente a todas las soluciones y herramientas que tenemos para ti.
-        </p>
-      </div>
+      <DashboardGreeting userName={userName} />
 
       <div className="flex flex-col gap-12">
         <Products products={ownTechProducts} cols={bentoConfig.ownTechCols} />
@@ -38,3 +32,4 @@ export default async function Dashboard() {
     </div>
   );
 }
+

@@ -6,6 +6,7 @@ import { Button, Drawer, Tabs, Toggle } from 'caralstable'
 import { Brand, CaralIcon } from 'iconcaral2'
 import FileUploader from '@/app/components/FileUploader'
 import IconPickerModal from '@/app/components/IconPickerModal'
+import { useTranslation } from '@/app/context/LanguageContext'
 
 const ApiFeaturePreview = ({ url, apiScript }: { url: string, apiScript?: string }) => {
   const [data, setData] = useState<any>(null)
@@ -153,6 +154,7 @@ const ApiDependencySelector = ({ url, apiScript, value, onChange }: { url: strin
 }
 
 export default function ProductosPage() {
+  const { t } = useTranslation()
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
@@ -356,7 +358,7 @@ export default function ProductosPage() {
           ]).select()
         if (error) throw error
         productId = data[0].id
-        alert('Producto creado!')
+        alert(t('products.productCreated', '¡Producto creado!'))
       }
 
       if (productId) {
@@ -386,7 +388,7 @@ export default function ProductosPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('¿Estás seguro de eliminar este producto?')) return
+    if (!confirm(t('products.confirmDelete', '¿Estás seguro de eliminar este producto?'))) return
     try {
       const { error } = await supabase.from('products').delete().eq('id', id)
       if (error) throw error
@@ -458,16 +460,16 @@ export default function ProductosPage() {
     <div className="flex flex-col gap-8 w-full max-w-5xl mx-auto py-8 px-4 md:px-8 h-full">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center w-full max-w-5xl mx-auto">
         <h1 className="text-3xl text-neutral-900 dark:text-white font-poppins font-bold">
-          Gestión de Productos
+          {t('products.title', 'Gestión de Productos')}
         </h1>
         <Button onClick={openCreateDrawer}>
-          Nuevo Producto
+          {t('products.newProduct', 'Nuevo Producto')}
         </Button>
       </div>
 
       <div className="flex flex-col gap-4">
         {loading ? (
-          <p>Cargando...</p>
+          <p>{t('common.loading', 'Cargando...')}</p>
         ) : (
           <div className="flex flex-col gap-4">
             {products.map((p, index) => (
@@ -523,7 +525,7 @@ export default function ProductosPage() {
                         hasBorder
                         size='sm'
                       >
-                        Editar
+                        {t('common.edit', 'Editar')}
                       </Button>
                     </div>
                   </div>
@@ -538,12 +540,18 @@ export default function ProductosPage() {
       <Drawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        title={editingId ? "Editar Producto" : "Crear Nuevo Producto"}
+        title={editingId ? t('products.editProduct', 'Editar Producto') : t('products.createProduct', 'Crear Nuevo Producto')}
         size="lg"
       >
         <div className="w-full mb-6">
           <Tabs
-            tabs={[{ label: 'General' }, { label: 'Visibilidad' }, { label: 'Requisitos' }, { label: 'Features' }, { label: 'Assets' }]}
+            tabs={[
+              { label: t('products.tabGeneral', 'General') }, 
+              { label: t('products.tabVisibility', 'Visibilidad') }, 
+              { label: t('products.tabRequirements', 'Requisitos') }, 
+              { label: t('products.tabFeatures', 'Features') }, 
+              { label: t('products.tabAssets', 'Assets') }
+            ]}
             activeIndex={drawerTab === 'general' ? 0 : drawerTab === 'visibility' ? 1 : drawerTab === 'requirements' ? 2 : drawerTab === 'features' ? 3 : 4}
             onChange={(idx) => setDrawerTab(idx === 0 ? 'general' : idx === 1 ? 'visibility' : idx === 2 ? 'requirements' : idx === 3 ? 'features' : 'assets')}
           />
@@ -573,23 +581,27 @@ export default function ProductosPage() {
                 </div>
 
                 <div className="flex flex-col">
-                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">Titulo</label>
+                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">
+                    {t('products.titleField', 'Titulo')}
+                  </label>
                   <input
                     required
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                     className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500"
-                    placeholder="Ej: Crestone"
+                    placeholder={t('products.titlePlaceholder', 'Ej: Crestone')}
                   />
                 </div>
 
                 <div className="flex flex-col">
-                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">Titulo (Slug)</label>
+                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">
+                    {t('products.slugField', 'Titulo (Slug)')}
+                  </label>
                   <input
                     value={newLink}
                     onChange={(e) => setNewLink(e.target.value)}
                     className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500"
-                    placeholder="Ej: crestone"
+                    placeholder={t('products.slugPlaceholder', 'Ej: crestone')}
                   />
                 </div>
               </div>
@@ -598,12 +610,14 @@ export default function ProductosPage() {
               <div className="grid grid-cols-[auto_1fr_1fr] gap-4">
                 <div className="w-10 invisible"></div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">Descripcion</label>
+                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">
+                    {t('products.descField', 'Descripcion')}
+                  </label>
                   <textarea
                     value={newDesc}
                     onChange={(e) => setNewDesc(e.target.value)}
                     className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500 h-28 resize-none"
-                    placeholder="Descripción del producto..."
+                    placeholder={t('products.productDesc', 'Descripción del producto...')}
                   />
                 </div>
               </div>
@@ -612,18 +626,22 @@ export default function ProductosPage() {
               <div className="grid grid-cols-[auto_1fr_1fr] gap-4">
                 <div className="w-10 invisible"></div>
                 <div className="flex flex-col">
-                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">Estado</label>
+                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">
+                    {t('products.statusField', 'Estado')}
+                  </label>
                   <select
                     value={newStatus}
                     onChange={(e) => setNewStatus(e.target.value)}
                     className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500"
                   >
-                    <option value="Publicada">Publicada</option>
-                    <option value="Borrador">Borrador</option>
+                    <option value="Publicada">{t('products.statusPublished', 'Publicada')}</option>
+                    <option value="Borrador">{t('products.statusDraft', 'Borrador')}</option>
                   </select>
                 </div>
                 <div className="flex flex-col">
-                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">Categoria</label>
+                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">
+                    {t('products.categoryField', 'Categoria')}
+                  </label>
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
@@ -638,7 +656,7 @@ export default function ProductosPage() {
               {/* Links Section */}
               <div className="mt-4 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
                 <div className="bg-[#EAF0F6] dark:bg-neutral-800/50 px-4 py-2 font-semibold text-[#667C99] dark:text-neutral-300 text-sm">
-                  Links
+                  {t('products.links', 'Links')}
                 </div>
                 <div className="p-4 grid grid-cols-3 gap-4 bg-white dark:bg-neutral-900/20">
                   <div className="flex flex-col">
@@ -660,7 +678,9 @@ export default function ProductosPage() {
                     />
                   </div>
                   <div className="flex flex-col">
-                    <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">Documentacion</label>
+                    <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">
+                      {t('sidebar.documentation', 'Documentacion')}
+                    </label>
                     <input
                       value={newLinkDocs}
                       onChange={(e) => setNewLinkDocs(e.target.value)}
@@ -674,7 +694,9 @@ export default function ProductosPage() {
               {/* Mostrar en el Inicio Section */}
               <div className="mt-2 rounded-xl border border-neutral-200 dark:border-neutral-800 overflow-hidden">
                 <div className="bg-[#EAF0F6] dark:bg-neutral-800/50 px-4 py-2 flex items-center justify-between">
-                  <span className="font-semibold text-[#667C99] dark:text-neutral-300 text-sm">Mostrar en el Inicio</span>
+                  <span className="font-semibold text-[#667C99] dark:text-neutral-300 text-sm">
+                    {t('products.showOnHome', 'Mostrar en el Inicio')}
+                  </span>
                   <Toggle
                     checked={!newHideInBento}
                     onChange={(checked) => setNewHideInBento(!checked)}
@@ -685,12 +707,16 @@ export default function ProductosPage() {
                   <div className="p-4 bg-white dark:bg-neutral-900/20">
                     <div className="grid grid-cols-2 gap-6 mb-6">
                       <div>
-                        <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">Destacada (Modo Claro)</label>
+                        <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">
+                          {t('products.featuredLight', 'Destacada (Modo Claro)')}
+                        </label>
                         <div className="h-32 rounded-lg bg-[#EAEFF4] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center text-[#869AB5] dark:text-neutral-400 overflow-hidden relative">
                           {newLightImage ? (
                             <>
                               <img src={newLightImage} alt="Preview Claro" className="w-full h-full object-cover" />
-                              <button type="button" onClick={() => setNewLightImage('')} className="absolute top-2 right-2 bg-white/80 p-1 rounded text-red-500 hover:bg-white">Quitar</button>
+                              <button type="button" onClick={() => setNewLightImage('')} className="absolute top-2 right-2 bg-white/80 p-1 rounded text-red-500 hover:bg-white cursor-pointer">
+                                {t('products.remove', 'Quitar')}
+                              </button>
                             </>
                           ) : (
                             <div className="flex items-center flex-col scale-75 opacity-70 hover:opacity-100 transition-opacity">
@@ -701,12 +727,16 @@ export default function ProductosPage() {
                       </div>
 
                       <div>
-                        <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">Destacada (Modo oscuro)</label>
+                        <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">
+                          {t('products.featuredDark', 'Destacada (Modo oscuro)')}
+                        </label>
                         <div className="h-32 rounded-lg bg-[#EAEFF4] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center text-[#869AB5] dark:text-neutral-400 overflow-hidden relative">
                           {newDarkImage ? (
                             <>
                               <img src={newDarkImage} alt="Preview Oscuro" className="w-full h-full object-cover" />
-                              <button type="button" onClick={() => setNewDarkImage('')} className="absolute top-2 right-2 bg-white/80 p-1 rounded text-red-500 hover:bg-white">Quitar</button>
+                              <button type="button" onClick={() => setNewDarkImage('')} className="absolute top-2 right-2 bg-white/80 p-1 rounded text-red-500 hover:bg-white cursor-pointer">
+                                {t('products.remove', 'Quitar')}
+                              </button>
                             </>
                           ) : (
                             <div className="flex items-center flex-col scale-75 opacity-70 hover:opacity-100 transition-opacity">
@@ -721,7 +751,7 @@ export default function ProductosPage() {
                       <Toggle
                         checked={newIsSuper}
                         onChange={setNewIsSuper}
-                        label="Activar modo Super"
+                        label={t('products.superMode', 'Activar modo Super')}
                       />
                     </div>
                   </div>
@@ -729,19 +759,29 @@ export default function ProductosPage() {
               </div>
 
               <div className="pt-4 flex justify-end">
-                <Button type="submit" className="min-w-[120px]">{editingId ? "Guardar Cambios" : "Crear Producto"}</Button>
+                <Button type="submit" className="min-w-[120px]">
+                  {editingId ? t('products.saveChanges', 'Guardar Cambios') : t('products.createProduct', 'Crear Producto')}
+                </Button>
               </div>
 
               {/* Zona de peligro */}
               {editingId && (
                 <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-800">
-                  <h3 className="text-xl font-bold text-neutral-900 dark:text-white">Zona de peligro</h3>
-                  <p className="text-sm text-neutral-800 mb-4">Tenga cuidado con las siguientes funciones ya que no se pueden deshacer.</p>
+                  <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
+                    {t('common.dangerZone', 'Zona de peligro')}
+                  </h3>
+                  <p className="text-sm text-neutral-800 mb-4">
+                    {t('common.dangerZoneNotice', 'Tenga cuidado con las siguientes funciones ya que no se pueden deshacer.')}
+                  </p>
 
                   <div className="border border-red-200 dark:border-red-900/50 bg-[#FDEEED] dark:bg-red-950/20 rounded-md p-4 flex items-center justify-between gap-4">
                     <div>
-                      <h4 className="font-bold text-[#641A1B] dark:text-red-400 mb-1">Eliminar Producto</h4>
-                      <p className="text-sm text-[#641A1B] dark:text-red-500 font-medium">El producto no estará más disponible y todo su contenido creado quedará huérfano.</p>
+                      <h4 className="font-bold text-[#641A1B] dark:text-red-400 mb-1">
+                        {t('products.deleteProduct', 'Eliminar Producto')}
+                      </h4>
+                      <p className="text-sm text-[#641A1B] dark:text-red-500 font-medium">
+                        {t('products.deleteWarning', 'El producto no estará más disponible y todo su contenido creado quedará huérfano.')}
+                      </p>
                     </div>
                     <Button
                       type="button"
@@ -752,8 +792,7 @@ export default function ProductosPage() {
                       variant='danger'
                       iconName='trash'
                     >
-
-                      Eliminar
+                      {t('common.delete', 'Eliminar')}
                     </Button>
                   </div>
                 </div>
@@ -764,8 +803,12 @@ export default function ProductosPage() {
           {drawerTab === 'visibility' && (
             <div className="flex flex-col gap-6 px-1">
               <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Visibilidad por Roles</h3>
-                <p className="text-sm text-neutral-800 mb-6">Selecciona los roles que tendrán acceso de lectura a este producto.</p>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
+                  {t('products.visibilityTitle', 'Visibilidad por Roles')}
+                </h3>
+                <p className="text-sm text-neutral-800 mb-6">
+                  {t('products.visibilitySubtitle', 'Selecciona los roles que tendrán acceso de lectura a este producto.')}
+                </p>
 
                 <div className="flex items-center gap-3 mb-4 pb-4 border-b border-neutral-200 dark:border-neutral-800">
                   <input
@@ -783,7 +826,7 @@ export default function ProductosPage() {
                     className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
                   />
                   <label htmlFor="role-all" className="text-sm font-bold text-neutral-900 dark:text-white cursor-pointer">
-                    Seleccionar todos
+                    {t('products.selectAll', 'Seleccionar todos')}
                   </label>
                 </div>
 
@@ -813,7 +856,9 @@ export default function ProductosPage() {
                 </div>
               </div>
               <div className="pt-4 flex justify-end">
-                <Button type="button" onClick={() => handleFormSubmit()} className="min-w-[120px]">{editingId ? "Guardar Cambios" : "Crear Producto"}</Button>
+                <Button type="button" onClick={() => handleFormSubmit()} className="min-w-[120px]">
+                  {editingId ? t('products.saveChanges', 'Guardar Cambios') : t('products.createProduct', 'Crear Producto')}
+                </Button>
               </div>
             </div>
           )}
@@ -821,36 +866,36 @@ export default function ProductosPage() {
           {drawerTab === 'requirements' && (
             <div className="flex flex-col gap-6 px-1">
               <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Requisitos</h3>
-                <p className="text-sm text-neutral-800 mb-6">Administra los requisitos técnicos de este producto.</p>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{t('products.reqTitle', 'Requisitos')}</h3>
+                <p className="text-sm text-neutral-800 mb-6">{t('products.reqSubtitle', 'Administra los requisitos técnicos de este producto.')}</p>
 
                 <div className="flex flex-col gap-2">
                   {(() => {
                     const renderRequirementForm = () => (
                       <div className="border border-blue-500 bg-blue-50/10 p-5 rounded-xl flex flex-col gap-4 relative z-20 shadow-sm mt-2 mb-2">
-                        <h4 className="font-semibold text-neutral-900 dark:text-white">{editingReqIndex !== null ? "Editar requisito" : "Añadir nuevo requisito"}</h4>
+                        <h4 className="font-semibold text-neutral-900 dark:text-white">{editingReqIndex !== null ? t('products.editReqHeader', "Editar requisito") : t('products.addReqHeader', "Añadir nuevo requisito")}</h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Título</label>
+                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.titleField', 'Título')}</label>
                             <input type="text" value={newReqTitle} onChange={(e) => setNewReqTitle(e.target.value)} placeholder="Ej: Entornos soportados" className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm" />
                           </div>
                           <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Tipo de Requisito</label>
+                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.reqType', 'Tipo de Requisito')}</label>
                             <select
                               value={newReqType}
                               onChange={(e: any) => setNewReqType(e.target.value)}
                               className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
                             >
-                              <option value="text">Texto Descriptivo</option>
-                              <option value="options">Lista de Opciones</option>
-                              <option value="tasklist">Lista de Tareas (Checklist)</option>
-                              <option value="boolean">Casilla (Checkbox)</option>
-                              <option value="feature_question">Pregunta de Feature</option>
+                              <option value="text">{t('products.reqTypeDesc', 'Texto Descriptivo')}</option>
+                              <option value="options">{t('products.reqTypeOptions', 'Lista de Opciones')}</option>
+                              <option value="tasklist">{t('products.reqTypeTasklist', 'Lista de Tareas (Checklist)')}</option>
+                              <option value="boolean">{t('products.reqTypeBoolean', 'Casilla (Checkbox)')}</option>
+                              <option value="feature_question">{t('products.reqTypeFeatureQuestion', 'Pregunta de Feature')}</option>
                             </select>
                           </div>
                           {newReqType !== 'feature_question' && (
                             <div className="flex flex-col gap-1">
-                              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Descripción / Instrucciones</label>
+                              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.reqDescInstructions', 'Descripción / Instrucciones')}</label>
                               <input type="text" value={newReqDesc} onChange={(e) => setNewReqDesc(e.target.value)} placeholder="Ej: Seleccione al menos uno" className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm" />
                             </div>
                           )}
@@ -858,24 +903,24 @@ export default function ProductosPage() {
 
                         {newReqType === 'feature_question' && (
                           <div className="flex flex-col gap-1 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-800 mb-2">
-                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Selecciona la Feature Comercial vinculada</label>
+                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.selectLinkedFeature', 'Selecciona la Feature Comercial vinculada')}</label>
                             <select
                               value={newReqLinkedFeatureId}
                               onChange={(e) => setNewReqLinkedFeatureId(e.target.value)}
                               className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
                             >
-                              <option value="">Selecciona una feature...</option>
+                              <option value="">{t('products.selectFeaturePlaceholder', 'Selecciona una feature...')}</option>
                               {newFeatures.map(f => (
                                 <option key={f.id} value={f.id}>{f.title}</option>
                               ))}
                             </select>
-                            <p className="text-xs text-neutral-500 mt-1">Este requisito heredará las opciones y lógica de la Feature seleccionada y siempre será opcional en la matriz.</p>
+                            <p className="text-xs text-neutral-500 mt-1">{t('products.linkedFeatureNotice', 'Este requisito heredará las opciones y lógica de la Feature seleccionada y siempre será opcional en la matriz.')}</p>
                           </div>
                         )}
 
                         {newReqType === 'boolean' && (
                           <div className="flex flex-col gap-1 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-800 mb-2">
-                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Texto de la Casilla</label>
+                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.checkboxText', 'Texto de la Casilla')}</label>
                             <input type="text" value={newReqBooleanLabel} onChange={(e) => setNewReqBooleanLabel(e.target.value)} placeholder="Ej: Confirmo que he verificado..." className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm" />
                           </div>
                         )}
@@ -883,7 +928,7 @@ export default function ProductosPage() {
                         {(newReqType === 'options' || newReqType === 'tasklist') && (
                           <div className="flex flex-col gap-3 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-800">
                             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                              {newReqType === 'options' ? 'Opciones Seleccionables' : 'Elementos de la Lista'}
+                              {newReqType === 'options' ? t('products.selectableOptions', 'Opciones Seleccionables') : t('products.listItems', 'Elementos de la Lista')}
                             </label>
                             <div className="flex flex-wrap gap-2">
                               {newReqOptions.map((tag, i) => (
@@ -894,7 +939,7 @@ export default function ProductosPage() {
                                   </button>
                                 </span>
                               ))}
-                              {newReqOptions.length === 0 && <span className="text-xs text-neutral-800">Agrega elementos abajo...</span>}
+                              {newReqOptions.length === 0 && <span className="text-xs text-neutral-800">{t('products.addItemsBelow', 'Agrega elementos abajo...')}</span>}
                             </div>
                             <div className="flex gap-2">
                               <input
@@ -923,7 +968,7 @@ export default function ProductosPage() {
                                   }
                                 }}
                               >
-                                Añadir
+                                {t('products.add', 'Añadir')}
                               </Button>
                             </div>
                           </div>
@@ -938,13 +983,13 @@ export default function ProductosPage() {
                                 setNewReqDependsOnValue('')
                               }
                             }} className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500" />
-                            <label htmlFor="req-conditional" className="text-sm font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer">Es condicional (depende de otro requisito)</label>
+                            <label htmlFor="req-conditional" className="text-sm font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer">{t('products.isConditionalReq', 'Es condicional (depende de otro requisito)')}</label>
                           </div>
 
                           {newReqIsConditional && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                               <div className="flex flex-col gap-1">
-                                <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">Requisito Padre</label>
+                                <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{t('products.parentReq', 'Requisito Padre')}</label>
                                 <select
                                   value={newReqDependsOnId}
                                   onChange={(e: any) => {
@@ -953,21 +998,21 @@ export default function ProductosPage() {
                                   }}
                                   className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
                                 >
-                                  <option value="">Selecciona un requisito de opciones...</option>
+                                  <option value="">{t('products.selectOptionsReq', 'Selecciona un requisito de opciones...')}</option>
                                   {newRequirements.filter(r => r.type === 'options' && r.id !== (editingReqIndex !== null ? newRequirements[editingReqIndex].id : '')).map(req => (
                                     <option key={req.id} value={req.id}>{req.title}</option>
                                   ))}
                                 </select>
                               </div>
                               <div className="flex flex-col gap-1">
-                                <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">Cuando el valor sea...</label>
+                                <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{t('products.whenValueIs', 'Cuando el valor sea...')}</label>
                                 <select
                                   value={newReqDependsOnValue}
                                   onChange={(e: any) => setNewReqDependsOnValue(e.target.value)}
                                   disabled={!newReqDependsOnId}
                                   className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
                                 >
-                                  <option value="">Selecciona una opción...</option>
+                                  <option value="">{t('products.selectAnOption', 'Selecciona una opción...')}</option>
                                   {newRequirements.find(r => r.id === newReqDependsOnId)?.options?.map((opt, i) => (
                                     <option key={i} value={opt}>{opt}</option>
                                   ))}
@@ -978,7 +1023,7 @@ export default function ProductosPage() {
                         </div>
 
                         <div className="flex flex-col gap-1 mt-1 mb-2">
-                          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Etiquetas (Tags)</label>
+                          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.tags', 'Etiquetas (Tags)')}</label>
                           <div className="flex flex-wrap gap-2 mb-1">
                             {newReqTags.map((tag, i) => (
                               <span key={i} className="text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -988,7 +1033,7 @@ export default function ProductosPage() {
                                 </button>
                               </span>
                             ))}
-                            {newReqTags.length === 0 && <span className="text-[10px] text-neutral-500 italic mt-1">Si no agregas nada, se asignará 'General' por defecto al guardar.</span>}
+                            {newReqTags.length === 0 && <span className="text-[10px] text-neutral-500 italic mt-1">{t('products.tagsDefaultNotice', "Si no agregas nada, se asignará 'General' por defecto al guardar.")}</span>}
                           </div>
                           <div className="flex gap-2">
                             <input
@@ -1017,14 +1062,14 @@ export default function ProductosPage() {
                                 }
                               }}
                             >
-                              Añadir Tag
+                              {t('products.addTag', 'Añadir Tag')}
                             </Button>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2">
                           <input id="req-mandatory" type="checkbox" checked={newReqMandatory} onChange={(e) => setNewReqMandatory(e.target.checked)} className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500" />
-                          <label htmlFor="req-mandatory" className="text-sm text-neutral-700 dark:text-neutral-300 cursor-pointer">Es obligatorio</label>
+                          <label htmlFor="req-mandatory" className="text-sm text-neutral-700 dark:text-neutral-300 cursor-pointer">{t('products.isMandatory', 'Es obligatorio')}</label>
                         </div>
                         
                         
@@ -1046,21 +1091,21 @@ export default function ProductosPage() {
                             setEditingReqIndex(null)
                             setIsCreatingReq(false)
                           }}>
-                            Cancelar
+                            {t('products.cancel', 'Cancelar')}
                           </Button>
                           <Button type="button" variant="light" hasBorder onClick={() => {
                             if (newReqTitle) {
                               if ((newReqType === 'options' || newReqType === 'tasklist') && newReqOptions.length === 0) {
-                                alert("Agrega al menos una opción/elemento o cambia el tipo a Texto.")
+                                alert(t('products.alertAddOption', "Agrega al menos una opción/elemento o cambia el tipo a Texto."))
                                 return
                               }
                               if (newReqType === 'feature_question' && !newReqLinkedFeatureId) {
-                                alert("Debes seleccionar a qué Feature apunta esta pregunta.")
+                                alert(t('products.alertSelectFeature', "Debes seleccionar a qué Feature apunta esta pregunta."))
                                 return
                               }
 
                               if (newReqIsConditional && (!newReqDependsOnId || !newReqDependsOnValue)) {
-                                alert("Debes seleccionar el requisito padre y el valor requerido para la condición.")
+                                alert(t('products.alertReqParent', "Debes seleccionar el requisito padre y el valor requerido para la condición."))
                                 return
                               }
 
@@ -1087,6 +1132,7 @@ export default function ProductosPage() {
                                 const updated = [...newRequirements]
                                 updated[editingReqIndex] = newReq
                                 setNewRequirements(updated)
+                                setNewRequirements(updated)
                                 setEditingReqIndex(null)
                               } else {
                                 setNewRequirements([...newRequirements, newReq])
@@ -1107,9 +1153,9 @@ export default function ProductosPage() {
                               setNewReqDependsOnValue('')
                               setNewReqLinkedFeatureId('')
                             } else {
-                              alert("El título es obligatorio")
+                              alert(t('products.alertTitleRequired', "El título es obligatorio"))
                             }
-                          }}>{editingReqIndex !== null ? "Guardar Cambios" : "Añadir a la lista"}</Button>
+                          }}>{editingReqIndex !== null ? t('products.saveChanges', "Guardar Cambios") : t('products.addToList', "Añadir a la lista")}</Button>
                         </div>
                       </div>
                     )
@@ -1132,12 +1178,12 @@ export default function ProductosPage() {
                             <div className="flex-1 pr-4">
                               <div className="flex items-center gap-2 mb-1">
                                 <h4 className="font-semibold text-neutral-900 dark:text-white">{req.title}</h4>
-                                <span className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium">Requisito</span>
-                                {req.is_mandatory && req.type !== 'feature_question' && <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded font-medium">Obligatorio</span>}
-                                {req.type === 'options' && <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium uppercase">Opciones</span>}
-                                {req.type === 'tasklist' && <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-medium uppercase">Checklist</span>}
-                                {req.type === 'boolean' && <span className="text-[10px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-medium uppercase">Casilla</span>}
-                                {req.type === 'feature_question' && <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium uppercase">Pregunta Feature</span>}
+                                <span className="text-[10px] bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-medium">{t('products.reqBadge', 'Requisito')}</span>
+                                {req.is_mandatory && req.type !== 'feature_question' && <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded font-medium">{t('products.mandatoryBadge', 'Obligatorio')}</span>}
+                                {req.type === 'options' && <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium uppercase">{t('products.optionsBadge', 'Opciones')}</span>}
+                                {req.type === 'tasklist' && <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-medium uppercase">{t('products.checklistBadge', 'Checklist')}</span>}
+                                {req.type === 'boolean' && <span className="text-[10px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-medium uppercase">{t('products.booleanBadge', 'Casilla')}</span>}
+                                {req.type === 'feature_question' && <span className="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded font-medium uppercase">{t('products.featureQuestionBadge', 'Pregunta Feature')}</span>}
                                 {(req.tags || ['General']).map((tag: string, i: number) => (
                                   <span key={i} className="text-[10px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 px-2 py-0.5 rounded-full font-medium">{tag}</span>
                                 ))}
@@ -1146,7 +1192,7 @@ export default function ProductosPage() {
                               
                               {req.type === 'feature_question' && (
                                 <div className="mt-2 text-xs text-neutral-700 dark:text-neutral-300 bg-amber-50/50 p-2 rounded border border-amber-200/50">
-                                  Vinculado a la feature comercial: <strong className="font-semibold">{newFeatures.find(f => f.id === req.linked_feature_id)?.title || 'Desconocida'}</strong>
+                                  {t('products.linkedToFeature', 'Vinculado a la feature comercial:')} <strong className="font-semibold">{newFeatures.find(f => f.id === req.linked_feature_id)?.title || t('products.unknown', 'Desconocida')}</strong>
                                 </div>
                               )}
 
@@ -1195,7 +1241,7 @@ export default function ProductosPage() {
                                 }
                                 setEditingReqIndex(originalIdx)
                               }}>
-                                Editar
+                                {t('products.edit', 'Editar')}
                               </Button>
                               <Button variant="danger" iconName="trash" size="sm" onClick={() => setNewRequirements(newRequirements.filter((_, i) => i !== originalIdx))} />
                             </div>
@@ -1238,7 +1284,6 @@ export default function ProductosPage() {
                             <Button variant="light" hasBorder onClick={() => {
                               setNewReqTitle('')
                               setNewReqDesc('')
-                              setNewReqCategory('requisito')
                               setNewReqMandatory(false)
                               setNewReqType('text')
                               setNewReqOptions([])
@@ -1249,7 +1294,7 @@ export default function ProductosPage() {
                               setEditingReqIndex(null)
                               setIsCreatingReq(true)
                             }}>
-                              + Añadir Nuevo Requisito
+                              {t('products.addNewReq', '+ Añadir Nuevo Requisito')}
                             </Button>
                           </div>
                         )}
@@ -1259,7 +1304,7 @@ export default function ProductosPage() {
                 </div>
               </div>
               <div className="pt-4 flex justify-end">
-                <Button type="button" onClick={() => handleFormSubmit()} className="min-w-[120px]">{editingId ? "Guardar Cambios" : "Crear Producto"}</Button>
+                <Button type="button" onClick={() => handleFormSubmit()} className="min-w-[120px]">{editingId ? t('products.saveChanges', 'Guardar Cambios') : t('products.createProduct', 'Crear Producto')}</Button>
               </div>
             </div>
           )}
@@ -1267,42 +1312,42 @@ export default function ProductosPage() {
           {drawerTab === 'features' && (
             <div className="flex flex-col gap-6 px-1">
               <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">Features</h3>
-                <p className="text-sm text-neutral-800 mb-6">Administra los features técnicos de este producto.</p>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{t('products.featuresTitle', 'Features')}</h3>
+                <p className="text-sm text-neutral-800 mb-6">{t('products.featuresSubtitle', 'Administra los features técnicos de este producto.')}</p>
 
                 <div className="flex flex-col gap-2">
                   {(() => {
                     const renderFeatureForm = () => (
                       <div className="border border-blue-500 bg-blue-50/10 p-5 rounded-xl flex flex-col gap-4 relative z-20 shadow-sm mt-2 mb-2">
-                        <h4 className="font-semibold text-neutral-900 dark:text-white">{editingFeatIndex !== null ? "Editar feature" : "Añadir nuevo feature"}</h4>
+                        <h4 className="font-semibold text-neutral-900 dark:text-white">{editingFeatIndex !== null ? t('products.editFeatureHeader', "Editar feature") : t('products.addFeatureHeader', "Añadir nuevo feature")}</h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Título</label>
+                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.titleField', 'Título')}</label>
                             <input type="text" value={newFeatTitle} onChange={(e) => setNewFeatTitle(e.target.value)} placeholder="Ej: Entornos soportados" className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm" />
                           </div>
                           <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Tipo de Feature</label>
+                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.featureType', 'Tipo de Feature')}</label>
                             <select
                               value={newFeatType}
                               onChange={(e: any) => setNewFeatType(e.target.value)}
                               className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
                             >
-                              <option value="text">Texto Descriptivo</option>
-                              <option value="options">Lista de Opciones</option>
-                              <option value="tasklist">Lista de Tareas (Checklist)</option>
-                              <option value="boolean">Casilla (Checkbox)</option>
-                              <option value="api_select">Selección desde API Externa</option>
+                              <option value="text">{t('products.reqTypeDesc', 'Texto Descriptivo')}</option>
+                              <option value="options">{t('products.reqTypeOptions', 'Lista de Opciones')}</option>
+                              <option value="tasklist">{t('products.reqTypeTasklist', 'Lista de Tareas (Checklist)')}</option>
+                              <option value="boolean">{t('products.reqTypeBoolean', 'Casilla (Checkbox)')}</option>
+                              <option value="api_select">{t('products.featureTypeApi', 'Selección desde API Externa')}</option>
                             </select>
                           </div>
                           <div className="flex flex-col gap-1">
-                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Descripción / Instrucciones</label>
+                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.reqDescInstructions', 'Descripción / Instrucciones')}</label>
                             <input type="text" value={newFeatDesc} onChange={(e) => setNewFeatDesc(e.target.value)} placeholder="Ej: Seleccione al menos uno" className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm" />
                           </div>
                         </div>
 
                         {newFeatType === 'boolean' && (
                           <div className="flex flex-col gap-1 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-800 mb-2">
-                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Texto de la Casilla</label>
+                            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.checkboxText', 'Texto de la Casilla')}</label>
                             <input type="text" value={newFeatBooleanLabel} onChange={(e) => setNewFeatBooleanLabel(e.target.value)} placeholder="Ej: Confirmo que he verificado..." className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm" />
                           </div>
                         )}
@@ -1310,7 +1355,7 @@ export default function ProductosPage() {
                         {newFeatType === 'api_select' && (
                           <div className="flex flex-col gap-3 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-800 mb-2">
                             <div className="flex flex-col gap-1">
-                              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">URL del origen JSON (API)</label>
+                              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.apiOriginUrl', 'URL del origen JSON (API)')}</label>
                               <input
                                 type="url"
                                 value={newFeatApiUrl}
@@ -1320,14 +1365,14 @@ export default function ProductosPage() {
                               />
                             </div>
                             <div className="flex flex-col gap-1">
-                              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Transform Script (JavaScript) <span className="text-neutral-400 font-normal text-xs">(Opcional)</span></label>
+                              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.transformScript', 'Transform Script (JavaScript)')} <span className="text-neutral-400 font-normal text-xs">{t('products.optional', '(Opcional)')}</span></label>
                               <textarea
                                 value={newFeatApiScript}
                                 onChange={(e) => setNewFeatApiScript(e.target.value)}
                                 placeholder="return data.items.map(item => ({ value: item.id, label: item.name }));"
                                 className="h-24 p-3 font-mono rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs text-neutral-800 dark:text-neutral-200"
                               />
-                              <p className="text-xs text-neutral-800 mt-1">Escribe código JS para transformar 'data' en un array de objetos con `value` y `label`, o un array simple de strings.</p>
+                              <p className="text-xs text-neutral-800 mt-1">{t('products.scriptHelper', "Escribe código JS para transformar 'data' en un array de objetos con `value` y `label`, o un array simple de strings.")}</p>
                             </div>
                           </div>
                         )}
@@ -1335,7 +1380,7 @@ export default function ProductosPage() {
                         {(newFeatType === 'options' || newFeatType === 'tasklist') && (
                           <div className="flex flex-col gap-3 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-800">
                             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
-                              {newFeatType === 'options' ? 'Opciones Seleccionables' : 'Elementos de la Lista'}
+                              {newFeatType === 'options' ? t('products.selectableOptions', 'Opciones Seleccionables') : t('products.listItems', 'Elementos de la Lista')}
                             </label>
                             <div className="flex flex-wrap gap-2">
                               {newFeatOptions.map((tag, i) => (
@@ -1346,7 +1391,7 @@ export default function ProductosPage() {
                                   </button>
                                 </span>
                               ))}
-                              {newFeatOptions.length === 0 && <span className="text-xs text-neutral-800">Agrega elementos abajo...</span>}
+                              {newFeatOptions.length === 0 && <span className="text-xs text-neutral-800">{t('products.addItemsBelow', 'Agrega elementos abajo...')}</span>}
                             </div>
                             <div className="flex gap-2">
                               <input
@@ -1375,7 +1420,7 @@ export default function ProductosPage() {
                                   }
                                 }}
                               >
-                                Añadir
+                                {t('products.add', 'Añadir')}
                               </Button>
                             </div>
                           </div>
@@ -1390,13 +1435,13 @@ export default function ProductosPage() {
                                 setNewFeatDependsOnValue('')
                               }
                             }} className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500" />
-                            <label htmlFor="req-conditional" className="text-sm font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer">Es condicional (depende de otro feature)</label>
+                            <label htmlFor="req-conditional" className="text-sm font-medium text-neutral-700 dark:text-neutral-300 cursor-pointer">{t('products.isConditionalFeature', 'Es condicional (depende de otro feature)')}</label>
                           </div>
 
                           {newFeatIsConditional && (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                               <div className="flex flex-col gap-1">
-                                <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">Feature Padre</label>
+                                <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{t('products.parentFeature', 'Feature Padre')}</label>
                                 <select
                                   value={newFeatDependsOnId}
                                   onChange={(e: any) => {
@@ -1405,20 +1450,20 @@ export default function ProductosPage() {
                                   }}
                                   className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
                                 >
-                                  <option value="">Selecciona un feature padre...</option>
+                                  <option value="">{t('products.selectParentFeature', 'Selecciona un feature padre...')}</option>
                                   {newFeatures.filter(r => (r.type === 'options' || r.type === 'api_select') && r.id !== (editingFeatIndex !== null ? newFeatures[editingFeatIndex].id : '')).map(req => (
                                     <option key={req.id} value={req.id}>{req.title}</option>
                                   ))}
                                 </select>
                               </div>
                               <div className="flex flex-col gap-1">
-                                <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">Cuando el valor sea...</label>
+                                <label className="text-xs font-medium text-neutral-600 dark:text-neutral-400">{t('products.whenValueIs', 'Cuando el valor sea...')}</label>
                                 {(() => {
                                   const parentFeat = newFeatures.find(r => r.id === newFeatDependsOnId);
                                   if (parentFeat?.type === 'api_select') {
                                     return (
                                       <ApiDependencySelector 
-                                        url={parentFeat.api_url} 
+                                        url={parentFeat.api_url || ''} 
                                         apiScript={parentFeat.api_script} 
                                         value={newFeatDependsOnValue} 
                                         onChange={(v) => setNewFeatDependsOnValue(v)} 
@@ -1432,7 +1477,7 @@ export default function ProductosPage() {
                                       disabled={!newFeatDependsOnId}
                                       className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
                                     >
-                                      <option value="">Selecciona una opción...</option>
+                                      <option value="">{t('products.selectAnOption', 'Selecciona una opción...')}</option>
                                       {parentFeat?.options?.map((opt, i) => (
                                         <option key={i} value={opt}>{opt}</option>
                                       ))}
@@ -1445,7 +1490,7 @@ export default function ProductosPage() {
                         </div>
 
                         <div className="flex flex-col gap-1 mt-1 mb-2">
-                          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Etiquetas (Tags)</label>
+                          <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.tags', 'Etiquetas (Tags)')}</label>
                           <div className="flex flex-wrap gap-2 mb-1">
                             {newFeatTags.map((tag, i) => (
                               <span key={i} className="text-xs bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 px-2 py-0.5 rounded-full flex items-center gap-1">
@@ -1455,7 +1500,7 @@ export default function ProductosPage() {
                                 </button>
                               </span>
                             ))}
-                            {newFeatTags.length === 0 && <span className="text-[10px] text-neutral-500 italic mt-1">Si no agregas nada, se asignará 'General' por defecto al guardar.</span>}
+                            {newFeatTags.length === 0 && <span className="text-[10px] text-neutral-500 italic mt-1">{t('products.tagsDefaultNotice', "Si no agregas nada, se asignará 'General' por defecto al guardar.")}</span>}
                           </div>
                           <div className="flex gap-2">
                             <input
@@ -1484,14 +1529,14 @@ export default function ProductosPage() {
                                 }
                               }}
                             >
-                              Añadir Tag
+                              {t('products.addTag', 'Añadir Tag')}
                             </Button>
                           </div>
                         </div>
 
                         <div className="flex items-center gap-2">
                           <input id="req-mandatory" type="checkbox" checked={newFeatMandatory} onChange={(e) => setNewFeatMandatory(e.target.checked)} className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500" />
-                          <label htmlFor="req-mandatory" className="text-sm text-neutral-700 dark:text-neutral-300 cursor-pointer">Es obligatorio</label>
+                          <label htmlFor="req-mandatory" className="text-sm text-neutral-700 dark:text-neutral-300 cursor-pointer">{t('products.isMandatory', 'Es obligatorio')}</label>
                         </div>
                         
                         
@@ -1514,17 +1559,17 @@ export default function ProductosPage() {
                             setEditingFeatIndex(null)
                             setIsCreatingFeat(false)
                           }}>
-                            Cancelar
+                            {t('products.cancel', 'Cancelar')}
                           </Button>
                           <Button type="button" variant="light" hasBorder onClick={() => {
                             if (newFeatTitle) {
                               if ((newFeatType === 'options' || newFeatType === 'tasklist') && newFeatOptions.length === 0) {
-                                alert("Agrega al menos una opción/elemento o cambia el tipo a Texto.")
+                                alert(t('products.alertAddOption', "Agrega al menos una opción/elemento o cambia el tipo a Texto."))
                                 return
                               }
 
                               if (newFeatIsConditional && (!newFeatDependsOnId || !newFeatDependsOnValue)) {
-                                alert("Debes seleccionar el feature padre y el valor requerido para la condición.")
+                                alert(t('products.alertFeatParent', "Debes seleccionar el feature padre y el valor requerido para la condición."))
                                 return
                               }
 
@@ -1573,9 +1618,9 @@ export default function ProductosPage() {
                               setNewFeatApiUrl('')
                               setNewFeatApiScript('')
                             } else {
-                              alert("El título es obligatorio")
+                              alert(t('products.alertTitleRequired', "El título es obligatorio"))
                             }
-                          }}>{editingFeatIndex !== null ? "Guardar Cambios" : "Añadir a la lista"}</Button>
+                          }}>{editingFeatIndex !== null ? t('products.saveChanges', "Guardar Cambios") : t('products.addToList', "Añadir a la lista")}</Button>
                         </div>
                       </div>
                     )
@@ -1598,12 +1643,12 @@ export default function ProductosPage() {
                             <div className="flex-1 pr-4">
                               <div className="flex items-center gap-2 mb-1">
                                 <h4 className="font-semibold text-neutral-900 dark:text-white">{req.title}</h4>
-                                <span className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded font-medium">Feature</span>
-                                {req.is_mandatory && <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded font-medium">Obligatorio</span>}
-                                {req.type === 'options' && <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium uppercase">Opciones</span>}
-                                {req.type === 'tasklist' && <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-medium uppercase">Checklist</span>}
-                                {req.type === 'boolean' && <span className="text-[10px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-medium uppercase">Casilla</span>}
-                                {req.type === 'api_select' && <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-medium uppercase">API</span>}
+                                <span className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded font-medium">{t('products.featureBadge', 'Feature')}</span>
+                                {req.is_mandatory && <span className="text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded font-medium">{t('products.mandatoryBadge', 'Obligatorio')}</span>}
+                                {req.type === 'options' && <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded font-medium uppercase">{t('products.optionsBadge', 'Opciones')}</span>}
+                                {req.type === 'tasklist' && <span className="text-[10px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded font-medium uppercase">{t('products.checklistBadge', 'Checklist')}</span>}
+                                {req.type === 'boolean' && <span className="text-[10px] bg-teal-100 text-teal-700 px-2 py-0.5 rounded font-medium uppercase">{t('products.booleanBadge', 'Casilla')}</span>}
+                                {req.type === 'api_select' && <span className="text-[10px] bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-medium uppercase">{t('products.apiBadge', 'API')}</span>}
                                 {(req.tags || ['General']).map((tag: string, i: number) => (
                                   <span key={i} className="text-[10px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 px-2 py-0.5 rounded-full font-medium">{tag}</span>
                                 ))}
@@ -1662,7 +1707,7 @@ export default function ProductosPage() {
                                 }
                                 setEditingFeatIndex(originalIdx)
                               }}>
-                                Editar
+                                {t('products.edit', 'Editar')}
                               </Button>
                               <Button variant="danger" iconName="trash" size="sm" onClick={() => setNewFeatures(newFeatures.filter((_, i) => i !== originalIdx))} />
                             </div>
@@ -1714,7 +1759,7 @@ export default function ProductosPage() {
                               setEditingFeatIndex(null)
                               setIsCreatingFeat(true)
                             }}>
-                              + Añadir Nuevo Feature
+                              {t('products.addNewFeature', '+ Añadir Nuevo Feature')}
                             </Button>
                           </div>
                         )}
@@ -1724,24 +1769,24 @@ export default function ProductosPage() {
                 </div>
               </div>
               <div className="pt-4 flex justify-end">
-                <Button type="button" onClick={() => handleFormSubmit()} className="min-w-[120px]">{editingId ? "Guardar Cambios" : "Crear Producto"}</Button>
+                <Button type="button" onClick={() => handleFormSubmit()} className="min-w-[120px]">{editingId ? t('products.saveChanges', 'Guardar Cambios') : t('products.createProduct', 'Crear Producto')}</Button>
               </div>
             </div>
           )}
 
           {drawerTab === 'assets' && (
             <div className="flex flex-col gap-6 px-4 py-4">
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Assets del Producto</h3>
+              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('products.assetsTitle', 'Assets del Producto')}</h3>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Logo Light */}
                 <div>
-                  <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">Logo Completo (Claro)</label>
+                  <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">{t('products.fullLogoLight', 'Logo Completo (Claro)')}</label>
                   <div className="h-40 rounded-lg bg-[#EAEFF4] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center overflow-hidden relative">
                     {newAssets?.logo_light ? (
                       <>
                         <img src={newAssets.logo_light} alt="Logo Claro" className="w-full h-full object-contain p-2" />
-                        <button type="button" onClick={() => setNewAssets({...newAssets, logo_light: ''})} className="absolute top-2 right-2 bg-white/80 p-1 rounded text-red-500 hover:bg-white">Quitar</button>
+                        <button type="button" onClick={() => setNewAssets({...newAssets, logo_light: ''})} className="absolute top-2 right-2 bg-white/80 p-1 rounded text-red-500 hover:bg-white">{t('products.remove', 'Quitar')}</button>
                       </>
                     ) : (
                       <div className="flex items-center flex-col opacity-70 hover:opacity-100 transition-opacity">
@@ -1753,12 +1798,12 @@ export default function ProductosPage() {
 
                 {/* Logo Dark */}
                 <div>
-                  <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">Logo Completo (Oscuro)</label>
+                  <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">{t('products.fullLogoDark', 'Logo Completo (Oscuro)')}</label>
                   <div className="h-40 rounded-lg bg-[#EAEFF4] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center overflow-hidden relative">
                     {newAssets?.logo_dark ? (
                       <>
                         <img src={newAssets.logo_dark} alt="Logo Oscuro" className="w-full h-full object-contain p-2 bg-neutral-900" />
-                        <button type="button" onClick={() => setNewAssets({...newAssets, logo_dark: ''})} className="absolute top-2 right-2 bg-white/80 p-1 rounded text-red-500 hover:bg-white">Quitar</button>
+                        <button type="button" onClick={() => setNewAssets({...newAssets, logo_dark: ''})} className="absolute top-2 right-2 bg-white/80 p-1 rounded text-red-500 hover:bg-white">{t('products.remove', 'Quitar')}</button>
                       </>
                     ) : (
                       <div className="flex items-center flex-col opacity-70 hover:opacity-100 transition-opacity">
@@ -1770,12 +1815,12 @@ export default function ProductosPage() {
 
                 {/* Icon Dark */}
                 <div>
-                  <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">Icono (Oscuro)</label>
+                  <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">{t('products.iconDark', 'Icono (Oscuro)')}</label>
                   <div className="h-40 rounded-lg bg-[#EAEFF4] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center overflow-hidden relative">
                     {newAssets?.icon_dark ? (
                       <>
                         <img src={newAssets.icon_dark} alt="Icono Oscuro" className="w-full h-full object-contain p-2 bg-neutral-900" />
-                        <button type="button" onClick={() => setNewAssets({...newAssets, icon_dark: ''})} className="absolute top-2 right-2 bg-white/80 p-1 rounded text-red-500 hover:bg-white">Quitar</button>
+                        <button type="button" onClick={() => setNewAssets({...newAssets, icon_dark: ''})} className="absolute top-2 right-2 bg-white/80 p-1 rounded text-red-500 hover:bg-white">{t('products.remove', 'Quitar')}</button>
                       </>
                     ) : (
                       <div className="flex items-center flex-col opacity-70 hover:opacity-100 transition-opacity">
@@ -1787,7 +1832,7 @@ export default function ProductosPage() {
 
                 {/* Cover Images */}
                 <div>
-                  <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">Portadas (Battlecards / Docs)</label>
+                  <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">{t('products.coverImages', 'Portadas (Battlecards / Docs)')}</label>
                   <div className="rounded-lg bg-[#EAEFF4] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-4 flex flex-wrap gap-4 items-center min-h-[160px]">
                     {(newAssets?.cover_images || []).map((coverUrl, idx) => (
                       <div key={idx} className="w-24 h-24 relative rounded overflow-hidden border border-neutral-300 dark:border-neutral-600 shrink-0">
@@ -1818,7 +1863,7 @@ export default function ProductosPage() {
               </div>
 
               <div className="pt-4 flex justify-end">
-                <Button type="button" onClick={() => handleFormSubmit()} className="min-w-[120px]">{editingId ? "Guardar Cambios" : "Crear Producto"}</Button>
+                <Button type="button" onClick={() => handleFormSubmit()} className="min-w-[120px]">{editingId ? t('products.saveChanges', 'Guardar Cambios') : t('products.createProduct', 'Crear Producto')}</Button>
               </div>
             </div>
           )}

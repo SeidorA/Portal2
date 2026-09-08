@@ -27,15 +27,6 @@ export default async function RolesPage() {
 
   return (
     <div className="mx-auto w-full p-8 pt-12 animate-fade-in pb-20">
-      <div className="mb-8">
-        <h1 className="text-4xl font-poppins font-extrabold text-neutral-900 dark:text-white tracking-tight">
-          Políticas de rol
-        </h1>
-        <p className="text-lg text-neutral-700 dark:text-neutral-100 leading-relaxed mb-2">
-          Configura qué roles tienen acceso a los distintos productos, módulos y documentos del portal.
-        </p>
-      </div>
-
       <RoleMatrixClient
         initialRoles={roles || []}
         initialProducts={products || []}

@@ -9,9 +9,11 @@ import { Button } from 'caralstable';
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function PublicDocumentView({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
+  const { t } = useTranslation();
   const [doc, setDoc] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [relatedProductsData, setRelatedProductsData] = useState<any[]>([]);
@@ -219,7 +221,7 @@ export default function PublicDocumentView({ params }: { params: Promise<{ id: s
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white dark:bg-neutral-950">
-        <span className="text-neutral-500 animate-pulse font-poppins">Cargando documento...</span>
+        <span className="text-neutral-500 animate-pulse font-poppins">{t('documents.loadingDoc', 'Cargando documento...')}</span>
       </div>
     );
   }
@@ -228,10 +230,10 @@ export default function PublicDocumentView({ params }: { params: Promise<{ id: s
     return (
       <div className="flex flex-col min-h-screen items-center justify-center bg-white dark:bg-neutral-950 p-6">
         <h1 className="text-2xl font-bold font-poppins text-neutral-900 dark:text-neutral-100 mb-2">
-          Documento no encontrado
+          {t('documents.docNotFound', 'Documento no encontrado')}
         </h1>
         <p className="text-neutral-500 text-center">
-          El documento que intentas ver no existe o ha sido eliminado.
+          {t('documents.docNotExist', 'El documento que intentas ver no existe o ha sido eliminado.')}
         </p>
       </div>
     );
@@ -368,7 +370,7 @@ export default function PublicDocumentView({ params }: { params: Promise<{ id: s
                   </div>
                 ))
               ) : (
-                <h3 className="font-poppins font-bold text-neutral-900 dark:text-neutral-100">Información</h3>
+                <h3 className="font-poppins font-bold text-neutral-900 dark:text-neutral-100">{t('documents.infoTitle', 'Información')}</h3>
               )}
             </div>
             <button onClick={() => updatePreference({ isSidebarOpen: false })} className="text-neutral-700 hover:text-neutral-800 dark:hover:text-neutral-200 mt-1">
@@ -386,18 +388,18 @@ export default function PublicDocumentView({ params }: { params: Promise<{ id: s
             )}
 
             <div>
-              <h4 className="text-xs font-semibold text-neutral-800 uppercase tracking-wider mb-2">Idioma</h4>
+              <h4 className="text-xs font-semibold text-neutral-800 uppercase tracking-wider mb-2">{t('documents.docLanguage', 'Idioma')}</h4>
               <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                {(doc.content?.metadata?.language || 'es') === 'es' ? 'Español' :
-                  (doc.content?.metadata?.language === 'en' ? 'Inglés' :
-                    (doc.content?.metadata?.language === 'pt' ? 'Portugués' :
-                      (doc.content?.metadata?.language === 'de' ? 'Alemán' : doc.content?.metadata?.language || 'Español')))}
+                {(doc.content?.metadata?.language || 'es') === 'es' ? t('documents.langEs', 'Español') :
+                  (doc.content?.metadata?.language === 'en' ? t('documents.langEn', 'Inglés') :
+                    (doc.content?.metadata?.language === 'pt' ? t('documents.langPt', 'Portugués') :
+                      (doc.content?.metadata?.language === 'de' ? t('documents.langDe', 'Alemán') : doc.content?.metadata?.language || t('documents.langEs', 'Español'))))}
               </p>
             </div>
 
             {doc.content?.metadata?.tags && (
               <div>
-                <h4 className="text-xs font-semibold text-neutral-800 uppercase tracking-wider mb-2">Etiquetas</h4>
+                <h4 className="text-xs font-semibold text-neutral-800 uppercase tracking-wider mb-2">{t('documents.tags', 'Etiquetas')}</h4>
                 <div className="flex flex-wrap gap-1.5">
                   {doc.content.metadata.tags.split(',').map((tag: string, idx: number) => (
                     <span key={idx} className="px-2 py-1 bg-neutral-100 dark:bg-neutral-800 rounded-full text-[11px] font-medium text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700">
@@ -410,10 +412,10 @@ export default function PublicDocumentView({ params }: { params: Promise<{ id: s
           </div>
 
           <div className='space-y-6 py-4 border-b border-neutral-900 w-full'>
-            <h4 className="text-xs font-semibold text-neutral-800 uppercase tracking-wider mb-2">Controles</h4>
+            <h4 className="text-xs font-semibold text-neutral-800 uppercase tracking-wider mb-2">{t('documents.controls', 'Controles')}</h4>
             <div className="flex items-center gap-2">
               <div className="flex gap-2 items-center">
-                <span>Paginas</span>
+                <span>{t('documents.page', 'Páginas')}</span>
                 <p className='font-bold text-neutral-900 dark:text-neutral-100'>{currentPage}</p>
                 |
                 <p className='font-bold text-neutral-900 dark:text-neutral-100'>{totalPages}</p>
@@ -437,11 +439,11 @@ export default function PublicDocumentView({ params }: { params: Promise<{ id: s
           </div>
 
           <Button variant='info' iconName={isExporting ? 'loader' : 'arrowDownToLine'} className='w-full font-poppins font-semibold' onClick={handleExportPDF} disabled={isExporting}>
-            {isExporting ? 'Generando PDF...' : 'Descargar PDF'}
+            {isExporting ? t('documents.generatingPdf', 'Generando PDF...') : t('documents.downloadPdf', 'Descargar PDF')}
           </Button>
           {canEdit && (
             <Button variant='ghost' iconName='edit' className='w-full mt-2 border border-neutral-500' onClick={() => router.push(`/documentos/edit/${docId}`)}>
-              Editar
+              {t('documents.editDoc', 'Editar')}
             </Button>
           )}
         </div>
@@ -465,7 +467,7 @@ export default function PublicDocumentView({ params }: { params: Promise<{ id: s
                 </div>
               )}
               <div className="flex gap-3 items-center px-4 border-r border-neutral-200 dark:border-neutral-700 text-sm mr-2">
-                <span className="text-neutral-600 dark:text-neutral-400">Pagina</span>
+                <span className="text-neutral-600 dark:text-neutral-400">{t('documents.page', 'Página')}</span>
                 <span className='font-bold text-neutral-900 dark:text-neutral-100'>{currentPage}</span>
                 <span className="text-neutral-300 dark:text-neutral-600">|</span>
                 <span className='font-bold text-neutral-800'>{totalPages}</span>
@@ -494,7 +496,7 @@ export default function PublicDocumentView({ params }: { params: Promise<{ id: s
 
         {doc.content?.metadata?.status === 'draft' && (
           <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-warning-main text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg opacity-80 pointer-events-none">
-            Borrador
+            {t('documents.statusDraft', 'Borrador')}
           </div>
         )}
         <div
@@ -529,7 +531,7 @@ export default function PublicDocumentView({ params }: { params: Promise<{ id: s
                         <div className="absolute top-60 right-10 z-[100] pointer-events-none -rotate-[15deg] opacity-[0.12]">
                           <div className="border-[8px] border-red-500 rounded-3xl px-8 py-3 bg-white/20 backdrop-blur-sm">
                             <span className="font-black text-4xl text-red-500 tracking-widest whitespace-nowrap">
-                              SOLO USO INTERNO
+                              {t('documents.internalWatermark', 'SOLO USO INTERNO')}
                             </span>
                           </div>
                         </div>
@@ -567,7 +569,7 @@ export default function PublicDocumentView({ params }: { params: Promise<{ id: s
                 {doc.title}
               </h1>
               <p className="text-neutral-500 text-center">
-                Las presentaciones interactivas aún no están soportadas en esta vista pública.
+                {t('documents.presentationsNotSupported', 'Las presentaciones interactivas aún no están soportadas en esta vista pública.')}
               </p>
             </div>
           )}

@@ -10,8 +10,10 @@ import { createClient } from '@/utils/supabase/client';
 import { Button } from 'caralstable';
 import { CaralIcon } from 'iconcaral2';
 import { parseDocusaurusMarkdown } from '@/utils/docusaurus-parser';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function ContenidoPage() {
+  const { t } = useTranslation();
   const [products, setProducts] = useState<any[]>([]);
   const [modulesList, setModulesList] = useState<any[]>([]);
   const [docs, setDocs] = useState<any[]>([]);
@@ -163,7 +165,7 @@ export default function ContenidoPage() {
   };
 
   const handleDeleteModule = async (id: string) => {
-    if (window.confirm("¿Seguro que deseas eliminar este módulo? Se perderán todos sus recursos internos.")) {
+    if (window.confirm(t('content.confirmDeleteModule', "¿Seguro que deseas eliminar este módulo? Se perderán todos sus recursos internos."))) {
       try {
         const { error } = await supabase.from('modules').delete().eq('id', id);
         if (error) throw error;
@@ -173,13 +175,13 @@ export default function ContenidoPage() {
         }
         fetchData();
       } catch (err: any) {
-        alert("Error al eliminar el módulo: " + err.message);
+        alert(t('content.errorDeleteModule', "Error al eliminar el módulo: ") + err.message);
       }
     }
   };
 
   const handleDeleteContent = async (id: string) => {
-    if (window.confirm("¿Seguro que deseas eliminar este recurso?")) {
+    if (window.confirm(t('content.confirmDeleteContent', "¿Seguro que deseas eliminar este recurso?"))) {
       try {
         const { error } = await supabase.from('documentation').delete().eq('id', id);
         if (error) throw error;
@@ -189,7 +191,7 @@ export default function ContenidoPage() {
         }
         fetchData();
       } catch (err: any) {
-        alert("Error al eliminar el recurso: " + err.message);
+        alert(t('content.errorDeleteContent', "Error al eliminar el recurso: ") + err.message);
       }
     }
   };
@@ -331,14 +333,14 @@ export default function ContenidoPage() {
         const { error } = await supabase.from('documentation').insert([payload]);
         if (error) {
             console.error('Error importing', file.name, error);
-            alert(`Error al importar ${file.name}: ${error.message}`);
+            alert(t('content.errorImportingFile', `Error al importar ${file.name}: ${error.message}`, { file: file.name, error: error.message }));
         }
       }
       setIsAddMenuOpen(false);
       setIsAddSubMenuOpen(false);
       fetchData();
     } catch (err: any) {
-      alert("Error en la importación: " + err.message);
+      alert(t('content.errorImportGeneral', "Error en la importación: ") + err.message);
     } finally {
       setLoading(false);
       if (fileInputRef.current) {
@@ -354,9 +356,9 @@ export default function ContenidoPage() {
 
           {/* COLUMNA 1: PRODUCTOS */}
           {!isDocModalOpen && (
-            <ManagementColumn title="Productos" isOpen={true}>
+            <ManagementColumn title={t('content.colProducts', "Productos")} isOpen={true}>
               {loading ? (
-                <p className="text-sm p-2 text-neutral-500">Cargando...</p>
+                <p className="text-sm p-2 text-neutral-500">{t('content.loading', "Cargando...")}</p>
               ) : products.map((prod) => (
                 <ManagementItem
                   key={prod.id}
@@ -378,7 +380,7 @@ export default function ContenidoPage() {
           {/* COLUMNA 2: MÓDULOS */}
           {!isDocModalOpen && (
             <ManagementColumn
-              title="Módulos"
+              title={t('content.colModules', "Módulos")}
               isOpen={!!selectedProduct}
               actionElement={
                 <div className="relative">
@@ -397,13 +399,13 @@ export default function ContenidoPage() {
                           className="p-2 w-full text-left px-4 py-2 hover:bg-neutral-200 hover:text-info-main! flex items-center gap-2"
                           onClick={() => { setIsAddModuleMenuOpen(false); openModuleModal(); }}
                         >
-                          <CaralIcon name='folder' /> Sección Custom
+                          <CaralIcon name='folder' /> {t('content.customSection', "Sección Custom")}
                         </button>
                         <button
                           className="p-2 w-full text-left px-4 py-2 hover:bg-neutral-200 hover:text-info-main! flex items-center gap-2"
                           onClick={() => { setIsAddModuleMenuOpen(false); setIsReleaseNoteModalOpen(true); }}
                         >
-                          <CaralIcon name='box' /> Release Notes
+                          <CaralIcon name='box' /> {t('content.releaseNotes', "Release Notes")}
                         </button>
                       </div>
                     </>
@@ -451,7 +453,7 @@ export default function ContenidoPage() {
 
           {/* COLUMNA 3: CONTENIDO */}
           <ManagementColumn
-            title="Recursos"
+            title={t('content.colResources', "Recursos")}
             isOpen={!!selectedModule}
             actionElement={
               <div className="relative">
@@ -470,34 +472,34 @@ export default function ContenidoPage() {
                         className="p-2 mb-3 pt-3 border-b-2 border-neutral-200 dark:border-neutral-800 w-full px-4 py-2 hover:bg-neutral-200 hover:text-info-main! flex items-center gap-2"
                         onClick={() => openDocModal(undefined, 'document')}
                       >
-                        <CaralIcon name='file' /> Nuevo Documento (Raíz)
+                        <CaralIcon name='file' /> {t('content.newDocRoot', "Nuevo Documento (Raíz)")}
                       </button>
 
                       <button
                         className="p-2 w-full text-left px-4 py-2 hover:bg-neutral-200 hover:text-info-main! flex items-center gap-2 border-b-2 border-neutral-200 dark:border-neutral-800"
                         onClick={() => openDocModal(undefined, 'roadmap')}
                       >
-                        <CaralIcon name='map' /> Nuevo Roadmap (Raíz)
+                        <CaralIcon name='map' /> {t('content.newRoadmapRoot', "Nuevo Roadmap (Raíz)")}
                       </button>
                       
                       <button
                         className="p-2 w-full text-left px-4 py-2 hover:bg-neutral-200 hover:text-info-main! flex items-center gap-2 border-b-2 border-neutral-200 dark:border-neutral-800"
                         onClick={() => openDocModal(undefined, 'battlecard')}
                       >
-                        <CaralIcon name='file' /> Nuevo Battlecard (Raíz)
+                        <CaralIcon name='file' /> {t('content.newBattlecardRoot', "Nuevo Battlecard (Raíz)")}
                       </button>
 
                       <button
                         className="p-2 w-full text-left px-4 py-2 hover:bg-neutral-200 hover:text-info-main! flex items-center gap-2"
                         onClick={() => openDocModal(undefined, 'section')}
                       >
-                        <CaralIcon name='folder' /> Nueva Sección
+                        <CaralIcon name='folder' /> {t('content.newSection', "Nueva Sección")}
                       </button>
                       <button
                         className="p-2 w-full text-left px-4 py-2 hover:bg-neutral-200 hover:text-info-main! flex items-center gap-2 border-t border-neutral-200 dark:border-neutral-800"
                         onClick={() => fileInputRef.current?.click()}
                       >
-                        <CaralIcon name='download' /> Importar desde Docusaurus
+                        <CaralIcon name='download' /> {t('content.importDocusaurus', "Importar desde Docusaurus")}
                       </button>
                     </div>
                   </>
@@ -564,7 +566,7 @@ export default function ContenidoPage() {
                     className="text-neutral-500 -ml-2 shrink-0"
                   />
                 )}
-                <span className="truncate" title={currentSection?.title}>{currentSection?.title || 'Documentos'}</span>
+                <span className="truncate" title={currentSection?.title}>{currentSection?.title || t('content.documentsTitle', 'Documentos')}</span>
               </div>
             }
             isOpen={!!currentSection}
@@ -586,31 +588,31 @@ export default function ContenidoPage() {
                           className="p-2 mb-3 pt-3 border-b-2 border-neutral-200 dark:border-neutral-800 w-full px-4 py-2 hover:bg-neutral-200 hover:text-info-main! flex items-center gap-2"
                           onClick={() => openDocModal(undefined, 'document', currentSection.id)}
                         >
-                          <CaralIcon name='file' /> Nuevo Documento Interno
+                          <CaralIcon name='file' /> {t('content.newDocInternal', "Nuevo Documento Interno")}
                         </button>
                         <button
                           className="p-2 w-full text-left px-4 py-2 hover:bg-neutral-200 hover:text-info-main! flex items-center gap-2"
                           onClick={() => openDocModal(undefined, 'section', currentSection.id)}
                         >
-                          <CaralIcon name='folder' /> Nueva Sub-Sección
+                          <CaralIcon name='folder' /> {t('content.newSubSection', "Nueva Sub-Sección")}
                         </button>
                         <button
                           className="p-2 w-full text-left px-4 py-2 hover:bg-neutral-200 hover:text-info-main! flex items-center gap-2"
                           onClick={() => openDocModal(undefined, 'roadmap', currentSection.id)}
                         >
-                          <CaralIcon name='map' /> Nuevo Roadmap Interno
+                          <CaralIcon name='map' /> {t('content.newRoadmapInternal', "Nuevo Roadmap Interno")}
                         </button>
                         <button
                           className="p-2 w-full text-left px-4 py-2 hover:bg-neutral-200 hover:text-info-main! flex items-center gap-2"
                           onClick={() => openDocModal(undefined, 'battlecard', currentSection.id)}
                         >
-                          <CaralIcon name='file' /> Nuevo Battlecard Interno
+                          <CaralIcon name='file' /> {t('content.newBattlecardInternal', "Nuevo Battlecard Interno")}
                         </button>
                         <button
                           className="p-2 w-full text-left px-4 py-2 hover:bg-neutral-200 hover:text-info-main! flex items-center gap-2 border-t border-neutral-200 dark:border-neutral-800"
                           onClick={() => fileInputRef.current?.click()}
                         >
-                          <CaralIcon name='download' /> Importar desde Docusaurus
+                          <CaralIcon name='download' /> {t('content.importDocusaurus', "Importar desde Docusaurus")}
                         </button>
                       </div>
                     </>
@@ -685,21 +687,21 @@ export default function ContenidoPage() {
 
       {/* --- MODAL DE MÓDULOS --- */}
       {isModuleModalOpen && (
-        <Modal isOpen={isModuleModalOpen} onClose={() => setIsModuleModalOpen(false)} title={editingModuleId ? 'Editar Módulo' : 'Nuevo Módulo'} width="sm">
+        <Modal isOpen={isModuleModalOpen} onClose={() => setIsModuleModalOpen(false)} title={editingModuleId ? t('content.editModule', 'Editar Módulo') : t('content.newModule', 'Nuevo Módulo')} width="sm">
           <form onSubmit={saveModule} className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Nombre del Módulo</label>
+              <label className="block text-sm font-medium mb-1">{t('content.moduleName', "Nombre del Módulo")}</label>
               <input
                 required
                 value={moduleTitle}
                 onChange={(e) => setModuleTitle(e.target.value)}
                 className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-inherit"
-                placeholder="Ej: Recursos"
+                placeholder={t('content.moduleNamePlaceholder', "Ej: Recursos")}
               />
             </div>
             <div className="flex justify-end gap-2 mt-6">
-              <Button variant="ghost" type="button" onClick={() => setIsModuleModalOpen(false)}>Cancelar</Button>
-              <Button variant="info" type="submit" disabled={!moduleTitle.trim()}>Guardar</Button>
+              <Button variant="ghost" type="button" onClick={() => setIsModuleModalOpen(false)}>{t('content.cancel', "Cancelar")}</Button>
+              <Button variant="info" type="submit" disabled={!moduleTitle.trim()}>{t('content.save', "Guardar")}</Button>
             </div>
           </form>
         </Modal>
@@ -708,22 +710,22 @@ export default function ContenidoPage() {
       {isReleaseNoteModalOpen && (
         <Modal
           isOpen={isReleaseNoteModalOpen}
-          title="Nuevo Módulo de Release Notes"
+          title={t('content.newReleaseNotesModule', "Nuevo Módulo de Release Notes")}
           onClose={() => setIsReleaseNoteModalOpen(false)}
         >
           <div className="flex flex-col gap-4">
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Título del Módulo</label>
+              <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">{t('content.moduleTitle', "Título del Módulo")}</label>
               <input
                 type="text"
                 className="w-full p-2 border border-neutral-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-800 dark:text-white"
                 value={releaseNoteTitle}
                 onChange={e => setReleaseNoteTitle(e.target.value)}
-                placeholder="Ej. Novedades"
+                placeholder={t('content.moduleTitlePlaceholder', "Ej. Novedades")}
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">URL del JSON (GitHub Raw)</label>
+              <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">{t('content.jsonUrl', "URL del JSON (GitHub Raw)")}</label>
               <input
                 type="text"
                 className="w-full p-2 border border-neutral-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-800 dark:text-white"
@@ -733,7 +735,7 @@ export default function ContenidoPage() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">URL Base de Documentación (Links)</label>
+              <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">{t('content.docBaseUrl', "URL Base de Documentación (Links)")}</label>
               <input
                 type="text"
                 className="w-full p-2 border border-neutral-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-800 dark:text-white"
@@ -743,19 +745,19 @@ export default function ContenidoPage() {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">Ruta de Imágenes</label>
+              <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">{t('content.imgFolderPath', "Ruta de Imágenes")}</label>
               <input
                 type="text"
                 className="w-full p-2 border border-neutral-300 dark:border-neutral-700 rounded bg-white dark:bg-neutral-800 dark:text-white"
                 value={imgFolder}
                 onChange={e => setImgFolder(e.target.value)}
-                placeholder="/img/relece"
+                placeholder={t('content.imgFolderPlaceholder', "/img/relece")}
               />
             </div>
           </div>
           <div className="flex justify-end gap-2 mt-6">
-            <Button variant="ghost" onClick={() => setIsReleaseNoteModalOpen(false)}>Cancelar</Button>
-            <Button onClick={saveReleaseNoteModule} disabled={!releaseNoteTitle.trim() || !releaseNoteUrl.trim()}>Crear</Button>
+            <Button variant="ghost" onClick={() => setIsReleaseNoteModalOpen(false)}>{t('content.cancel', "Cancelar")}</Button>
+            <Button onClick={saveReleaseNoteModule} disabled={!releaseNoteTitle.trim() || !releaseNoteUrl.trim()}>{t('content.create', "Crear")}</Button>
           </div>
         </Modal>
       )}

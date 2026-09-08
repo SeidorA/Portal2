@@ -5,8 +5,8 @@ import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
 import { Opportunity } from './mockData';
 import KanbanCard from './KanbanCard';
 import { CaralIcon } from 'iconcaral2';
-
 import { createClient } from '@/utils/supabase/client';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function KanbanBoard({
   opportunities,
@@ -19,6 +19,7 @@ export default function KanbanBoard({
   stages: any[],
   onOpportunityClick?: (opportunity: Opportunity, initialTab?: 'info' | 'reqs' | 'approvals') => void
 }) {
+  const { t } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [draggedStageId, setDraggedStageId] = useState<string | null>(null);
@@ -65,14 +66,14 @@ export default function KanbanBoard({
     // Handle Closing Actions (won, lost, delete)
     if (['won', 'lost', 'delete'].includes(destination.droppableId)) {
       if (destination.droppableId === 'delete') {
-        if (!confirm("¿Estás seguro de eliminar esta oportunidad de forma definitiva?")) return;
+        if (!confirm(t('opportunities.confirmDeleteOpp', "¿Estás seguro de eliminar esta oportunidad de forma definitiva?"))) return;
 
         await supabase.from('opportunity_activities').delete().eq('opportunity_id', draggableId);
         await supabase.from('opportunities').delete().eq('id', draggableId);
         setOpportunities(prev => prev.filter(o => o.id !== draggableId));
       } else {
-        const confirmText = destination.droppableId === 'won' ? "Cerrar con Venta" : "Cerrar como Perdida";
-        if (!confirm(`¿Estás seguro de marcar esta oportunidad como "${confirmText}"?`)) return;
+        const confirmText = destination.droppableId === 'won' ? t('opportunities.closeWon', "Cerrar con Venta") : t('opportunities.closeLost', "Cerrar como Perdida");
+        if (!confirm(t('opportunities.confirmCloseOpp', '¿Estás seguro de marcar esta oportunidad como "{action}"?').replace('{action}', confirmText))) return;
 
         await supabase.from('opportunities').update({ status: destination.droppableId }).eq('id', draggableId);
         setOpportunities(prev => prev.filter(o => o.id !== draggableId));
@@ -87,7 +88,7 @@ export default function KanbanBoard({
               old_status: oldStageName,
               new_status: confirmText,
               user_name: userName,
-              message: `marcó la oportunidad como ${confirmText}`
+              message: t('opportunities.markedOppAs', 'marcó la oportunidad como {action}').replace('{action}', confirmText)
             }
           });
         }
@@ -119,7 +120,7 @@ export default function KanbanBoard({
         const allowedRoles = configData.access_roles;
         const hasAccess = userRoles.some(ur => allowedRoles.some((ar: any) => ar.toString() === ur.toString()));
         if (!hasAccess && !userRoles.includes('admin')) {
-          alert("No tienes permiso para mover la oportunidad a esta etapa.");
+          alert(t('opportunities.noPermissionMoveStage', "No tienes permiso para mover la oportunidad a esta etapa."));
           return;
         }
       }
@@ -189,7 +190,7 @@ export default function KanbanBoard({
             activity_type: 'comment',
             content: {
               text: ruleToApply.auto_comment,
-              user_name: 'Sistema (Automatización)'
+              user_name: t('opportunities.systemAutomation', 'Sistema (Automatización)')
             }
           });
       }
@@ -197,7 +198,7 @@ export default function KanbanBoard({
   };
 
   // Prevenir errores de hidratación con @hello-pangea/dnd
-  if (!isMounted) return <div className="w-full h-[600px] flex items-center justify-center text-neutral-400">Cargando tablero...</div>;
+  if (!isMounted) return <div className="w-full h-[600px] flex items-center justify-center text-neutral-400">{t('opportunities.loadingBoard', 'Cargando tablero...')}</div>;
 
   const isLastStage = stages.length > 0 && draggedStageId === stages[stages.length - 1].id;
 
@@ -259,7 +260,7 @@ export default function KanbanBoard({
                 >
                   <div className="flex items-center gap-3 font-bold text-lg">
                     <CaralIcon name="check-circle" size={24} />
-                    Cerrar con Venta
+                    {t('opportunities.closeWon', 'Cerrar con Venta')}
                   </div>
                   <div className="hidden">{provided.placeholder}</div>
                 </div>
@@ -276,7 +277,7 @@ export default function KanbanBoard({
               >
                 <div className="flex items-center gap-3 font-bold text-lg">
                   <CaralIcon name="x-circle" size={24} />
-                  Cerrar como Perdida
+                  {t('opportunities.closeLost', 'Cerrar como Perdida')}
                 </div>
                 <div className="hidden">{provided.placeholder}</div>
               </div>
@@ -292,7 +293,7 @@ export default function KanbanBoard({
               >
                 <div className="flex items-center gap-3 font-bold text-lg">
                   <CaralIcon name="trash" size={24} />
-                  Eliminar
+                  {t('opportunities.delete', 'Eliminar')}
                 </div>
                 <div className="hidden">{provided.placeholder}</div>
               </div>
@@ -303,3 +304,4 @@ export default function KanbanBoard({
     </div>
   );
 }
+

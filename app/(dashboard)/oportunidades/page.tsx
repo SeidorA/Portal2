@@ -9,8 +9,10 @@ import { Button, Drawer } from 'caralstable';
 import { createClient } from '@/utils/supabase/client';
 import { Opportunity } from './mockData';
 import { useRouter } from 'next/navigation';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function OportunidadesPage() {
+  const { t } = useTranslation();
   const [viewMode, setViewMode] = useState<'kanban' | 'list'>('kanban');
   const [opportunities, setOpportunities] = useState<any[]>([]);
   const [stages, setStages] = useState<any[]>([]);
@@ -105,8 +107,8 @@ export default function OportunidadesPage() {
 
         return {
           id: d.id,
-          clientName: d.company_data?.name || 'Sin cliente',
-          productName: d.products?.title || 'Producto Desconocido',
+          clientName: d.company_data?.name || t('opportunities.noClient', 'Sin cliente'),
+          productName: d.products?.title || t('opportunities.unknownProduct', 'Producto Desconocido'),
           status: d.status,
           country: d.company_data?.country || '',
           city: d.company_data?.city || '',
@@ -145,10 +147,10 @@ export default function OportunidadesPage() {
       <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center mb-8 gap-4 bg-container p-4 border border-neutral-200 dark:border-neutral-800 rounded-lg">
         <div>
           <h2 className="text-[28px] font-semibold text-neutral-900">
-            Oportunidades
+            {t('opportunities.title', 'Oportunidades')}
           </h2>
           <p className="text-neutral-800 text-sm">
-            Administra el estado de tus leads y oportunidades en tiempo real.
+            {t('opportunities.subtitle', 'Administra el estado de tus leads y oportunidades en tiempo real.')}
           </p>
         </div>
         <div className="flex gap-2">
@@ -159,7 +161,7 @@ export default function OportunidadesPage() {
             iconName={viewMode === 'kanban' ? 'list' : 'grid'}
             onClick={toggleView}
           >
-            Cambiar vista
+            {t('opportunities.changeView', 'Cambiar vista')}
           </Button>
 
           <Button
@@ -170,26 +172,16 @@ export default function OportunidadesPage() {
             isIconButton
             onClick={() => router.push('/oportunidades/configuracion')}
           >
-            Configurar Pipeline
+            {t('opportunities.configurePipeline', 'Configurar Pipeline')}
           </Button>
 
-          {/**<Button
-            variant='light'
-            hasBorder
-            size='md'
-            iconName='filter'
-            isIconButton
-          >
-            Filtrar
-          </Button>
-          */}
           <Button
             variant='info'
             size='md'
             iconName='plus'
             onClick={() => setIsFormDrawerOpen(true)}
           >
-            Nueva oportunidad
+            {t('opportunities.newOpportunity', 'Nueva oportunidad')}
           </Button>
         </div>
       </div>
@@ -214,7 +206,7 @@ export default function OportunidadesPage() {
       <Drawer
         isOpen={isFormDrawerOpen}
         onClose={() => setIsFormDrawerOpen(false)}
-        title="Registrar Oportunidad"
+        title={t('opportunities.registerOpportunity', 'Registrar Oportunidad')}
         size="lg"
       >
         <OpportunityForm onClose={() => setIsFormDrawerOpen(false)} onSuccess={handleSuccess} />
@@ -223,7 +215,7 @@ export default function OportunidadesPage() {
       <Drawer
         isOpen={!!selectedOpportunity}
         onClose={() => setSelectedOpportunity(null)}
-        title="Detalles de la Oportunidad"
+        title={t('opportunities.opportunityDetails', 'Detalles de la Oportunidad')}
         size="lg"
       >
         {selectedOpportunity && (
@@ -238,4 +230,5 @@ export default function OportunidadesPage() {
     </div>
   );
 }
+
 

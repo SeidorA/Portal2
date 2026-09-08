@@ -1,10 +1,12 @@
 "use client";
 
-
 import React from "react";
 import styles from "./hero.module.css";
+import { useTranslation } from "@/app/context/LanguageContext";
 
 export default function Hero() {
+  const { t } = useTranslation();
+
   return (
     <div className={`${styles.heroBanner} relative flex flex-col items-center justify-center w-full min-h-[50vh]`}>
       <img
@@ -15,10 +17,10 @@ export default function Hero() {
       />
       <div className={`${styles.container} relative z-10 w-full flex flex-col items-center text-neutral-900`}>
         <h1 className={styles.title}>
-          Explore el ecosistema de SEIDOR Analytics
+          {t("home.heroTitle", "Explore el ecosistema de SEIDOR Analytics")}
         </h1>
         <p className={`${styles.phero} mt-4 text-neutral-800`}>
-          Conoce nuestras soluciones, accede a sus documentaciones y mantente al tanto de los próximos eventos.
+          {t("home.heroSubtitle", "Conoce nuestras soluciones, accede a sus documentaciones y mantente al tanto de los próximos eventos.")}
         </p>
       </div>
     </div>

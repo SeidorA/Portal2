@@ -1,6 +1,9 @@
+"use client";
+
 import React, { useState, useMemo } from 'react';
 import { Opportunity } from './mockData';
 import { CaralIcon } from 'iconcaral2';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 interface ListViewProps {
   opportunities: Opportunity[];
@@ -9,6 +12,7 @@ interface ListViewProps {
 }
 
 export default function ListView({ opportunities, stages = [], onOpportunityClick }: ListViewProps) {
+  const { t } = useTranslation();
   const [sortConfig, setSortConfig] = useState<{ key: keyof Opportunity | null, direction: 'asc' | 'desc' }>({
     key: null,
     direction: 'asc'
@@ -40,7 +44,7 @@ export default function ListView({ opportunities, stages = [], onOpportunityClic
       });
     }
     return sortableItems;
-  }, [opportunities, sortConfig]);
+  }, [opportunities, sortConfig, stages]);
 
   const SortIcon = ({ columnKey }: { columnKey: keyof Opportunity }) => {
     if (sortConfig.key !== columnKey) {
@@ -65,7 +69,7 @@ export default function ListView({ opportunities, stages = [], onOpportunityClic
               onClick={() => handleSort('productName')}
             >
               <div className="flex items-center">
-                Producto/Servicio <SortIcon columnKey="productName" />
+                {t('opportunities.colProductService', 'Producto/Servicio')} <SortIcon columnKey="productName" />
               </div>
             </th>
             <th 
@@ -73,7 +77,7 @@ export default function ListView({ opportunities, stages = [], onOpportunityClic
               onClick={() => handleSort('clientName')}
             >
               <div className="flex items-center">
-                Cliente <SortIcon columnKey="clientName" />
+                {t('opportunities.colClient', 'Cliente')} <SortIcon columnKey="clientName" />
               </div>
             </th>
             <th 
@@ -81,7 +85,7 @@ export default function ListView({ opportunities, stages = [], onOpportunityClic
               onClick={() => handleSort('industry')}
             >
               <div className="flex items-center">
-                Industria <SortIcon columnKey="industry" />
+                {t('opportunities.colIndustry', 'Industria')} <SortIcon columnKey="industry" />
               </div>
             </th>
             <th 
@@ -89,7 +93,7 @@ export default function ListView({ opportunities, stages = [], onOpportunityClic
               onClick={() => handleSort('country')}
             >
               <div className="flex items-center">
-                País/Ciudad <SortIcon columnKey="country" />
+                {t('opportunities.colCountryCity', 'País/Ciudad')} <SortIcon columnKey="country" />
               </div>
             </th>
             <th 
@@ -97,7 +101,7 @@ export default function ListView({ opportunities, stages = [], onOpportunityClic
               onClick={() => handleSort('repName')}
             >
               <div className="flex items-center">
-                Representante <SortIcon columnKey="repName" />
+                {t('opportunities.colRepresentative', 'Representante')} <SortIcon columnKey="repName" />
               </div>
             </th>
             <th 
@@ -105,7 +109,7 @@ export default function ListView({ opportunities, stages = [], onOpportunityClic
               onClick={() => handleSort('status')}
             >
               <div className="flex items-center">
-                Estado <SortIcon columnKey="status" />
+                {t('opportunities.colStatus', 'Estado')} <SortIcon columnKey="status" />
               </div>
             </th>
           </tr>
@@ -147,7 +151,7 @@ export default function ListView({ opportunities, stages = [], onOpportunityClic
           {opportunities.length === 0 && (
             <tr>
               <td colSpan={6} className="p-8 text-center text-neutral-500">
-                No hay oportunidades disponibles
+                {t('opportunities.noOpportunities', 'No hay oportunidades disponibles')}
               </td>
             </tr>
           )}
@@ -156,3 +160,4 @@ export default function ListView({ opportunities, stages = [], onOpportunityClic
     </div>
   );
 }
+

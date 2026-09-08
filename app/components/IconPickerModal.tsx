@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { Button } from 'caralstable';
 import { CaralIcon, Brand } from 'iconcaral2';
 import iconCategoriesData from '@/app/data/iconCategories.json';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 interface IconPickerModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export default function IconPickerModal({
   initialIconName = '',
   initialIsBrand = false,
 }: IconPickerModalProps) {
+  const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
   const categories: Category[] = iconCategoriesData;
   const [isBrand, setIsBrand] = useState(initialIsBrand);
@@ -85,7 +87,9 @@ export default function IconPickerModal({
       >
         {/* Header Custom del Modal */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-neutral-800">
-          <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">Seleccionar Ícono</h2>
+          <h2 className="text-xl font-semibold text-neutral-900 dark:text-white">
+            {t('iconPicker.title', 'Seleccionar Ícono')}
+          </h2>
           <button
             type="button"
             onClick={onClose}
@@ -133,7 +137,7 @@ export default function IconPickerModal({
               </span>
               <input
                 type="text"
-                placeholder="Buscar ícono..."
+                placeholder={t('iconPicker.searchPlaceholder', 'Buscar ícono...')}
                 value={searchQuery}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') e.preventDefault();
@@ -148,7 +152,7 @@ export default function IconPickerModal({
           <div className="flex-1 overflow-y-auto border border-neutral-200 dark:border-neutral-800 rounded-lg p-4 bg-neutral-50/50 dark:bg-neutral-900/50">
             {displayedIcons.length === 0 ? (
               <div className="h-full flex items-center justify-center text-neutral-500 text-sm">
-                No se encontraron íconos.
+                {t('iconPicker.noIconsFound', 'No se encontraron íconos.')}
               </div>
             ) : (
               <div className="grid grid-cols-6 sm:grid-cols-8 md:grid-cols-12 lg:grid-cols-16 gap-3">
@@ -195,14 +199,16 @@ export default function IconPickerModal({
                 <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-200 ease-in-out transform ${isBrand ? 'translate-x-5' : 'translate-x-0'}`} />
               </div>
               <span className="font-poppins text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                {isBrand ? 'Modo Color (Brand)' : 'Modo Monocromático'}
+                {isBrand ? t('iconPicker.colorMode', 'Modo Color (Brand)') : t('iconPicker.monoMode', 'Modo Monocromático')}
               </span>
             </button>
 
             <div className="flex gap-2">
-              <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
+              <Button type="button" variant="ghost" onClick={onClose}>
+                {t('iconPicker.cancel', 'Cancelar')}
+              </Button>
               <Button type="button" variant="info" onClick={handleConfirm} disabled={!selectedIcon}>
-                Confirmar
+                {t('iconPicker.confirm', 'Confirmar')}
               </Button>
             </div>
           </div>

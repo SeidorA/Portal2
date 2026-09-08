@@ -7,8 +7,10 @@ import { ProductItem } from '@/app/components/home/Products';
 import { Button, Drawer, Toggle } from 'caralstable';
 import FileUploader from '@/app/components/FileUploader';
 import { getBentoConfig, updateBentoConfig } from '@/app/actions/bentoConfig';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function BentoEditorPage() {
+  const { t } = useTranslation();
   const [ownTechProducts, setOwnTechProducts] = useState<ProductItem[]>([]);
   const [actinProducts, setActinProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -126,7 +128,7 @@ export default function BentoEditorPage() {
           .eq('id', list[i].id);
       }
     } catch (error: any) {
-      alert('Error al reordenar: ' + error.message);
+      alert(t("bentoBuilder.reorderError", "Error al reordenar: ") + error.message);
       fetchProducts(); // Revert on error
     }
   };
@@ -162,24 +164,24 @@ export default function BentoEditorPage() {
       }
       setIsDrawerOpen(false);
     } catch (error: any) {
-      alert("Error al guardar: " + error.message);
+      alert(t("bentoBuilder.saveError", "Error al guardar: ") + error.message);
     } finally {
       setIsSaving(false);
     }
   };
 
   if (loading) {
-    return <div className="p-8 text-neutral-500">Cargando visualizador Bento...</div>;
+    return <div className="p-8 text-neutral-500">{t("bentoBuilder.loading", "Cargando visualizador Bento...")}</div>;
   }
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto py-8 px-4 h-full">
       <div className="flex flex-col">
         <h1 className="text-3xl text-neutral-900 dark:text-white font-poppins font-bold">
-          Ordenador de Bento (Inicio)
+          {t("bentoBuilder.title", "Ordenador de Bento (Inicio)")}
         </h1>
-        <p className="text-neutral-600 dark:text-neutral-400 mt-2">
-          Arrastra y suelta las tarjetas para modificar visualmente el orden en el que aparecerán los productos en la página principal.
+        <p className="text-neutral-600 dark:text-neutral-400 mt-2 font-poppins">
+          {t("bentoBuilder.subtitle", "Arrastra y suelta las tarjetas para modificar visualmente el orden en el que aparecerán los productos en la página principal.")}
         </p>
       </div>
 
@@ -192,10 +194,10 @@ export default function BentoEditorPage() {
 
         <div className="relative z-10 w-full mb-6 mt-4 flex items-center justify-between">
           <h3 className="font-poppins font-bold text-neutral-900 dark:text-white">
-            Productos Own Tech
+            {t("bentoBuilder.ownTechProducts", "Productos Own Tech")}
           </h3>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Columnas:</span>
+          <div className="flex items-center gap-2 font-poppins">
+            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">{t("bentoBuilder.columns", "Columnas:")}</span>
             <select
               value={ownTechCols}
               onChange={(e) => handleConfigChange('own_tech', Number(e.target.value))}
@@ -283,10 +285,10 @@ export default function BentoEditorPage() {
 
         <div className="relative z-10 w-full mb-6 mt-12 flex items-center justify-between">
           <h3 className="font-poppins font-bold text-neutral-900 dark:text-white">
-            Productos Act-in
+            {t("bentoBuilder.actinProducts", "Productos Act-in")}
           </h3>
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Columnas:</span>
+          <div className="flex items-center gap-2 font-poppins">
+            <span className="text-sm font-medium text-neutral-600 dark:text-neutral-400">{t("bentoBuilder.columns", "Columnas:")}</span>
             <select
               value={actinCols}
               onChange={(e) => handleConfigChange('actin', Number(e.target.value))}
@@ -376,29 +378,35 @@ export default function BentoEditorPage() {
       <Drawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        title={`Edición Rápida: ${editingProduct?.title || ''}`}
+        title={t("bentoBuilder.quickEditTitle", "Edición Rápida: {title}").replace('{title}', editingProduct?.title || '')}
         size="md"
       >
         {editingProduct && (
           <form onSubmit={handleQuickSave} className="flex flex-col gap-6 p-4 h-full">
             <div>
-              <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">Descripción</label>
+              <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300 font-poppins">
+                {t("bentoBuilder.description", "Descripción")}
+              </label>
               <textarea
                 value={editingProduct.description || ''}
                 onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500 h-24 resize-none"
-                placeholder="Descripción del producto..."
+                className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500 h-24 resize-none font-poppins text-neutral-900 dark:text-white"
+                placeholder={t("bentoBuilder.descriptionPlaceholder", "Descripción del producto...")}
               />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-bold text-neutral-500 dark:text-neutral-400 mb-2">Imagen Claro</label>
+                <label className="block text-sm font-bold text-neutral-500 dark:text-neutral-400 mb-2 font-poppins">
+                  {t("bentoBuilder.lightImage", "Imagen Claro")}
+                </label>
                 <div className="h-28 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center overflow-hidden relative">
                   {editingProduct.light_image ? (
                     <>
                       <img src={editingProduct.light_image} alt="Preview Claro" className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => setEditingProduct({ ...editingProduct, light_image: '' })} className="absolute top-1 right-1 bg-white/80 p-1 rounded text-red-500 hover:bg-white text-xs">Quitar</button>
+                      <button type="button" onClick={() => setEditingProduct({ ...editingProduct, light_image: '' })} className="absolute top-1 right-1 bg-white/80 p-1 rounded text-red-500 hover:bg-white text-xs font-poppins">
+                        {t("bentoBuilder.remove", "Quitar")}
+                      </button>
                     </>
                   ) : (
                     <div className="flex items-center flex-col scale-75 opacity-70 hover:opacity-100 transition-opacity">
@@ -409,12 +417,16 @@ export default function BentoEditorPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-neutral-500 dark:text-neutral-400 mb-2">Imagen Oscuro</label>
+                <label className="block text-sm font-bold text-neutral-500 dark:text-neutral-400 mb-2 font-poppins">
+                  {t("bentoBuilder.darkImage", "Imagen Oscuro")}
+                </label>
                 <div className="h-28 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center overflow-hidden relative">
                   {editingProduct.dark_image ? (
                     <>
                       <img src={editingProduct.dark_image} alt="Preview Oscuro" className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => setEditingProduct({ ...editingProduct, dark_image: '' })} className="absolute top-1 right-1 bg-white/80 p-1 rounded text-red-500 hover:bg-white text-xs">Quitar</button>
+                      <button type="button" onClick={() => setEditingProduct({ ...editingProduct, dark_image: '' })} className="absolute top-1 right-1 bg-white/80 p-1 rounded text-red-500 hover:bg-white text-xs font-poppins">
+                        {t("bentoBuilder.remove", "Quitar")}
+                      </button>
                     </>
                   ) : (
                     <div className="flex items-center flex-col scale-75 opacity-70 hover:opacity-100 transition-opacity">
@@ -429,14 +441,16 @@ export default function BentoEditorPage() {
               <Toggle
                 checked={!!editingProduct.is_super}
                 onChange={(checked) => setEditingProduct({ ...editingProduct, is_super: checked })}
-                label="Modo Súper (Ocupa el doble de espacio horizontal)"
+                label={t("bentoBuilder.superMode", "Modo Súper (Ocupa el doble de espacio horizontal)")}
               />
             </div>
 
             <div className="mt-auto pt-4 border-t border-neutral-200 dark:border-neutral-800 flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => setIsDrawerOpen(false)}>Cancelar</Button>
-              <Button type="submit" variant="primary" disabled={isSaving}>
-                {isSaving ? "Guardando..." : "Guardar Cambios"}
+              <Button type="button" variant="light" hasBorder onClick={() => setIsDrawerOpen(false)}>
+                {t("bentoBuilder.cancel", "Cancelar")}
+              </Button>
+              <Button type="submit" variant="info" disabled={isSaving}>
+                {isSaving ? t("bentoBuilder.saving", "Guardando...") : t("bentoBuilder.saveChanges", "Guardar Cambios")}
               </Button>
             </div>
           </form>

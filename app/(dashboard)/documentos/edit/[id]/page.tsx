@@ -7,8 +7,10 @@ import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { MilkdownEditorWrapper as MilkdownEditor } from '@/app/components/Editor/MilkdownEditor';
 import DocumentCover from '@/app/components/DocumentCover';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function DocumentEditorPage({ params }: { params: Promise<{ id: string }> }) {
+  const { t } = useTranslation();
   const unwrappedParams = React.use(params);
   const [doc, setDoc] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -35,7 +37,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
   const [titleDraft, setTitleDraft] = useState('');
 
   // Metadata States
-  const [metadata, setMetadata] = useState({ tags: '', status: 'draft', restriction: 'public' });
+  const [metadata, setMetadata] = useState<{ tags: string; status: string; restriction: string; language?: string; description?: string;[key: string]: any }>({ tags: '', status: 'draft', restriction: 'public', language: 'es', description: '' });
   const [relatedProducts, setRelatedProducts] = useState<string[]>([]);
   const [availableProducts, setAvailableProducts] = useState<any[]>([]);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
@@ -55,7 +57,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
 
       if (error) {
         console.error(error);
-        alert('Documento no encontrado');
+        alert(t('documents.docNotFound', 'Documento no encontrado'));
         router.push('/documentos');
         return;
       }
@@ -140,7 +142,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
 
     if (error) {
       console.error(error);
-      alert('Error al guardar el documento');
+      alert(t('documents.saveError', 'Error al guardar el documento'));
     }
   };
 
@@ -182,7 +184,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
   if (loading) {
     return (
       <div className="flex h-full items-center justify-center">
-        <span className="text-neutral-500 animate-pulse">Cargando documento...</span>
+        <span className="text-neutral-500 animate-pulse">{t('documents.loadingDoc', 'Cargando documento...')}</span>
       </div>
     );
   }
@@ -227,7 +229,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
                   setIsSettingsOpen(false);
                 }
               }}
-              title="Configuración de Portada"
+              title={t('documents.coverSettingsTitle', 'Configuración de Portada')}
             >
               <CaralIcon name="image" size={18} />
             </Button>
@@ -241,18 +243,18 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
                   setIsSettingsOpen(false);
                 }
               }}
-              title="Ajustes del documento"
+              title={t('documents.docSettingsTitle', 'Ajustes del documento')}
             >
               <CaralIcon name="gear" size={18} />
             </Button>
           </div>
           <Button variant="ghost" onClick={() => window.open(`/d/${docId}`, '_blank')}>
             <CaralIcon name="eye" size={18} className="mr-2" />
-            Ver
+            {t('documents.view', 'Ver')}
           </Button>
           <Button variant="info" onClick={handleSave} disabled={isSaving}>
             <CaralIcon name="save" size={18} className="mr-2" />
-            {isSaving ? 'Guardando...' : 'Guardar'}
+            {isSaving ? t('documents.saving', 'Guardando...') : t('documents.save', 'Guardar')}
           </Button>
         </div>
       </div>
@@ -260,25 +262,25 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
       {/* Pagination Bar */}
       {doc.type === 'document' && (
         <div className="flex items-center justify-center p-2 bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 gap-4 text-sm shadow-sm z-10">
-          <Button variant="ghost" size="sm" onClick={handleAddPageBefore} title="Añadir página antes">
-            <CaralIcon name="plus" size={14} className="mr-1" /> Antes
+          <Button variant="ghost" size="sm" onClick={handleAddPageBefore} title={t('documents.addPageBeforeTitle', 'Añadir página antes')}>
+            <CaralIcon name="plus" size={14} className="mr-1" /> {t('documents.addPageBefore', 'Antes')}
           </Button>
           <div className="flex items-center gap-2 font-medium bg-neutral-100 dark:bg-neutral-800 rounded-full px-3 py-1">
             <button onClick={() => handlePageChange(currentPageIndex - 1)} disabled={currentPageIndex === 0} className="disabled:opacity-30 hover:text-blue-500">
               <CaralIcon name="chevronLeft" size={16} />
             </button>
-            <span>Página {currentPageIndex + 1} de {totalPages}</span>
+            <span>{t('documents.page', 'Página')} {currentPageIndex + 1} {t('documents.of', 'de')} {totalPages}</span>
             <button onClick={() => handlePageChange(currentPageIndex + 1)} disabled={currentPageIndex === totalPages - 1} className="disabled:opacity-30 hover:text-blue-500">
               <CaralIcon name="chevronRigth" size={16} />
             </button>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleAddPageAfter} title="Añadir página después">
-            <CaralIcon name="plus" size={14} className="mr-1" /> Después
+          <Button variant="ghost" size="sm" onClick={handleAddPageAfter} title={t('documents.addPageAfterTitle', 'Añadir página después')}>
+            <CaralIcon name="plus" size={14} className="mr-1" /> {t('documents.addPageAfter', 'Después')}
           </Button>
           {totalPages > 1 && (
             <div className="border-l border-neutral-200 dark:border-neutral-700 pl-4 ml-2">
               <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50" onClick={handleDeletePage}>
-                Eliminar actual
+                {t('documents.deleteCurrentPage', 'Eliminar actual')}
               </Button>
             </div>
           )}
@@ -307,7 +309,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
                   <div className="absolute top-60 right-10 z-[100] pointer-events-none -rotate-[15deg] opacity-[0.12]">
                     <div className="border-[8px] border-red-500 rounded-3xl px-8 py-3 bg-white/20 backdrop-blur-sm">
                       <span className="font-black text-4xl text-red-500 tracking-widest whitespace-nowrap">
-                        SOLO USO INTERNO
+                        {t('documents.internalWatermark', 'SOLO USO INTERNO')}
                       </span>
                     </div>
                   </div>
@@ -350,9 +352,9 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
             <div className="border-b border-neutral-200 dark:border-neutral-800">
               <Tabs
                 tabs={[
-                  { label: 'Atributos' },
-                  { label: 'Generales' },
-                  { label: 'Portada' }
+                  { label: t('documents.tabAttributes', 'Atributos') },
+                  { label: t('documents.tabGeneral', 'Generales') },
+                  { label: t('documents.tabCover', 'Portada') }
                 ]}
                 activeIndex={sidebarTab === 'attributes' ? 0 : sidebarTab === 'general' ? 1 : 2}
                 onChange={(idx) => {
@@ -367,48 +369,48 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
               {sidebarTab === 'attributes' && (
                 <div className="space-y-6">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Estado</label>
+                    <label className="block text-sm font-medium mb-2">{t('documents.statusField', 'Estado')}</label>
                     <select
                       className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-md p-2"
                       value={metadata.status}
                       onChange={e => setMetadata({ ...metadata, status: e.target.value })}
                     >
-                      <option value="draft">Borrador</option>
-                      <option value="published">Publicado</option>
+                      <option value="draft">{t('documents.statusDraft', 'Borrador')}</option>
+                      <option value="published">{t('documents.statusPublished', 'Publicado')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Idioma del Documento</label>
+                    <label className="block text-sm font-medium mb-2">{t('documents.docLanguage', 'Idioma del Documento')}</label>
                     <select
                       className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-md p-2"
                       value={metadata.language || 'es'}
                       onChange={e => setMetadata({ ...metadata, language: e.target.value })}
                     >
-                      <option value="es">Español</option>
-                      <option value="en">Inglés</option>
-                      <option value="pt">Portugués</option>
-                      <option value="de">Alemán</option>
+                      <option value="es">{t('documents.langEs', 'Español')}</option>
+                      <option value="en">{t('documents.langEn', 'Inglés')}</option>
+                      <option value="pt">{t('documents.langPt', 'Portugués')}</option>
+                      <option value="de">{t('documents.langDe', 'Alemán')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Restricción</label>
+                    <label className="block text-sm font-medium mb-2">{t('documents.restriction', 'Restricción')}</label>
                     <select
                       className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-md p-2"
                       value={metadata.restriction}
                       onChange={e => setMetadata({ ...metadata, restriction: e.target.value })}
                     >
-                      <option value="public">Público (Todos)</option>
-                      <option value="internal">Interno (Solo Empleados)</option>
-                      <option value="restricted">Restringido (Autorizados)</option>
+                      <option value="public">{t('documents.publicAll', 'Público (Todos)')}</option>
+                      <option value="internal">{t('documents.internalEmployeesOnly', 'Interno (Solo Empleados)')}</option>
+                      <option value="restricted">{t('documents.restrictedAuthorized', 'Restringido (Autorizados)')}</option>
                     </select>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Descripción</label>
+                    <label className="block text-sm font-medium mb-2">{t('documents.descriptionField', 'Descripción')}</label>
                     <textarea
-                      placeholder="Breve descripción del documento..."
+                      placeholder={t('documents.descriptionPlaceholder', 'Breve descripción del documento...')}
                       className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-md p-2 text-sm min-h-[80px] resize-y"
                       value={metadata.description || ''}
                       onChange={e => setMetadata({ ...metadata, description: e.target.value })}
@@ -416,10 +418,10 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Etiquetas (separadas por coma)</label>
+                    <label className="block text-sm font-medium mb-2">{t('documents.tagsField', 'Etiquetas (separadas por coma)')}</label>
                     <input
                       type="text"
-                      placeholder="ej. SAP, ERP, Manual"
+                      placeholder={t('documents.tagsPlaceholder', 'ej. SAP, ERP, Manual')}
                       className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-md p-2"
                       value={metadata.tags || ''}
                       onChange={e => setMetadata({ ...metadata, tags: e.target.value })}
@@ -427,10 +429,10 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-2">Productos Relacionados</label>
+                    <label className="block text-sm font-medium mb-2">{t('documents.relatedProducts', 'Productos Relacionados')}</label>
                     <div className="max-h-48 overflow-y-auto border border-neutral-200 dark:border-neutral-800 rounded-md p-2 space-y-1 bg-neutral-50 dark:bg-neutral-950">
                       {availableProducts.length === 0 ? (
-                        <span className="text-xs text-neutral-500">Cargando productos...</span>
+                        <span className="text-xs text-neutral-500">{t('documents.loadingProducts', 'Cargando productos...')}</span>
                       ) : (
                         availableProducts.map(prod => (
                           <label key={prod.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-neutral-100 dark:hover:bg-neutral-900 p-1.5 rounded transition-colors">
@@ -460,7 +462,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
               {sidebarTab === 'general' && (
                 <div className="space-y-6">
                   <div className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-800 rounded-lg bg-neutral-50 dark:bg-neutral-950">
-                    <span className="text-sm font-medium">Formato A4</span>
+                    <span className="text-sm font-medium">{t('documents.formatA4', 'Formato A4')}</span>
                     <input
                       type="checkbox"
                       className="w-4 h-4"
@@ -469,7 +471,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
                     />
                   </div>
                   <div className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-800 rounded-lg bg-neutral-50 dark:bg-neutral-950">
-                    <span className="text-sm font-medium">Mostrar Footer (A4)</span>
+                    <span className="text-sm font-medium">{t('documents.showFooter', 'Mostrar Footer (A4)')}</span>
                     <input
                       type="checkbox"
                       className="w-4 h-4"
@@ -478,7 +480,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
                     />
                   </div>
                   <div className="flex items-center justify-between p-3 border border-neutral-200 dark:border-neutral-800 rounded-lg bg-neutral-50 dark:bg-neutral-950">
-                    <span className="text-sm font-medium">Ocultar bordes de tablas</span>
+                    <span className="text-sm font-medium">{t('documents.hideTableBorders', 'Ocultar bordes de tablas')}</span>
                     <input
                       type="checkbox"
                       className="w-4 h-4"
@@ -494,8 +496,8 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
                   {/* Activar Portada */}
                   <div className="flex items-center justify-between p-4 border border-neutral-200 dark:border-neutral-800 bg-[#F5F7FA] dark:bg-neutral-900/50 rounded-xl">
                     <div className="flex flex-col">
-                      <span className="text-sm font-bold text-neutral-900 dark:text-white">Activar portada</span>
-                      <span className="text-xs text-neutral-500 dark:text-neutral-400">Se muestra al inicio del documento publicado</span>
+                      <span className="text-sm font-bold text-neutral-900 dark:text-white">{t('documents.enableCover', 'Activar portada')}</span>
+                      <span className="text-xs text-neutral-500 dark:text-neutral-400">{t('documents.enableCoverSubtitle', 'Se muestra al inicio del documento publicado')}</span>
                     </div>
                     <Toggle
                       checked={!!settings.cover?.hasCover}
@@ -509,13 +511,13 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
                       {/* Seleccionar Portada */}
                       {coverAvailableImages.length > 0 && (
                         <div>
-                          <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-3">Seleccionar Portada</h4>
+                          <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-3">{t('documents.selectCover', 'Seleccionar Portada')}</h4>
                           <div className="grid grid-cols-2 gap-3">
                             <button
                               onClick={() => setSettings({ ...settings, cover: { ...settings.cover, selectedCoverImage: '' } })}
                               className={`relative aspect-[1/1.4] rounded-xl border-2 transition-all overflow-hidden bg-neutral-100 flex flex-col items-center justify-center ${!settings.cover.selectedCoverImage ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-transparent hover:border-neutral-300'}`}
                             >
-                              <span className="text-xs font-semibold text-neutral-500">Auto</span>
+                              <span className="text-xs font-semibold text-neutral-500">{t('documents.auto', 'Auto')}</span>
                             </button>
                             {coverAvailableImages.map((imgUrl, idx) => (
                               <button
@@ -532,7 +534,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
 
                       {/* Contenido */}
                       <div>
-                        <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-3">Contenido</h4>
+                        <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-3">{t('documents.content', 'Contenido')}</h4>
 
                         <div className="flex items-center gap-3 mb-4">
                           <hr className="flex-1 border-neutral-200 dark:border-neutral-800" />
@@ -548,15 +550,15 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
                         />
 
                         <div className="mb-4">
-                          <label className="block text-xs font-medium text-neutral-600 mb-1">Título</label>
+                          <label className="block text-xs font-medium text-neutral-600 mb-1">{t('documents.coverTitle', 'Título')}</label>
                           <select
                             className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg p-2 text-sm"
                             value={settings.cover?.titleMode || 'logo_name'}
                             onChange={e => setSettings({ ...settings, cover: { ...settings.cover, titleMode: e.target.value } })}
                           >
-                            <option value="logo_name">Logo + Nombre ({coverProducts[0]?.title || 'producto'})</option>
-                            <option value="name">Nombre producto ({coverProducts[0]?.title || 'producto'})</option>
-                            <option value="custom">Custom</option>
+                            <option value="logo_name">{t('documents.titleModeLogoName', 'Logo + Nombre')} ({coverProducts[0]?.title || 'producto'})</option>
+                            <option value="name">{t('documents.titleModeName', 'Nombre producto')} ({coverProducts[0]?.title || 'producto'})</option>
+                            <option value="custom">{t('documents.titleModeCustom', 'Custom')}</option>
                           </select>
                         </div>
 
@@ -564,7 +566,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
                           <div className="mb-4">
                             <input
                               type="text"
-                              placeholder="Escribe el título"
+                              placeholder={t('documents.customTitlePlaceholder', 'Escribe el título')}
                               className="w-full bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg p-2 text-sm"
                               value={settings.cover?.customTitle || ''}
                               onChange={e => setSettings({ ...settings, cover: { ...settings.cover, customTitle: e.target.value } })}
@@ -587,7 +589,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
 
                         <div className="mb-4 flex gap-2 items-end">
                           <div className="w-10 flex flex-col gap-1">
-                            <label className="text-xs font-medium text-neutral-600">Color</label>
+                            <label className="text-xs font-medium text-neutral-600">{t('documents.color', 'Color')}</label>
                             <input
                               type="color"
                               className="w-full h-9 rounded border border-neutral-200 p-0.5 cursor-pointer"
@@ -596,10 +598,10 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
                             />
                           </div>
                           <div className="flex-1 flex flex-col gap-1">
-                            <label className="text-xs font-medium text-neutral-600">Subtítulo</label>
+                            <label className="text-xs font-medium text-neutral-600">{t('documents.subtitleField', 'Subtítulo')}</label>
                             <input
                               type="text"
-                              placeholder="Subtítulo"
+                              placeholder={t('documents.subtitlePlaceholder', 'Subtítulo')}
                               className="w-full h-9 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg px-2 text-sm"
                               value={settings.cover?.subtitleText || ''}
                               onChange={e => setSettings({ ...settings, cover: { ...settings.cover, subtitleText: e.target.value } })}
@@ -610,7 +612,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
 
                       {/* Visibilidad de Logos */}
                       <div>
-                        <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-3">Visibilidad de Logos</h4>
+                        <h4 className="text-sm font-bold text-neutral-900 dark:text-white mb-3">{t('documents.logoVisibility', 'Visibilidad de Logos')}</h4>
                         <div className="flex flex-wrap gap-3">
                           {/* Logo Seidor (Hardcoded) */}
                           <button

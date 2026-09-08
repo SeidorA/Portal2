@@ -5,8 +5,10 @@ import { createClient } from '@/utils/supabase/client';
 import { Button, TextInput } from 'caralstable';
 import { CaralIcon } from 'iconcaral2';
 import IconPickerModal from '@/app/components/IconPickerModal';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function OpportunityFieldBuilder() {
+  const { t } = useTranslation();
   const supabase = createClient();
   const [sections, setSections] = useState<any[]>([]);
   const [fields, setFields] = useState<any[]>([]);
@@ -71,12 +73,12 @@ export default function OpportunityFieldBuilder() {
       setNewSectionIcon('folder');
       setIsAddingSection(false);
     } else {
-      alert("Error al crear la sección: " + error?.message);
+      alert(t('opportunities.errorCreatingSection', "Error al crear la sección: ") + error?.message);
     }
   };
 
   const handleDeleteSection = async (id: string) => {
-    if (!confirm("¿Eliminar sección? Se eliminarán todos los campos dentro de ella.")) return;
+    if (!confirm(t('opportunities.confirmDeleteSection', "¿Eliminar sección? Se eliminarán todos los campos dentro de ella."))) return;
     const { error } = await supabase.from('opportunity_form_sections').delete().eq('id', id);
     if (!error) {
       setSections(sections.filter(s => s.id !== id));
@@ -140,12 +142,12 @@ export default function OpportunityFieldBuilder() {
       setNewOptionsText('');
       setIsAddingFieldTo(null);
     } else {
-      alert("Error al agregar campo: " + error?.message);
+      alert(t('opportunities.errorAddingField', "Error al agregar campo: ") + error?.message);
     }
   };
 
   const handleDeleteField = async (id: string) => {
-    if (!confirm("¿Eliminar campo? Afectará a los leads ya creados.")) return;
+    if (!confirm(t('opportunities.confirmDeleteField', "¿Eliminar campo? Afectará a los leads ya creados."))) return;
     const { error } = await supabase.from('opportunity_fields').delete().eq('id', id);
     if (!error) {
       setFields(fields.filter(f => f.id !== id));
@@ -179,33 +181,37 @@ export default function OpportunityFieldBuilder() {
     ]);
   };
 
-  if (loading) return <div className="text-sm text-neutral-500">Cargando constructor...</div>;
+  if (loading) return <div className="text-sm text-neutral-500">{t('opportunities.loadingStages', 'Cargando estados...')}</div>;
 
   return (
     <div className="flex flex-col gap-6 max-w-4xl">
       <div className="flex justify-between items-center bg-info-main/5 p-4 rounded-xl border border-info-main/20">
         <div>
-          <h4 className="text-lg font-bold text-neutral-900 dark:text-white">Formulario Dinámico de Oportunidades</h4>
-          <p className="text-sm text-neutral-600">Agrupa los campos en secciones para mejorar la vista.</p>
+          <h4 className="text-lg font-bold text-neutral-900 dark:text-white">
+            {t('opportunities.fieldBuilderTitle', 'Formulario Dinámico de Oportunidades')}
+          </h4>
+          <p className="text-sm text-neutral-600">
+            {t('opportunities.fieldBuilderSubtitle', 'Agrupa los campos en secciones para mejorar la vista.')}
+          </p>
         </div>
         <Button variant="info" iconName="plus" onClick={() => setIsAddingSection(!isAddingSection)}>
-          {isAddingSection ? 'Cancelar' : 'Nueva Sección'}
+          {isAddingSection ? t('opportunities.cancel', 'Cancelar') : t('opportunities.newSection', 'Nueva Sección')}
         </Button>
       </div>
 
       <div className="bg-neutral-50 dark:bg-neutral-800/50 border border-neutral-200 dark:border-neutral-800 p-4 rounded-xl shadow-sm">
         <h5 className="font-semibold text-sm text-neutral-800 dark:text-neutral-200 flex items-center gap-2 mb-2">
           <CaralIcon name="lock" size={16} className="text-neutral-500" />
-          Campos Fijos del Sistema (Automáticos)
+          {t('opportunities.systemFixedFields', 'Campos Fijos del Sistema (Automáticos)')}
         </h5>
         <div className="flex gap-4 opacity-70">
           <div className="flex-1 bg-white dark:bg-neutral-900 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700">
-            <span className="text-xs font-bold text-neutral-500">Obligatorio</span>
-            <p className="font-medium text-sm">Cliente / Empresa</p>
+            <span className="text-xs font-bold text-neutral-500">{t('opportunities.mandatoryBadge', 'Obligatorio')}</span>
+            <p className="font-medium text-sm">{t('opportunities.fixedClient', 'Cliente / Empresa')}</p>
           </div>
           <div className="flex-1 bg-white dark:bg-neutral-900 p-3 rounded-lg border border-neutral-200 dark:border-neutral-700">
-            <span className="text-xs font-bold text-neutral-500">Obligatorio</span>
-            <p className="font-medium text-sm">Producto Asociado</p>
+            <span className="text-xs font-bold text-neutral-500">{t('opportunities.mandatoryBadge', 'Obligatorio')}</span>
+            <p className="font-medium text-sm">{t('opportunities.fixedProduct', 'Producto Asociado')}</p>
           </div>
         </div>
       </div>
@@ -213,7 +219,7 @@ export default function OpportunityFieldBuilder() {
       {isAddingSection && (
         <div className="bg-white dark:bg-neutral-900 border-2 border-info-main/30 p-4 rounded-xl flex items-end gap-4 shadow-sm animate-fade-in">
           <div className="flex flex-col gap-1 w-32">
-            <span className="text-xs font-semibold text-neutral-700">Icono</span>
+            <span className="text-xs font-semibold text-neutral-700">{t('opportunities.icon', 'Icono')}</span>
             <button 
               className="h-[42px] border border-neutral-300 dark:border-neutral-700 rounded-md flex items-center justify-center gap-2 hover:bg-neutral-50"
               onClick={() => setIsIconPickerOpen(true)}
@@ -222,14 +228,18 @@ export default function OpportunityFieldBuilder() {
             </button>
           </div>
           <div className="flex-1">
-            <span className="block text-xs font-semibold text-neutral-700 mb-1">Nombre de la Sección</span>
+            <span className="block text-xs font-semibold text-neutral-700 mb-1">
+              {t('opportunities.sectionName', 'Nombre de la Sección')}
+            </span>
             <TextInput 
               value={newSectionTitle}
               onChange={(e) => setNewSectionTitle(e.target.value)}
-              placeholder="Ej. Datos Comerciales"
+              placeholder={t('opportunities.sectionNamePlaceholder', 'Ej. Datos Comerciales')}
             />
           </div>
-          <Button variant="success" onClick={handleAddSection} disabled={!newSectionTitle.trim()}>Crear Sección</Button>
+          <Button variant="success" onClick={handleAddSection} disabled={!newSectionTitle.trim()}>
+            {t('opportunities.createSection', 'Crear Sección')}
+          </Button>
         </div>
       )}
 
@@ -259,7 +269,7 @@ export default function OpportunityFieldBuilder() {
                 
                 <div className="flex items-center gap-2">
                   <Button variant="light" size="sm" iconName="plus" onClick={() => setIsAddingFieldTo(isAddingToThis ? null : section.id)}>
-                    {isAddingToThis ? 'Cancelar' : 'Agregar Campo'}
+                    {isAddingToThis ? t('opportunities.cancel', 'Cancelar') : t('opportunities.addField', 'Agregar Campo')}
                   </Button>
                   <button className="p-2 text-neutral-400 hover:text-danger-main transition-colors rounded-lg hover:bg-danger-main/10" onClick={() => handleDeleteSection(section.id)}>
                     <CaralIcon name="trash" size={18} />
@@ -272,36 +282,42 @@ export default function OpportunityFieldBuilder() {
                   <div className="bg-neutral-50 dark:bg-neutral-800/30 border border-neutral-200 dark:border-neutral-700 p-4 rounded-xl flex flex-col gap-4 shadow-inner mb-2 animate-fade-in">
                     <div className="flex gap-4">
                       <div className="flex-1">
-                        <span className="block text-xs font-semibold text-neutral-700 mb-1">Nombre del Campo</span>
+                        <span className="block text-xs font-semibold text-neutral-700 mb-1">
+                          {t('opportunities.fieldName', 'Nombre del Campo')}
+                        </span>
                         <TextInput 
                           value={newLabel}
                           onChange={(e) => setNewLabel(e.target.value)}
-                          placeholder="Ej. Industria, Presupuesto..."
+                          placeholder={t('opportunities.fieldNamePlaceholder', 'Ej. Industria, Presupuesto...')}
                         />
                       </div>
                       <div className="w-48">
-                        <span className="block text-xs font-semibold text-neutral-700 mb-1">Tipo de Dato</span>
+                        <span className="block text-xs font-semibold text-neutral-700 mb-1">
+                          {t('opportunities.dataType', 'Tipo de Dato')}
+                        </span>
                         <select 
                           className="w-full h-[42px] px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white text-sm"
                           value={newType}
                           onChange={(e) => setNewType(e.target.value)}
                         >
-                          <option value="text">Texto Corto</option>
-                          <option value="number">Número</option>
-                          <option value="date">Fecha</option>
-                          <option value="boolean">Casilla (Sí/No)</option>
-                          <option value="options">Desplegable (Opciones)</option>
+                          <option value="text">{t('opportunities.typeText', 'Texto Corto')}</option>
+                          <option value="number">{t('opportunities.typeNumber', 'Número')}</option>
+                          <option value="date">{t('opportunities.typeDate', 'Fecha')}</option>
+                          <option value="boolean">{t('opportunities.typeBoolean', 'Casilla (Sí/No)')}</option>
+                          <option value="options">{t('opportunities.typeOptions', 'Desplegable (Opciones)')}</option>
                         </select>
                       </div>
                     </div>
                     
                     {newType === 'options' && (
                       <div>
-                        <span className="block text-xs font-semibold text-neutral-700 mb-1">Opciones (separadas por coma)</span>
+                        <span className="block text-xs font-semibold text-neutral-700 mb-1">
+                          {t('opportunities.optionsCommaSeparated', 'Opciones (separadas por coma)')}
+                        </span>
                         <TextInput 
                           value={newOptionsText}
                           onChange={(e) => setNewOptionsText(e.target.value)}
-                          placeholder="Opción 1, Opción 2, Opción 3"
+                          placeholder={t('opportunities.optionsPlaceholder', 'Opción 1, Opción 2, Opción 3')}
                         />
                       </div>
                     )}
@@ -314,15 +330,21 @@ export default function OpportunityFieldBuilder() {
                           onChange={(e) => setNewRequired(e.target.checked)}
                           className="w-4 h-4 text-info-main rounded border-neutral-300"
                         />
-                        <span className="text-sm font-medium text-neutral-700">Obligatorio al crear la oportunidad</span>
+                        <span className="text-sm font-medium text-neutral-700">
+                          {t('opportunities.mandatoryOnCreate', 'Obligatorio al crear la oportunidad')}
+                        </span>
                       </label>
-                      <Button variant="success" size="sm" onClick={handleAddField} disabled={!newLabel.trim()}>Guardar Campo</Button>
+                      <Button variant="success" size="sm" onClick={handleAddField} disabled={!newLabel.trim()}>
+                        {t('opportunities.saveField', 'Guardar Campo')}
+                      </Button>
                     </div>
                   </div>
                 )}
 
                 {sectionFields.length === 0 && !isAddingToThis ? (
-                  <div className="text-center p-6 text-sm text-neutral-400 italic">No hay campos en esta sección.</div>
+                  <div className="text-center p-6 text-sm text-neutral-400 italic">
+                    {t('opportunities.noFieldsInSection', 'No hay campos en esta sección.')}
+                  </div>
                 ) : (
                   sectionFields.map((field, fIndex) => (
                     <div key={field.id} className="flex items-center justify-between bg-white dark:bg-neutral-900 border border-neutral-100 dark:border-neutral-800 p-3 rounded-lg hover:border-neutral-300 transition-colors">
@@ -338,11 +360,13 @@ export default function OpportunityFieldBuilder() {
                         <div className="flex flex-col">
                           <div className="flex items-center gap-2">
                             <span className="font-semibold text-neutral-800 dark:text-neutral-200 text-sm">{field.label}</span>
-                            {field.is_required && <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold uppercase">Obligatorio</span>}
+                            {field.is_required && <span className="text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold uppercase">{t('opportunities.mandatoryBadge', 'Obligatorio')}</span>}
                             <span className="text-[10px] bg-neutral-100 text-neutral-500 px-1.5 py-0.5 rounded border border-neutral-200 uppercase">{field.field_type}</span>
                           </div>
                           {field.field_type === 'options' && (
-                            <span className="text-xs text-neutral-400 mt-0.5">Opciones: {field.options_list?.join(', ')}</span>
+                            <span className="text-xs text-neutral-400 mt-0.5">
+                              {t('opportunities.optionsLabel', 'Opciones: {options}').replace('{options}', field.options_list?.join(', '))}
+                            </span>
                           )}
                         </div>
                       </div>
@@ -358,7 +382,7 @@ export default function OpportunityFieldBuilder() {
         })}
         {sections.length === 0 && (
           <div className="text-center p-8 border border-dashed border-neutral-300 dark:border-neutral-700 rounded-xl text-neutral-500 text-sm">
-            No has creado ninguna sección todavía. Crea una para empezar a agregar campos.
+            {t('opportunities.noSectionsCreated', 'No has creado ninguna sección todavía. Crea una para empezar a agregar campos.')}
           </div>
         )}
       </div>
@@ -372,3 +396,4 @@ export default function OpportunityFieldBuilder() {
     </div>
   );
 }
+

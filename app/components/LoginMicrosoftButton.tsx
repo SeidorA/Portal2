@@ -2,8 +2,10 @@
 
 import React, { useState } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function LoginMicrosoftButton() {
+  const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,7 +32,7 @@ export default function LoginMicrosoftButton() {
       }
     } catch (err: any) {
       console.error('Error al iniciar sesión con Microsoft:', err);
-      setError(err.message || 'Error al iniciar sesión con Microsoft');
+      setError(err.message || t('login.errorMicrosoft', 'Error al iniciar sesión con Microsoft'));
       setLoading(false);
     } finally {
       // Si no hubo redirección inmediata, liberamos el botón
@@ -48,7 +50,7 @@ export default function LoginMicrosoftButton() {
         style={{ backgroundColor: '#0072CA' }}
       >
         {loading ? (
-          <span>Conectando con Microsoft...</span>
+          <span>{t('login.connectingMicrosoft', 'Conectando con Microsoft...')}</span>
         ) : (
           <>
             <svg width="20" height="20" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg" className="shrink-0">
@@ -57,7 +59,7 @@ export default function LoginMicrosoftButton() {
               <path d="M0 11H10V21H0V11Z" fill="#00A4EF" />
               <path d="M11 11H21V21H11V11Z" fill="#FFB900" />
             </svg>
-            <span>Iniciar sesión con Microsoft</span>
+            <span>{t('login.loginWithMicrosoft', 'Iniciar sesión con Microsoft')}</span>
           </>
         )}
       </button>
@@ -69,3 +71,4 @@ export default function LoginMicrosoftButton() {
     </div>
   );
 }
+

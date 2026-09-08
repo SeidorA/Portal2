@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Brand, CaralIcon } from 'iconcaral2';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export type ProductItem = {
   id?: string;
@@ -19,6 +20,7 @@ export type ProductItem = {
 };
 
 export default function Products({ products = [], cols = 4 }: { products?: ProductItem[], cols?: number }) {
+  const { t } = useTranslation();
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -38,7 +40,7 @@ export default function Products({ products = [], cols = 4 }: { products?: Produ
     <div className="w-full flex flex-col pt-10 pb-2.5">
       <div className="w-full mb-6 p-2">
         <h3 className="font-poppins font-bold text-neutral-900 dark:text-white">
-          Productos
+          {t("home.products", "Productos")}
         </h3>
       </div>
 

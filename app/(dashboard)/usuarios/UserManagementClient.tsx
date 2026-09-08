@@ -7,8 +7,10 @@ import { Button } from 'caralstable';
 import { CaralIcon } from 'iconcaral2';
 import Modal from '@/app/components/Modal';
 import { createNewUser } from './actions';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function UserManagementClient({ initialProfiles, availableRoles }: { initialProfiles: any[], availableRoles: any[] }) {
+  const { t, language } = useTranslation();
   const [profiles, setProfiles] = useState(initialProfiles);
   const [loading, setLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -56,7 +58,7 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
       }));
 
     } catch (e: any) {
-      alert("Error actualizando rol: " + e.message);
+      alert(`${t('users.roleUpdateError', 'Error actualizando rol: ')}${e.message}`);
     } finally {
       setLoading(false);
     }
@@ -72,7 +74,7 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
       if (res.error) {
         alert(res.error);
       } else {
-        alert("Usuario creado correctamente. Ya puede iniciar sesión.");
+        alert(t('users.userCreatedSuccess', 'Usuario creado correctamente. Ya puede iniciar sesión.'));
         setIsModalOpen(false);
         router.refresh(); // Refrescar la página para ver el nuevo usuario
       }
@@ -127,7 +129,16 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
   };
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-6">
+      <div>
+        <h1 className="text-4xl font-poppins font-extrabold text-neutral-900 tracking-tight">
+          {t('users.title', 'Gestión de Usuarios')}
+        </h1>
+        <p className="text-lg text-neutral-800 leading-relaxed mt-1">
+          {t('users.subtitle', 'Asigna roles y administra los accesos a los distintos productos y módulos del portal.')}
+        </p>
+      </div>
+
       <div className="flex justify-between items-center gap-4">
         <div className="relative flex-1 max-w-sm">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -135,7 +146,7 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
           </div>
           <input
             type="text"
-            placeholder="Buscar por nombre o correo..."
+            placeholder={t('users.searchPlaceholder', 'Buscar por nombre o correo...')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-3 py-2 bg-container border border-neutral-200 dark:border-neutral-700 rounded-md text-sm outline-none focus:ring-2 focus:ring-info-main/50 transition-all"
@@ -143,7 +154,7 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
         </div>
         <Button variant="info" onClick={() => setIsModalOpen(true)}>
           <CaralIcon name="addCircle" size={18} className="mr-2" />
-          Nuevo Usuario
+          {t('users.newUser', 'Nuevo Usuario')}
         </Button>
       </div>
 
@@ -156,19 +167,19 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
                   className="px-6 py-4 font-medium cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors select-none"
                   onClick={() => handleSort('name')}
                 >
-                  Usuario / Email <SortIcon columnKey="name" />
+                  {t('users.colUser', 'Usuario / Email')} <SortIcon columnKey="name" />
                 </th>
                 <th 
                   className="px-6 py-4 font-medium cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors select-none"
                   onClick={() => handleSort('role')}
                 >
-                  Roles Asignados <SortIcon columnKey="role" />
+                  {t('users.colRoles', 'Roles Asignados')} <SortIcon columnKey="role" />
                 </th>
                 <th 
                   className="px-6 py-4 font-medium text-right cursor-pointer hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors select-none"
                   onClick={() => handleSort('activity')}
                 >
-                  <SortIcon columnKey="activity" /> Última Actividad
+                  <SortIcon columnKey="activity" /> {t('users.colActivity', 'Última Actividad')}
                 </th>
               </tr>
             </thead>
@@ -176,9 +187,12 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
               {sortedProfiles.map(profile => (
                 <tr key={profile.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
                   <td className="px-6 py-4">
-
-                    <div className="font-medium text-neutral-900 dark:text-neutral-100 ">{profile.display_name || <span className="italic text-neutral-500">Sin nombre</span>}</div>
-                    <div className="text-xs text-neutral-700 dark:text-neutral-300 mt-0">{profile.email || 'Sin Email'}</div>
+                    <div className="font-medium text-neutral-900 dark:text-neutral-100 ">
+                      {profile.display_name || <span className="italic text-neutral-500">{t('users.noName', 'Sin nombre')}</span>}
+                    </div>
+                    <div className="text-xs text-neutral-700 dark:text-neutral-300 mt-0">
+                      {profile.email || t('users.noEmail', 'Sin Email')}
+                    </div>
                   </td>
                   <td className="px-6 py-4">
                     <select
@@ -194,7 +208,7 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
                       ${profile.roles && profile.roles.length > 0 ? 'text-neutral-900 border-nutral-200' : 'bg-neutral-50 border-neutral-300 text-neutral-600'}
                     `}
                     >
-                      <option value="">-- Sin Rol --</option>
+                      <option value="">{t('users.noRole', '-- Sin Rol --')}</option>
                       {availableRoles.map(role => (
                         <option key={role.id} value={role.id}>
                           {role.name}
@@ -203,7 +217,9 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
                     </select>
                   </td>
                   <td className="px-6 py-4 text-right text-neutral-700 dark:text-neutral-300 whitespace-nowrap">
-                    {profile.last_activity_at ? new Date(profile.last_activity_at).toLocaleDateString() : 'Nunca'}
+                    {profile.last_activity_at 
+                      ? new Date(profile.last_activity_at).toLocaleDateString(language === 'en' ? 'en-US' : 'es-ES') 
+                      : t('users.never', 'Nunca')}
                   </td>
                 </tr>
               ))}
@@ -213,7 +229,7 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
                   <td colSpan={3} className="px-6 py-12 text-center text-neutral-500">
                     <div className="flex flex-col items-center gap-3">
                       <CaralIcon name="users" size={32} />
-                      <p>No se encontraron perfiles de usuario.</p>
+                      <p>{t('users.noUsersFound', 'No se encontraron perfiles de usuario.')}</p>
                     </div>
                   </td>
                 </tr>
@@ -224,36 +240,38 @@ export default function UserManagementClient({ initialProfiles, availableRoles }
       </div>
 
       {isModalOpen && (
-        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Crear Nuevo Usuario" width="sm">
+        <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={t('users.modalTitle', 'Crear Nuevo Usuario')} width="sm">
           <form onSubmit={handleCreateUser} className="flex flex-col gap-4">
             <p className="text-sm text-neutral-500 mb-2">
-              Puedes crear un usuario con correo y contraseña. El usuario podrá iniciar sesión inmediatamente.
+              {t('users.modalDescription', 'Puedes crear un usuario con correo y contraseña. El usuario podrá iniciar sesión inmediatamente.')}
             </p>
             <div>
-              <label className="block text-sm font-medium mb-1">Correo Electrónico (Email)</label>
+              <label className="block text-sm font-medium mb-1">{t('users.emailLabel', 'Correo Electrónico (Email)')}</label>
               <input
                 required
                 type="email"
                 name="email"
                 className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-inherit"
-                placeholder="ejemplo@empresa.com"
+                placeholder={t('users.emailPlaceholder', 'ejemplo@empresa.com')}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Contraseña Provisoria</label>
+              <label className="block text-sm font-medium mb-1">{t('users.passwordLabel', 'Contraseña Provisoria')}</label>
               <input
                 required
                 type="password"
                 name="password"
                 minLength={6}
                 className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-inherit"
-                placeholder="Mínimo 6 caracteres"
+                placeholder={t('users.passwordPlaceholder', 'Mínimo 6 caracteres')}
               />
             </div>
             <div className="flex justify-end gap-2 mt-4">
-              <Button variant="ghost" type="button" onClick={() => setIsModalOpen(false)} disabled={isCreating}>Cancelar</Button>
+              <Button variant="ghost" type="button" onClick={() => setIsModalOpen(false)} disabled={isCreating}>
+                {t('users.cancel', 'Cancelar')}
+              </Button>
               <Button variant="info" type="submit" disabled={isCreating}>
-                {isCreating ? 'Creando...' : 'Crear Usuario'}
+                {isCreating ? t('users.creating', 'Creando...') : t('users.createUser', 'Crear Usuario')}
               </Button>
             </div>
           </form>

@@ -5,8 +5,10 @@ import { createClient } from '@/utils/supabase/client';
 import { Button, TextInput } from 'caralstable';
 import { CaralIcon } from 'iconcaral2';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function StageBuilder() {
+  const { t } = useTranslation();
   const supabase = createClient();
   const [stages, setStages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,12 +59,12 @@ export default function StageBuilder() {
       setNewName('');
       setIsAdding(false);
     } else {
-      alert("Error al agregar estado: " + error?.message);
+      alert(t('opportunities.errorAddingStage', "Error al agregar estado: ") + error?.message);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Estás seguro de eliminar este estado? Las oportunidades en este estado podrían perder su referencia.")) return;
+    if (!confirm(t('opportunities.confirmDeleteStage', "¿Estás seguro de eliminar este estado? Las oportunidades en este estado podrían perder su referencia."))) return;
 
     const { error } = await supabase
       .from('opportunity_stages')
@@ -92,7 +94,7 @@ export default function StageBuilder() {
       setStages(stages.map(s => s.id === editingId ? { ...s, name: editName.trim(), color: editColor } : s));
       setEditingId(null);
     } else {
-      alert("Error al actualizar: " + error.message);
+      alert(t('opportunities.errorUpdatingStage', "Error al actualizar: ") + error.message);
     }
   };
 
@@ -123,50 +125,60 @@ export default function StageBuilder() {
     await supabase.from('opportunity_stages').upsert(updates);
   };
 
-  if (loading) return <div className="text-sm text-neutral-500">Cargando estados...</div>;
+  if (loading) return <div className="text-sm text-neutral-500">{t('opportunities.loadingStages', 'Cargando estados...')}</div>;
 
   return (
     <div className="flex flex-col gap-6 max-w-3xl">
       <div className="flex justify-between items-center bg-info-main/5 p-4 rounded-xl border border-info-main/20">
         <div>
-          <h4 className="text-lg font-bold text-neutral-900 dark:text-white">Constructor de Estados</h4>
-          <p className="text-sm text-neutral-600">Define los estados por los que pasarán las oportunidades.</p>
+          <h4 className="text-lg font-bold text-neutral-900 dark:text-white">
+            {t('opportunities.stageBuilderTitle', 'Constructor de Estados')}
+          </h4>
+          <p className="text-sm text-neutral-600">
+            {t('opportunities.stageBuilderSubtitle', 'Define los estados por los que pasarán las oportunidades.')}
+          </p>
         </div>
         <Button
           variant={isAdding ? 'danger' : 'info'}
           iconName={isAdding ? 'x' : 'plus'}
           onClick={() => setIsAdding(!isAdding)}>
-          {isAdding ? 'Cancelar' : 'Nuevo Estado'}
+          {isAdding ? t('opportunities.cancel', 'Cancelar') : t('opportunities.newStage', 'Nuevo Estado')}
         </Button>
       </div>
 
       {isAdding && (
         <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 p-4 rounded-xl flex items-end gap-4 shadow-sm animate-fade-in">
           <div className="flex-1">
-            <span className="block text-xs font-semibold text-neutral-700 mb-1">Nombre del Estado</span>
+            <span className="block text-xs font-semibold text-neutral-700 mb-1">
+              {t('opportunities.stageName', 'Nombre del Estado')}
+            </span>
             <TextInput
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              placeholder="Ej. Validación Legal"
+              placeholder={t('opportunities.stageNamePlaceholder', 'Ej. Validación Legal')}
             />
           </div>
           <div className="w-32">
-            <span className="block text-xs font-semibold text-neutral-700 mb-1">Color</span>
+            <span className="block text-xs font-semibold text-neutral-700 mb-1">
+              {t('opportunities.color', 'Color')}
+            </span>
             <select
               className="w-full h-[42px] px-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-sm focus:ring-2 focus:ring-info-main outline-none transition-shadow"
               value={newColor}
               onChange={(e) => setNewColor(e.target.value)}
             >
-              <option value="info">Celeste</option>
-              <option value="success">Verde </option>
-              <option value="danger">Rojo</option>
-              <option value="warning">Naranja</option>
-              <option value="indido">Morado</option>
-              <option value="sakura">Rosa</option>
-              <option value="seidor">Azul</option>
+              <option value="info">{t('opportunities.colorInfo', 'Celeste')}</option>
+              <option value="success">{t('opportunities.colorSuccess', 'Verde')}</option>
+              <option value="danger">{t('opportunities.colorDanger', 'Rojo')}</option>
+              <option value="warning">{t('opportunities.colorWarning', 'Naranja')}</option>
+              <option value="indido">{t('opportunities.colorIndigo', 'Morado')}</option>
+              <option value="sakura">{t('opportunities.colorSakura', 'Rosa')}</option>
+              <option value="seidor">{t('opportunities.colorSeidor', 'Azul')}</option>
             </select>
           </div>
-          <Button variant="success" onClick={handleAdd} disabled={!newName.trim()}>Guardar</Button>
+          <Button variant="success" onClick={handleAdd} disabled={!newName.trim()}>
+            {t('opportunities.save', 'Guardar')}
+          </Button>
         </div>
       )}
 
@@ -185,28 +197,36 @@ export default function StageBuilder() {
                       {editingId === stage.id ? (
                         <div className="flex-1 flex gap-4 ml-8 items-end">
                           <div className="flex-1">
-                            <span className="block text-xs font-semibold text-neutral-700 mb-1">Nombre del Estado</span>
+                            <span className="block text-xs font-semibold text-neutral-700 mb-1">
+                              {t('opportunities.stageName', 'Nombre del Estado')}
+                            </span>
                             <TextInput value={editName} onChange={(e) => setEditName(e.target.value)} />
                           </div>
                           <div className="w-32">
-                            <span className="block text-xs font-semibold text-neutral-700 mb-1">Color</span>
+                            <span className="block text-xs font-semibold text-neutral-700 mb-1">
+                              {t('opportunities.color', 'Color')}
+                            </span>
                             <select
                               className="w-full h-[42px] px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-sm"
                               value={editColor}
                               onChange={(e) => setEditColor(e.target.value)}
                             >
-                              <option value="info">Celeste (Info)</option>
-                              <option value="success">Verde (Success)</option>
-                              <option value="danger">Rojo (Danger)</option>
-                              <option value="warning">Naranja (Warning)</option>
-                              <option value="indido">Morado (Indigo)</option>
-                              <option value="sakura">Rosa (Sakura)</option>
-                              <option value="seidor">Azul (Seidor)</option>
+                              <option value="info">{t('opportunities.colorInfo', 'Celeste')}</option>
+                              <option value="success">{t('opportunities.colorSuccess', 'Verde')}</option>
+                              <option value="danger">{t('opportunities.colorDanger', 'Rojo')}</option>
+                              <option value="warning">{t('opportunities.colorWarning', 'Naranja')}</option>
+                              <option value="indido">{t('opportunities.colorIndigo', 'Morado')}</option>
+                              <option value="sakura">{t('opportunities.colorSakura', 'Rosa')}</option>
+                              <option value="seidor">{t('opportunities.colorSeidor', 'Azul')}</option>
                             </select>
                           </div>
                           <div className="flex gap-2">
-                            <Button variant="success" size="sm" onClick={handleEditSave} disabled={!editName.trim()}>Guardar</Button>
-                            <Button variant="light" size="sm" onClick={() => setEditingId(null)}>Cancelar</Button>
+                            <Button variant="success" size="sm" onClick={handleEditSave} disabled={!editName.trim()}>
+                              {t('opportunities.save', 'Guardar')}
+                            </Button>
+                            <Button variant="light" size="sm" onClick={() => setEditingId(null)}>
+                              {t('opportunities.cancel', 'Cancelar')}
+                            </Button>
                           </div>
                         </div>
                       ) : (
@@ -220,7 +240,9 @@ export default function StageBuilder() {
                                 <div className={`w-3 h-3 rounded-full bg-${stage.color}-main`}></div>
                                 <span className="font-bold text-neutral-900 dark:text-white">{stage.name}</span>
                               </div>
-                              <span className="text-xs text-neutral-700">Orden: {stage.order_index}</span>
+                              <span className="text-xs text-neutral-700">
+                                {t('opportunities.orderLabel', 'Orden: {order}').replace('{order}', String(stage.order_index))}
+                              </span>
                             </div>
                           </div>
 
@@ -254,3 +276,4 @@ export default function StageBuilder() {
     </div>
   );
 }
+

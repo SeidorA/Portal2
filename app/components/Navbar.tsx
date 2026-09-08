@@ -10,6 +10,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { createClient } from "../../utils/supabase/client";
 import { searchGlobal, SearchResult } from "@/app/actions/searchAction";
 import { logSearchEvent } from "@/app/actions/logSearchClickAction";
+import { useTranslation } from "../context/LanguageContext";
 
 type NavChildMock = {
   id: string;
@@ -47,6 +48,7 @@ interface NavbarProps {
 
 export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
   const router = useRouter();
+  const { t, language, setLanguage } = useTranslation();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [themePreference, setThemePreference] = useState<'light' | 'dark' | 'system'>('system');
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
@@ -423,7 +425,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
             >
               <div className="flex items-center gap-2 text-neutral-800 group-hover:text-neutral-900 transition-colors">
                 <CaralIcon name="search" size="s" />
-                <span className="font-poppins text-p text-neutral-800 group-hover:text-neutral-900">Buscar</span>
+                <span className="font-poppins text-p text-neutral-800 group-hover:text-neutral-900">{t('nav.search', 'Buscar')}</span>
               </div>
               <div className="flex items-center justify-center bg-neutral-100 dark:bg-neutral-800 border rounded-full px-2 py-0.5 text-xs text-neutral-800 dark:text-neutral-400 font-medium shrink-0">
                 ⌘ K
@@ -441,7 +443,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                 iconName="search"
                 size="md"
                 onClick={() => setIsSearchModalOpen(true)}
-                aria-label="Buscar"
+                aria-label={t('nav.search', 'Buscar')}
               />
             </div>
 
@@ -480,7 +482,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                       </div>
                     ) : (
                       <Button iconName="arrowRight" variant="info" onClick={() => router.push('/login')}>
-                        Log in
+                        {t('nav.login', 'Log in')}
                       </Button>
                     )}
                   </React.Fragment>
@@ -523,7 +525,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                         className={`w-full text-xs ${themePreference === 'light' ? 'border border-neutral-300 dark:border-neutral-600 shadow-sm' : ''}`}
                         onClick={() => handleThemeChange('light')}
                       >
-                        Claro
+                        {t('nav.themeLight', 'Claro')}
                       </Button>
                       <Button
                         variant={themePreference === 'dark' ? 'carbon' : 'ghost'}
@@ -532,7 +534,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                         className={`w-full text-xs ${themePreference === 'dark' ? 'border border-neutral-300 dark:border-neutral-600 shadow-sm bg-transparent!' : ''}`}
                         onClick={() => handleThemeChange('dark')}
                       >
-                        Oscuro
+                        {t('nav.themeDark', 'Oscuro')}
                       </Button>
                       <Button
                         variant={themePreference === 'system' ? 'light' : 'ghost'}
@@ -541,21 +543,57 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                         className={`w-full text-xs ${themePreference === 'system' ? 'border border-neutral-300 dark:border-neutral-600 shadow-sm bg-transparent!' : ''}`}
                         onClick={() => handleThemeChange('system')}
                       >
-                        Sistema
+                        {t('nav.themeSystem', 'Sistema')}
                       </Button>
                     </div>
                   </div>
 
                   <div className="p-4 flex flex-col gap-2 border-b border-neutral-200 dark:border-neutral-800">
-                    <Button iconName="user" onClick={() => router.push('/perfil')} className="justify-start!" variant="ghost">Perfil</Button>
-                    <Button iconName="city" onClick={() => router.push('/dashboard')} className="justify-start!" variant="ghost">Dashboard</Button>
-                    <Button iconName="wrench" onClick={() => router.push('/configuracion')} className="justify-start!" variant="ghost">Configuracion</Button>
-                    <Button iconName="globe" className="justify-start!" variant="ghost"><div className="w-full text-start">Español</div> <CaralIcon name="chevronRigth" size="m" /></Button>
-                    <Button iconName="command" className="justify-start!" variant="ghost" > Versión </Button>
+                    <Button 
+                      iconName="user" 
+                      onClick={() => { setIsProfileMenuOpen(false); router.push('/perfil'); }} 
+                      className="justify-start!" 
+                      variant="ghost"
+                    >
+                      {t('nav.profile', 'Perfil')}
+                    </Button>
+                    <Button 
+                      iconName="city" 
+                      onClick={() => { setIsProfileMenuOpen(false); router.push('/dashboard'); }} 
+                      className="justify-start!" 
+                      variant="ghost"
+                    >
+                      {t('nav.dashboard', 'Dashboard')}
+                    </Button>
+                    <Button 
+                      iconName="wrench" 
+                      onClick={() => { setIsProfileMenuOpen(false); router.push('/configuracion'); }} 
+                      className="justify-start!" 
+                      variant="ghost"
+                    >
+                      {t('nav.settings', 'Configuración')}
+                    </Button>
+                    <Button 
+                      iconName="globe" 
+                      onClick={() => setLanguage(language === 'es' ? 'en' : 'es')} 
+                      className="justify-start!" 
+                      variant="ghost"
+                    >
+                      <div className="w-full text-start flex items-center justify-between">
+                        <span>{language === 'es' ? 'Español' : 'English'}</span>
+                        <span className="text-xs text-neutral-400 font-normal uppercase tracking-wider">{language === 'es' ? 'EN' : 'ES'}</span>
+                      </div>
+                      <CaralIcon name="chevronRigth" size="m" />
+                    </Button>
+                    <Button iconName="command" className="justify-start!" variant="ghost">
+                      {t('nav.version', 'Versión')} 1.0.0
+                    </Button>
                   </div>
 
                   <div className="p-4">
-                    <Button onClick={handleLogout} className="justify-start! w-full" iconName="arrowLeft" variant="danger" hasBorder>Cerrar Sesión</Button>
+                    <Button onClick={handleLogout} className="justify-start! w-full" iconName="arrowLeft" variant="danger" hasBorder>
+                      {t('nav.logout', 'Cerrar Sesión')}
+                    </Button>
                   </div>
                 </div>
               </>
@@ -577,10 +615,10 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                       className="flex items-center gap-2 text-sm font-semibold text-neutral-800 dark:text-neutral-200 hover:text-info-main transition-colors cursor-pointer py-1.5 px-2.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
                     >
                       <CaralIcon name="chevronLeft" size="s" />
-                      <span>Volver a navegación</span>
+                      <span>{t('nav.backToNav', 'Volver a navegación')}</span>
                     </button>
                     <span className="text-xs font-medium text-neutral-400">
-                      Documentación
+                      {t('sidebar.documentation', 'Documentación')}
                     </span>
                   </div>
 
@@ -623,7 +661,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                       >
                         <div className="flex items-center gap-2">
                           <CaralIcon name="book" size="s" />
-                          <span>Ver contenido del documento</span>
+                          <span>{t('nav.viewDocContent', 'Ver contenido del documento')}</span>
                         </div>
                         <CaralIcon name="chevronRigth" size="s" />
                       </button>
@@ -777,7 +815,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                     <div className="shrink-0 text-info-main">
                       <CaralIcon name="book" size="s" />
                     </div>
-                    <span>Documentación interna</span>
+                    <span>{t('nav.internalDocs', 'Documentación interna')}</span>
                   </button>
                 </div>
               )}
@@ -798,7 +836,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                 <CaralIcon name="search" size="s" />
                 <input
                   type="text"
-                  placeholder="Busca páginas, documentos, novedades, etc..."
+                  placeholder={t('nav.searchPlaceholder', 'Busca páginas, documentos, novedades, etc...')}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="w-full bg-transparent border-none outline-none font-poppins text-neutral-700 dark:text-neutral-300 placeholder-neutral-400"
@@ -815,7 +853,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
 
             <div className="flex flex-col overflow-y-auto max-h-[60vh] font-poppins bg-white dark:bg-neutral-900">
               {isSearching ? (
-                <div className="p-8 text-center text-neutral-800 text-sm">Buscando...</div>
+                <div className="p-8 text-center text-neutral-800 text-sm">{t('nav.searching', 'Buscando...')}</div>
               ) : searchResults.length > 0 ? (
                 <div className="flex flex-col p-2">
                   {searchResults.map((res) => (
@@ -840,13 +878,15 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                   ))}
                 </div>
               ) : searchQuery.trim() ? (
-                <div className="p-8 text-center text-neutral-800 text-sm">No se encontraron resultados para "{searchQuery}"</div>
+                <div className="p-8 text-center text-neutral-800 text-sm">
+                  {t('nav.noResultsFor', 'No se encontraron resultados para')} "{searchQuery}"
+                </div>
               ) : (
                 <div className="p-8 flex flex-col items-center justify-center text-neutral-400 gap-3">
                   <div className="bg-neutral-100  p-4 rounded-full">
                     <CaralIcon name="search" size="m" />
                   </div>
-                  <p className="text-sm">Escribe para empezar a buscar en el portal</p>
+                  <p className="text-sm">{t('nav.searchPrompt', 'Escribe para empezar a buscar en el portal')}</p>
                 </div>
               )}
             </div>

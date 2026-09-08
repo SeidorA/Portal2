@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { CaralIcon, Brand } from 'iconcaral2';
 import Link from 'next/link';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 interface NewsItem {
   title_slide: string;
@@ -20,6 +21,7 @@ interface VersionData {
 }
 
 function VersionSection({ vData, versionKey, docBaseUrl, imgFolder }: { vData: VersionData, versionKey: string, docBaseUrl?: string, imgFolder?: string }) {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<'action' | 'slider'>('action');
   const [activeSlide, setActiveSlide] = useState(0);
 
@@ -42,7 +44,7 @@ function VersionSection({ vData, versionKey, docBaseUrl, imgFolder }: { vData: V
             : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
             }`}
         >
-          Action
+          {t("releaseNotes.actionTab", "Action")}
           {activeTab === 'action' && <div className="absolute bottom-[-2px] left-0 right-0 h-1 bg-info-main rounded-t-full" />}
         </button>
         <button
@@ -52,7 +54,7 @@ function VersionSection({ vData, versionKey, docBaseUrl, imgFolder }: { vData: V
             : 'text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300'
             }`}
         >
-          Slider
+          {t("releaseNotes.sliderTab", "Slider")}
           {activeTab === 'slider' && <div className="absolute bottom-[-2px] left-0 right-0 h-1 bg-info-main rounded-t-full" />}
         </button>
       </div>
@@ -61,7 +63,7 @@ function VersionSection({ vData, versionKey, docBaseUrl, imgFolder }: { vData: V
         <div className="flex flex-col gap-12 mt-4 animate-fade-in">
           {vData.description && (
             <h3 className="text-3xl font-extrabold text-neutral-900 dark:text-white flex items-center gap-3">
-              <CaralIcon name="lightning" size={32} /> All the features of this release
+              <CaralIcon name="lightning" size={32} /> {t("releaseNotes.allFeatures", "All the features of this release")}
             </h3>
           )}
 
@@ -141,7 +143,7 @@ function VersionSection({ vData, versionKey, docBaseUrl, imgFolder }: { vData: V
               onClick={() => setActiveSlide(s => (s - 1 + slideCount) % slideCount)}
               className="px-6 py-2 rounded-full border border-neutral-300 dark:border-neutral-700 font-semibold hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors flex items-center gap-2"
             >
-              <CaralIcon name="arrowLeft" size={16} /> Return
+              <CaralIcon name="arrowLeft" size={16} /> {t("releaseNotes.return", "Return")}
             </button>
             <div className="flex flex-col items-center gap-2">
               <span className="font-bold text-neutral-600 dark:text-neutral-400">
@@ -161,7 +163,7 @@ function VersionSection({ vData, versionKey, docBaseUrl, imgFolder }: { vData: V
               onClick={() => setActiveSlide(s => (s + 1) % slideCount)}
               className="px-6 py-2 rounded-full bg-[#0A1635] text-white font-semibold hover:bg-opacity-90 transition-colors flex items-center gap-2"
             >
-              Next <CaralIcon name="arrowRight" size={16} />
+              {t("releaseNotes.next", "Next")} <CaralIcon name="arrowRight" size={16} />
             </button>
           </div>
 
@@ -203,8 +205,9 @@ function VersionSection({ vData, versionKey, docBaseUrl, imgFolder }: { vData: V
 }
 
 export default function ReleaseNoteViewer({ data, docBaseUrl, imgFolder }: { data: any, docBaseUrl?: string, imgFolder?: string }) {
+  const { t } = useTranslation();
   console.log("ReleaseNoteViewer props received -> docBaseUrl:", docBaseUrl, "imgFolder:", imgFolder);
-  if (!data) return <div>No se encontraron novedades o ocurrió un error al cargarlas.</div>;
+  if (!data) return <div>{t("releaseNotes.noData", "No se encontraron novedades o ocurrió un error al cargarlas.")}</div>;
 
   const versionKeys = Object.keys(data).sort((a, b) => b.localeCompare(a));
 

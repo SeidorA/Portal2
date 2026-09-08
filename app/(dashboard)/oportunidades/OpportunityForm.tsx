@@ -5,6 +5,7 @@ import { TextInput, Button } from 'caralstable';
 import { createClient } from '@/utils/supabase/client';
 import { CaralIcon } from 'iconcaral2';
 import OpportunityRequirementsForm from './OpportunityRequirementsForm';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export interface OpportunityFormProps {
   onClose: () => void;
@@ -12,6 +13,7 @@ export interface OpportunityFormProps {
 }
 
 export default function OpportunityForm({ onClose, onSuccess }: OpportunityFormProps) {
+  const { t } = useTranslation();
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [products, setProducts] = useState<any[]>([]);
@@ -70,8 +72,6 @@ export default function OpportunityForm({ onClose, onSuccess }: OpportunityFormP
     }));
   };
 
-
-
   const handleSubmit = async () => {
     setIsLoading(true);
     
@@ -98,7 +98,7 @@ export default function OpportunityForm({ onClose, onSuccess }: OpportunityFormP
           opportunity_id: insertedData.id,
           user_id: userData.user.id,
           activity_type: 'creation',
-          content: { message: "creó la oportunidad", user_name: userName }
+          content: { message: t('opportunities.createdOpp', 'creó la oportunidad'), user_name: userName }
         });
       }
       setIsLoading(false);
@@ -107,7 +107,7 @@ export default function OpportunityForm({ onClose, onSuccess }: OpportunityFormP
     } else {
       setIsLoading(false);
       console.error(error);
-      alert("Error al guardar la oportunidad");
+      alert(t('opportunities.errorSavingOpportunity', "Error al guardar la oportunidad"));
     }
   };
 
@@ -125,18 +125,24 @@ export default function OpportunityForm({ onClose, onSuccess }: OpportunityFormP
         {step === 1 && (
           <div className="animate-fade-in flex flex-col gap-6">
             <div>
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Producto de Interés</h3>
-              <p className="text-sm text-neutral-800">Selecciona el producto o servicio que interesa al cliente.</p>
+              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">
+                {t('opportunities.stepProduct', 'Producto de Interés')}
+              </h3>
+              <p className="text-sm text-neutral-800">
+                {t('opportunities.stepProductDesc', 'Selecciona el producto o servicio que interesa al cliente.')}
+              </p>
             </div>
 
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Producto</label>
+              <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                {t('opportunities.product', 'Producto')}
+              </label>
               <select
                 className="w-full px-4 py-3 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded-xl focus:ring-2 focus:ring-info-main outline-none text-neutral-900 dark:text-white"
                 value={formData.product_id}
                 onChange={(e) => setFormData({ ...formData, product_id: e.target.value })}
               >
-                <option value="">Seleccione un producto...</option>
+                <option value="">{t('opportunities.selectProductPlaceholder', 'Seleccione un producto...')}</option>
                 {products.map(p => (
                   <option key={p.id} value={p.id}>{p.title}</option>
                 ))}
@@ -148,16 +154,20 @@ export default function OpportunityForm({ onClose, onSuccess }: OpportunityFormP
         {step === 2 && (
           <div className="animate-fade-in flex flex-col gap-6">
             <div>
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Datos de la Oportunidad</h3>
-              <p className="text-sm text-neutral-500">Completa la información inicial del lead.</p>
+              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">
+                {t('opportunities.stepData', 'Datos de la Oportunidad')}
+              </h3>
+              <p className="text-sm text-neutral-500">
+                {t('opportunities.stepDataDesc', 'Completa la información inicial del lead.')}
+              </p>
             </div>
 
             <div className="flex flex-col gap-5">
               <div className="bg-neutral-50 dark:bg-neutral-800/50 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800">
                 <div className="flex flex-col gap-2">
                   <TextInput
-                    label="Cliente / Empresa (Obligatorio)"
-                    placeholder="Ej. TechCorp"
+                    label={t('opportunities.clientCompanyReq', 'Cliente / Empresa (Obligatorio)')}
+                    placeholder={t('opportunities.clientCompanyPlaceholder', 'Ej. TechCorp')}
                     value={formData.company_name}
                     onChange={e => setFormData({ ...formData, company_name: e.target.value })}
                   />
@@ -186,7 +196,7 @@ export default function OpportunityForm({ onClose, onSuccess }: OpportunityFormP
                               value={formData.custom_answers[field.id] || ''}
                               onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
                             >
-                              <option value="">Seleccionar...</option>
+                              <option value="">{t('opportunities.selectPlaceholder', 'Seleccionar...')}</option>
                               {(field.options_list || []).map((opt: string) => (
                                 <option key={opt} value={opt}>{opt}</option>
                               ))}
@@ -199,12 +209,12 @@ export default function OpportunityForm({ onClose, onSuccess }: OpportunityFormP
                                 onChange={(e) => handleCustomFieldChange(field.id, e.target.checked)}
                                 className="w-5 h-5 text-info-main rounded border-neutral-300"
                               />
-                              <span className="text-sm">Sí, confirmar</span>
+                              <span className="text-sm">{t('opportunities.yesConfirm', 'Sí, confirmar')}</span>
                             </label>
                           ) : (
                             <TextInput
                               type={field.field_type === 'number' ? 'number' : field.field_type === 'date' ? 'date' : 'text'}
-                              placeholder={`Ingresar ${field.label.toLowerCase()}...`}
+                              placeholder={t('opportunities.enterFieldPlaceholder', 'Ingresar {label}...').replace('{label}', field.label.toLowerCase())}
                               value={formData.custom_answers[field.id] || ''}
                               onChange={e => handleCustomFieldChange(field.id, e.target.value)}
                             />
@@ -221,7 +231,7 @@ export default function OpportunityForm({ onClose, onSuccess }: OpportunityFormP
                 <div className="flex flex-col gap-4 bg-white dark:bg-neutral-900 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
                   <h4 className="font-bold text-neutral-800 dark:text-neutral-200 flex items-center gap-2 border-b border-neutral-100 dark:border-neutral-800 pb-2">
                     <CaralIcon name="layers" size={18} className="text-neutral-400" />
-                    Otros Campos
+                    {t('opportunities.otherFields', 'Otros Campos')}
                   </h4>
                   <div className="flex flex-col gap-4">
                     {customFields.filter(f => !f.section_id).map(field => (
@@ -235,7 +245,7 @@ export default function OpportunityForm({ onClose, onSuccess }: OpportunityFormP
                             value={formData.custom_answers[field.id] || ''}
                             onChange={(e) => handleCustomFieldChange(field.id, e.target.value)}
                           >
-                            <option value="">Seleccionar...</option>
+                            <option value="">{t('opportunities.selectPlaceholder', 'Seleccionar...')}</option>
                             {(field.options_list || []).map((opt: string) => (
                               <option key={opt} value={opt}>{opt}</option>
                             ))}
@@ -248,12 +258,12 @@ export default function OpportunityForm({ onClose, onSuccess }: OpportunityFormP
                               onChange={(e) => handleCustomFieldChange(field.id, e.target.checked)}
                               className="w-5 h-5 text-info-main rounded border-neutral-300"
                             />
-                            <span className="text-sm">Sí, confirmar</span>
+                            <span className="text-sm">{t('opportunities.yesConfirm', 'Sí, confirmar')}</span>
                           </label>
                         ) : (
                           <TextInput
                             type={field.field_type === 'number' ? 'number' : field.field_type === 'date' ? 'date' : 'text'}
-                            placeholder={`Ingresar ${field.label.toLowerCase()}...`}
+                            placeholder={t('opportunities.enterFieldPlaceholder', 'Ingresar {label}...').replace('{label}', field.label.toLowerCase())}
                             value={formData.custom_answers[field.id] || ''}
                             onChange={e => handleCustomFieldChange(field.id, e.target.value)}
                           />
@@ -270,8 +280,12 @@ export default function OpportunityForm({ onClose, onSuccess }: OpportunityFormP
         {step === 3 && createdOpportunity && (
           <div className="animate-fade-in flex flex-col gap-6">
             <div>
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">Preguntas Iniciales</h3>
-              <p className="text-sm text-neutral-500">Responde estas preguntas generales para completar la creación.</p>
+              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">
+                {t('opportunities.stepInitialQuestions', 'Preguntas Iniciales')}
+              </h3>
+              <p className="text-sm text-neutral-500">
+                {t('opportunities.stepInitialQuestionsDesc', 'Responde estas preguntas generales para completar la creación.')}
+              </p>
             </div>
             
             <OpportunityRequirementsForm 
@@ -290,44 +304,45 @@ export default function OpportunityForm({ onClose, onSuccess }: OpportunityFormP
           variant="light"
           onClick={step === 1 ? onClose : step === 3 ? onSuccess : () => setStep(step - 1)}
         >
-          {step === 1 ? 'Cancelar' : step === 3 ? 'Saltar' : 'Atrás'}
+          {step === 1 ? t('opportunities.cancel', 'Cancelar') : step === 3 ? t('opportunities.skip', 'Saltar') : t('opportunities.back', 'Atrás')}
         </Button>
         {step !== 3 && (
           <Button
             variant="info"
             onClick={step === 2 ? handleSubmit : () => {
               if (step === 1 && !formData.product_id) {
-              alert("Por favor selecciona un producto");
-              return;
-            }
-            if (step === 2 && !formData.company_name.trim()) {
-              alert("El Cliente/Empresa es obligatorio");
-              return;
-            }
-            
-            // Check mandatory fields
-            if (step === 2) {
-              for (const field of customFields) {
-                if (field.is_required) {
-                  const val = formData.custom_answers[field.id];
-                  if (val === undefined || val === null || val === '') {
-                    alert(`El campo "${field.label}" es obligatorio.`);
-                    return;
+                alert(t('opportunities.alertSelectProduct', "Por favor selecciona un producto"));
+                return;
+              }
+              if (step === 2 && !formData.company_name.trim()) {
+                alert(t('opportunities.alertClientRequired', "El Cliente/Empresa es obligatorio"));
+                return;
+              }
+              
+              // Check mandatory fields
+              if (step === 2) {
+                for (const field of customFields) {
+                  if (field.is_required) {
+                    const val = formData.custom_answers[field.id];
+                    if (val === undefined || val === null || val === '') {
+                      alert(t('opportunities.alertFieldRequired', 'El campo "{label}" es obligatorio.').replace('{label}', field.label));
+                      return;
+                    }
                   }
                 }
               }
-            }
 
-            if (step === 1) { // before moving to step 2 it's just product.
-              setStep(step + 1);
-            }
-          }}
-          disabled={isLoading}
-        >
-          {isLoading ? 'Guardando...' : step === 2 ? 'Crear Oportunidad' : 'Siguiente'}
-        </Button>
+              if (step === 1) { // before moving to step 2 it's just product.
+                setStep(step + 1);
+              }
+            }}
+            disabled={isLoading}
+          >
+            {isLoading ? t('opportunities.saving', 'Guardando...') : step === 2 ? t('opportunities.createOpportunity', 'Crear Oportunidad') : t('opportunities.next', 'Siguiente')}
+          </Button>
         )}
       </div>
     </div>
   );
 }
+

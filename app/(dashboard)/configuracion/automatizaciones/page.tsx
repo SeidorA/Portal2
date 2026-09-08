@@ -5,9 +5,11 @@ import { useRouter } from 'next/navigation';
 import { Button, Drawer, TextInput } from 'caralstable';
 import { CaralIcon } from 'iconcaral2';
 import { createClient } from '@/utils/supabase/client';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function AutomatizacionesPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [rules, setRules] = useState<any[]>([]);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +40,17 @@ export default function AutomatizacionesPage() {
     loadRules();
   }, []);
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'nuevas': return t('automations.statusNuevas', 'Nuevas');
+      case 'contacto': return t('automations.statusContacto', 'En Contacto');
+      case 'propuesta': return t('automations.statusPropuesta', 'Propuesta');
+      case 'ganada': return t('automations.statusGanada', 'Ganada');
+      case 'perdida': return t('automations.statusPerdida', 'Perdida');
+      default: return status;
+    }
+  };
+
   const handleSave = async () => {
     setIsLoading(true);
 
@@ -63,12 +76,12 @@ export default function AutomatizacionesPage() {
       loadRules();
       setFormData({ name: '', from_status: 'nuevas', to_status: 'contacto', required_roles: '', auto_comment: '' });
     } else {
-      alert("Error al guardar la automatización");
+      alert(t('automations.errorSavingAutomation', 'Error al guardar la automatización'));
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("¿Eliminar esta automatización?")) return;
+    if (!confirm(t('automations.confirmDeleteAutomation', '¿Eliminar esta automatización?'))) return;
     await supabase.from('opportunity_rules').delete().eq('id', id);
     loadRules();
   };
@@ -83,14 +96,14 @@ export default function AutomatizacionesPage() {
             iconName='arrowLeft'
             onClick={() => router.push('/oportunidades')}
           >
-            Volver
+            {t('automations.back', 'Volver')}
           </Button>
           <h2 className="text-[28px] font-semibold text-neutral-900 flex items-center gap-2">
             <CaralIcon name="cloudSync" size={28} />
-            Automatizaciones CRM
+            {t('automations.title', 'Automatizaciones CRM')}
           </h2>
           <p className="text-neutral-800 text-sm">
-            Configura reglas de permisos y acciones automáticas para el gestor de oportunidades.
+            {t('automations.subtitle', 'Configura reglas de permisos y acciones automáticas para el gestor de oportunidades.')}
           </p>
         </div>
         <Button
@@ -99,7 +112,7 @@ export default function AutomatizacionesPage() {
           iconName='plus'
           onClick={() => setIsDrawerOpen(true)}
         >
-          Crear Regla
+          {t('automations.createRule', 'Crear Regla')}
         </Button>
       </div>
 
@@ -107,11 +120,11 @@ export default function AutomatizacionesPage() {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-neutral-50 dark:bg-neutral-800/50 border-b border-neutral-200 dark:border-neutral-800 text-xs text-neutral-500 uppercase tracking-wider">
-              <th className="p-4 font-semibold">Nombre</th>
-              <th className="p-4 font-semibold">Transición</th>
-              <th className="p-4 font-semibold">Roles Requeridos</th>
-              <th className="p-4 font-semibold">Comentario Automático</th>
-              <th className="p-4 font-semibold text-right">Acciones</th>
+              <th className="p-4 font-semibold">{t('automations.colName', 'Nombre')}</th>
+              <th className="p-4 font-semibold">{t('automations.colTransition', 'Transición')}</th>
+              <th className="p-4 font-semibold">{t('automations.colRoles', 'Roles Requeridos')}</th>
+              <th className="p-4 font-semibold">{t('automations.colAutoComment', 'Comentario Automático')}</th>
+              <th className="p-4 font-semibold text-right">{t('automations.colActions', 'Acciones')}</th>
             </tr>
           </thead>
           <tbody className="text-sm">
@@ -119,7 +132,7 @@ export default function AutomatizacionesPage() {
               <tr key={rule.id} className="border-b border-neutral-100 dark:border-neutral-800/50 hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
                 <td className="p-4 font-medium text-neutral-900">{rule.name}</td>
                 <td className="p-4 text-neutral-600">
-                  De <span className="font-semibold">{rule.from_status}</span> a <span className="font-semibold">{rule.to_status}</span>
+                  {t('automations.from', 'De')} <span className="font-semibold">{getStatusLabel(rule.from_status)}</span> {t('automations.to', 'a')} <span className="font-semibold">{getStatusLabel(rule.to_status)}</span>
                 </td>
                 <td className="p-4">
                   {rule.required_roles && rule.required_roles.length > 0 ? (
@@ -129,7 +142,7 @@ export default function AutomatizacionesPage() {
                       ))}
                     </div>
                   ) : (
-                    <span className="text-neutral-400 italic">Cualquiera</span>
+                    <span className="text-neutral-400 italic">{t('automations.anyRole', 'Cualquiera')}</span>
                   )}
                 </td>
                 <td className="p-4 text-neutral-600 max-w-[200px] truncate">
@@ -149,7 +162,7 @@ export default function AutomatizacionesPage() {
             {rules.length === 0 && (
               <tr>
                 <td colSpan={5} className="p-8 text-center text-neutral-500">
-                  No hay automatizaciones configuradas.
+                  {t('automations.noAutomations', 'No hay automatizaciones configuradas.')}
                 </td>
               </tr>
             )}
@@ -160,14 +173,14 @@ export default function AutomatizacionesPage() {
       <Drawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        title="Nueva Automatización"
+        title={t('automations.newAutomation', 'Nueva Automatización')}
         size="md"
       >
         <div className="flex flex-col gap-6 p-6">
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-semibold text-neutral-800">Nombre de la Regla</label>
+            <label className="text-sm font-semibold text-neutral-800">{t('automations.ruleName', 'Nombre de la Regla')}</label>
             <TextInput
-              placeholder="Ej: Aprobación de Sales Manager"
+              placeholder={t('automations.ruleNamePlaceholder', 'Ej: Aprobación de Sales Manager')}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             />
@@ -175,49 +188,49 @@ export default function AutomatizacionesPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold text-neutral-800">Estado Origen</label>
+              <label className="text-sm font-semibold text-neutral-800">{t('automations.fromStatus', 'Estado Origen')}</label>
               <select
                 className="w-full px-3 py-2 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm"
                 value={formData.from_status}
                 onChange={(e) => setFormData({ ...formData, from_status: e.target.value })}
               >
-                <option value="nuevas">Nuevas</option>
-                <option value="contacto">En Contacto</option>
-                <option value="propuesta">Propuesta</option>
-                <option value="ganada">Ganada</option>
-                <option value="perdida">Perdida</option>
+                <option value="nuevas">{t('automations.statusNuevas', 'Nuevas')}</option>
+                <option value="contacto">{t('automations.statusContacto', 'En Contacto')}</option>
+                <option value="propuesta">{t('automations.statusPropuesta', 'Propuesta')}</option>
+                <option value="ganada">{t('automations.statusGanada', 'Ganada')}</option>
+                <option value="perdida">{t('automations.statusPerdida', 'Perdida')}</option>
               </select>
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-sm font-semibold text-neutral-800">Estado Destino</label>
+              <label className="text-sm font-semibold text-neutral-800">{t('automations.toStatus', 'Estado Destino')}</label>
               <select
                 className="w-full px-3 py-2 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 rounded-lg text-sm"
                 value={formData.to_status}
                 onChange={(e) => setFormData({ ...formData, to_status: e.target.value })}
               >
-                <option value="nuevas">Nuevas</option>
-                <option value="contacto">En Contacto</option>
-                <option value="propuesta">Propuesta</option>
-                <option value="ganada">Ganada</option>
-                <option value="perdida">Perdida</option>
+                <option value="nuevas">{t('automations.statusNuevas', 'Nuevas')}</option>
+                <option value="contacto">{t('automations.statusContacto', 'En Contacto')}</option>
+                <option value="propuesta">{t('automations.statusPropuesta', 'Propuesta')}</option>
+                <option value="ganada">{t('automations.statusGanada', 'Ganada')}</option>
+                <option value="perdida">{t('automations.statusPerdida', 'Perdida')}</option>
               </select>
             </div>
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-semibold text-neutral-800">Roles Permitidos (separados por coma)</label>
+            <label className="text-sm font-semibold text-neutral-800">{t('automations.requiredRoles', 'Roles Permitidos (separados por coma)')}</label>
             <TextInput
-              placeholder="Ej: sales_manager, admin"
+              placeholder={t('automations.requiredRolesPlaceholder', 'Ej: sales_manager, admin')}
               value={formData.required_roles}
               onChange={(e) => setFormData({ ...formData, required_roles: e.target.value })}
             />
-            <span className="text-xs text-neutral-500">Si lo dejas en blanco, cualquier usuario podrá realizar el cambio.</span>
+            <span className="text-xs text-neutral-500">{t('automations.requiredRolesHelp', 'Si lo dejas en blanco, cualquier usuario podrá realizar el cambio.')}</span>
           </div>
 
           <div className="flex flex-col gap-2">
-            <label className="text-sm font-semibold text-neutral-800">Comentario Automático (Opcional)</label>
+            <label className="text-sm font-semibold text-neutral-800">{t('automations.autoComment', 'Comentario Automático (Opcional)')}</label>
             <TextInput
-              placeholder="Ej: Por favor revisa estos links: https://..."
+              placeholder={t('automations.autoCommentPlaceholder', 'Ej: Por favor revisa estos links: https://...')}
               multiline
               rows={4}
               value={formData.auto_comment}
@@ -227,10 +240,10 @@ export default function AutomatizacionesPage() {
 
           <div className="pt-4 border-t border-neutral-200 mt-4 flex justify-end gap-3">
             <Button variant="light" hasBorder onClick={() => setIsDrawerOpen(false)}>
-              Cancelar
+              {t('automations.cancel', 'Cancelar')}
             </Button>
             <Button variant="info" onClick={handleSave} disabled={isLoading || !formData.name}>
-              {isLoading ? 'Guardando...' : 'Crear Regla'}
+              {isLoading ? t('automations.saving', 'Guardando...') : t('automations.createRule', 'Crear Regla')}
             </Button>
           </div>
         </div>

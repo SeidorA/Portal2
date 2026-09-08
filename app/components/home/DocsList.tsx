@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 type LinkProps = {
   link: string;
@@ -27,14 +28,16 @@ const docsList: LinkProps[] = [
 ];
 
 export default function DocsList() {
+  const { t } = useTranslation();
+
   return (
     <div className="w-full flex flex-col gap-6 mb-12">
       <div className="flex flex-col gap-2">
-        <h2 className="text-h2 font-poppins font-semibold text-neutral-900">
-          Documentación oficial de nuestras soluciones
+        <h2 className="text-h2 font-poppins font-semibold text-neutral-900 dark:text-white">
+          {t("home.docsListTitle", "Documentación oficial de nuestras soluciones")}
         </h2>
-        <p className="text-p font-poppins text-neutral-600">
-          Consultá la documentación oficial de cada producto, incluyendo conceptos clave, flujos de uso, configuraciones y casos de aplicación.
+        <p className="text-p font-poppins text-neutral-600 dark:text-neutral-400">
+          {t("home.docsListSubtitle", "Consultá la documentación oficial de cada producto, incluyendo conceptos clave, flujos de uso, configuraciones y casos de aplicación.")}
         </p>
       </div>
 

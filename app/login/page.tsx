@@ -7,8 +7,10 @@ import { Button } from 'caralstable';
 import { CaralIcon } from 'iconcaral2';
 import LoginMicrosoftButton from '@/app/components/LoginMicrosoftButton';
 import { useSearchParams } from 'next/navigation';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 function LoginContent() {
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
   const message = searchParams.get('message');
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -63,10 +65,10 @@ function LoginContent() {
         <div className="w-full max-w-md mx-auto my-auto py-6">
           <div className="mb-8">
             <h1 className="text-3xl sm:text-4xl font-poppins font-bold text-neutral-900 dark:text-white tracking-tight">
-              Iniciar Sesión
+              {t('login.title', 'Iniciar Sesión')}
             </h1>
             <p className="text-sm text-neutral-800 mt-2 font-poppins leading-relaxed">
-              Bienvenido al ecosistema de SEIDOR Analytics. Accede con tus credenciales para continuar.
+              {t('login.subtitle', 'Bienvenido al ecosistema de SEIDOR Analytics. Accede con tus credenciales para continuar.')}
             </p>
           </div>
 
@@ -81,7 +83,7 @@ function LoginContent() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-container px-3 text-neutral-800 font-medium font-poppins">
-                  o con credenciales locales
+                  {t('login.orWithLocal', 'o con credenciales locales')}
                 </span>
               </div>
             </div>
@@ -92,14 +94,14 @@ function LoginContent() {
                 className="text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 font-poppins"
                 htmlFor="email"
               >
-                Correo electrónico
+                {t('login.emailLabel', 'Correo electrónico')}
               </label>
               <input
                 id="email"
                 name="email"
                 type="email"
                 required
-                placeholder="nombre@seidor.com"
+                placeholder={t('login.emailPlaceholder', 'nombre@seidor.com')}
                 className="w-full rounded-xl px-4 py-3  border border-neutral-300 dark:border-neutral-700 text-neutral-900 dark:text-white placeholder:text-neutral-400 font-poppins text-sm focus:outline-none focus:ring-2 focus:ring-info-main focus:border-transparent transition-all"
               />
             </div>
@@ -110,7 +112,7 @@ function LoginContent() {
                 className="text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300 font-poppins"
                 htmlFor="password"
               >
-                Contraseña
+                {t('login.passwordLabel', 'Contraseña')}
               </label>
               <input
                 id="password"
@@ -127,7 +129,7 @@ function LoginContent() {
               variant="info"
               className="w-full justify-center h-12 rounded-xl text-sm font-semibold shadow-sm mt-1"
             >
-              Entrar con Email
+              {t('login.loginEmailButton', 'Entrar con Email')}
             </Button>
 
             {/* Mensajes de error o aviso */}
@@ -147,9 +149,9 @@ function LoginContent() {
             className="hover:text-info-main transition-colors flex items-center gap-1.5 py-1"
           >
             <CaralIcon name="chevronLeft" size={14} />
-            <span>Volver al inicio</span>
+            <span>{t('login.backToHome', 'Volver al inicio')}</span>
           </Link>
-          <span>© {new Date().getFullYear()} SEIDOR Analytics</span>
+          <span>{t('login.rightsReserved', '© 2026 SEIDOR Analytics').replace('{year}', new Date().getFullYear().toString())}</span>
         </div>
       </div>
 
@@ -165,3 +167,4 @@ export default function LoginPage() {
     </Suspense>
   );
 }
+

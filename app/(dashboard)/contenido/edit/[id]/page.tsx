@@ -6,12 +6,14 @@ import { Button } from 'caralstable';
 import { useRouter } from 'next/navigation';
 import { MilkdownEditorWrapper } from '@/app/components/Editor/MilkdownEditor';
 import RoadmapEditor from '@/app/components/Editor/RoadmapEditor';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function EditDocumentPage({
   params
 }: {
   params: Promise<{ id: string }>
 }) {
+  const { t } = useTranslation();
   const { id } = use(params);
   const router = useRouter();
   const supabase = createClient();
@@ -68,7 +70,7 @@ export default function EditDocumentPage({
       }
     } catch (err: any) {
       console.error(err.message);
-      alert('Error cargando documento');
+      alert(t('content.errorDocLoad', 'Error cargando documento'));
     } finally {
       setLoading(false);
     }
@@ -97,30 +99,38 @@ export default function EditDocumentPage({
 
       if (error) throw error;
 
-      alert('Documento actualizado correctamente.');
+      alert(t('content.docUpdatedSuccess', 'Documento actualizado correctamente.'));
       if (productSlug && slug) {
         router.push(`/docs/${productSlug}/${slug}`);
       }
     } catch (error: any) {
-      alert('Error: ' + error.message);
+      alert("Error: " + error.message);
     } finally {
       setSaving(false);
     }
   };
 
   if (loading) {
-    return <div className="p-8 text-neutral-500">Cargando documento...</div>;
+    return <div className="p-8 text-neutral-500">{t('content.loadingDoc', 'Cargando documento...')}</div>;
   }
+
+  const getDocTypeLabel = () => {
+    switch (docType) {
+      case 'roadmap': return t('content.typeRoadmap', 'Roadmap');
+      case 'section': return t('content.typeSection', 'Sección');
+      default: return t('content.typeDocument', 'Documento');
+    }
+  };
 
   return (
     <div className="flex flex-col gap-8 w-full max-w-6xl mx-auto py-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl text-neutral-900 dark:text-white font-poppins font-bold">
-          Editar {docType === 'roadmap' ? 'Roadmap' : docType === 'section' ? 'Sección' : 'Documento'}
+          {t('content.editDocPrefix', 'Editar ')}{getDocTypeLabel()}
         </h1>
         {productSlug && (
           <Button variant="ghost" onClick={() => router.push(`/docs/${productSlug}/${slug}`)}>
-            Volver al documento
+            {t('content.backToDoc', 'Volver al documento')}
           </Button>
         )}
       </div>
@@ -130,7 +140,7 @@ export default function EditDocumentPage({
           {/* Fila 1: Título y Slug */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Título del Documento</label>
+              <label className="block text-sm font-medium mb-1">{t('content.titleDoc', 'Título del Documento')}</label>
               <input
                 required
                 value={title}
@@ -139,7 +149,7 @@ export default function EditDocumentPage({
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Slug (URL amigable)</label>
+              <label className="block text-sm font-medium mb-1">{t('content.slugLabel', 'Slug (URL amigable)')}</label>
               <input
                 required
                 value={slug}
@@ -152,7 +162,7 @@ export default function EditDocumentPage({
           {/* Fila 2: Sección y Orden */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-neutral-50 dark:bg-neutral-950 p-4 rounded-lg border border-neutral-100 dark:border-neutral-800">
             <div>
-              <label className="block text-sm font-medium mb-1">Sección</label>
+              <label className="block text-sm font-medium mb-1">{t('content.typeSection', 'Sección')}</label>
               <input
                 required
                 value={section}
@@ -162,7 +172,7 @@ export default function EditDocumentPage({
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Orden (#)</label>
+              <label className="block text-sm font-medium mb-1">{t('content.orderLabel', 'Orden (#)')}</label>
               <input
                 type="number"
                 required
@@ -176,7 +186,7 @@ export default function EditDocumentPage({
           {/* Fila 3: Icono y SEO */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg border border-blue-100 dark:border-blue-900/50">
             <div>
-              <label className="block text-sm font-medium mb-1">Icono de Documento</label>
+              <label className="block text-sm font-medium mb-1">{t('content.iconDocLabel', 'Icono de Documento')}</label>
               <input
                 value={iconName}
                 onChange={(e) => setIconName(e.target.value)}
@@ -190,13 +200,13 @@ export default function EditDocumentPage({
                   onChange={(e) => setUseBrand(e.target.checked)}
                   className="rounded text-blue-600 focus:ring-blue-500"
                 />
-                Es un Brand Logo de iconcaral2
+                {t('content.isBrandIcon', 'Es un Brand Logo de iconcaral2')}
               </label>
             </div>
 
             <div className="flex flex-col gap-2">
               <div>
-                <label className="block text-sm font-medium mb-1">Descripción SEO (Cabecera)</label>
+                <label className="block text-sm font-medium mb-1">{t('content.seoDescHeader', 'Descripción SEO (Cabecera)')}</label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
@@ -211,21 +221,21 @@ export default function EditDocumentPage({
                   onChange={(e) => setHideToc(e.target.checked)}
                   className="rounded text-blue-600 focus:ring-blue-500"
                 />
-                Ocultar la Tabla de Contenidos (ToC)
+                {t('content.hideTocAbbr', 'Ocultar la Tabla de Contenidos (ToC)')}
               </label>
             </div>
           </div>
 
           {/* Fila 4: Status */}
           <div>
-            <label className="block text-sm font-medium mb-1">Estado</label>
+            <label className="block text-sm font-medium mb-1">{t('content.status', 'Estado')}</label>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value)}
               className="rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-inherit text-sm"
             >
-              <option value="published">Publicado</option>
-              <option value="draft">Borrador</option>
+              <option value="published">{t('content.statusPublished', 'Publicado')}</option>
+              <option value="draft">{t('content.statusDraft', 'Borrador')}</option>
             </select>
           </div>
 
@@ -233,7 +243,7 @@ export default function EditDocumentPage({
           {docType === 'document' && (
             <div className="mt-4">
               <h2 className="text-xl font-poppins font-semibold mb-4 text-blue-600 dark:text-blue-400">
-                Contenido
+                {t('content.contentHeading', 'Contenido')}
               </h2>
               <MilkdownEditorWrapper
                 content={content}
@@ -246,7 +256,7 @@ export default function EditDocumentPage({
           {docType === 'roadmap' && (
             <div className="mt-4 flex-1 flex flex-col min-h-[400px]">
               <h2 className="text-xl font-poppins font-semibold mb-4 text-blue-600 dark:text-blue-400">
-                Roadmap Builder
+                {t('content.roadmapBuilder', 'Roadmap Builder')}
               </h2>
               <div className="flex-1 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg overflow-hidden flex flex-col">
                 <RoadmapEditor
@@ -259,7 +269,7 @@ export default function EditDocumentPage({
 
           <div className="flex justify-end mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-800">
             <Button type="submit" variant="info" disabled={saving}>
-              {saving ? 'Guardando...' : 'Guardar Cambios'}
+              {saving ? t('content.saving', 'Guardando...') : t('content.saveChanges', 'Guardar Cambios')}
             </Button>
           </div>
         </form>

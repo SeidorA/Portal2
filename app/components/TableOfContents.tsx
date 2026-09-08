@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Button } from 'caralstable';
+import { useTranslation } from '@/app/context/LanguageContext';
+import { extractLanguageContent } from '@/utils/multilingual-content';
 
 interface TocItem {
   level: number;
@@ -9,8 +11,34 @@ interface TocItem {
   id: string;
 }
 
-export default function TableOfContents({ toc }: { toc: TocItem[] }) {
+export default function TableOfContents({ toc, rawContent }: { toc?: TocItem[], rawContent?: string }) {
+  const { t, language } = useTranslation();
   const [isOpen, setIsOpen] = useState(true);
+
+  const activeToc = useMemo(() => {
+    if (rawContent) {
+      const activeText = extractLanguageContent(rawContent, language as 'es' | 'en');
+      const items: TocItem[] = [];
+      const headingRegex = /(?:^|\n)(#{2,3})\s+([^\n]+)/g;
+      let match;
+      while ((match = headingRegex.exec(activeText)) !== null) {
+        const level = match[1].length;
+        let title = match[2].trim();
+        if (title.endsWith('\r')) title = title.slice(0, -1);
+
+        const cleanTitle = title
+          .replace(/[*_`]/g, '')
+          .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+          .replace(/!(?:icon|brand)-[\w-]+!/g, '')
+          .trim();
+        const id = cleanTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+        items.push({ level, title: cleanTitle, id });
+      }
+      return items;
+    }
+    return toc || [];
+  }, [rawContent, toc, language]);
 
   return (
     <aside
@@ -20,7 +48,7 @@ export default function TableOfContents({ toc }: { toc: TocItem[] }) {
       <div className={`flex gap-2 items-center mb-4 ${!isOpen ? 'justify-end' : ''}`}>
         {isOpen && (
           <span className="font-semibold text-sm uppercase tracking-wider text-neutral-900 dark:text-white whitespace-nowrap">
-            En esta página
+            {t('docs.onThisPage', 'En esta página')}
           </span>
         )}
         <Button
@@ -33,11 +61,11 @@ export default function TableOfContents({ toc }: { toc: TocItem[] }) {
 
       {isOpen && (
         <div className="animate-fade-in">
-          {toc.length === 0 ? (
-            <p className="text-xs text-neutral-500">No hay subtítulos.</p>
+          {activeToc.length === 0 ? (
+            <p className="text-xs text-neutral-500">{t('docs.noSubtitles', 'No hay subtítulos.')}</p>
           ) : (
             <ul className="flex flex-col gap-2 border-l border-neutral-200 dark:border-neutral-800 text-[12px]">
-              {toc.map((item, idx) => (
+              {activeToc.map((item, idx) => (
                 <li
                   key={idx}
                   className={`${item.level === 3 ? 'pl-6' : 'pl-4'}`}

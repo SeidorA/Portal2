@@ -1,6 +1,9 @@
+"use client";
+
 import React, { useState } from 'react';
 import { CaralIcon } from 'iconcaral2';
 import { Toggle, Button } from 'caralstable';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 interface AutomationBuilderProps {
   products: any[];
@@ -23,6 +26,7 @@ export default function AutomationBuilder({
   profiles = [],
   roles = []
 }: AutomationBuilderProps) {
+  const { t } = useTranslation();
 
   // Default auto_advance mapped to trigger_automations
   const handleToggleRule = (stageId: string, ruleType: string, isEnabled: boolean) => {
@@ -142,14 +146,16 @@ export default function AutomationBuilder({
     <div className="flex flex-col gap-6 animate-fade-in">
       <div className="flex justify-between items-center">
         <div>
-          <h3 className="text-lg font-medium text-neutral-900 dark:text-white">Triggers y Aprobaciones (Human-in-the-Loop)</h3>
+          <h3 className="text-lg font-medium text-neutral-900 dark:text-white">
+            {t('opportunities.automationTitle', 'Triggers y Aprobaciones (Human-in-the-Loop)')}
+          </h3>
           <p className="text-sm text-neutral-800">
-            Configura qué debe suceder para que la oportunidad pase de esta etapa a la siguiente. Puedes combinar reglas (se exigirán TODAS).
+            {t('opportunities.automationSubtitle', 'Configura qué debe suceder para que la oportunidad pase de esta etapa a la siguiente. Puedes combinar reglas (se exigirán TODAS).')}
           </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
-          <span className="text-sm text-neutral-600 dark:text-neutral-800">Producto:</span>
+          <span className="text-sm text-neutral-600 dark:text-neutral-800">{t('opportunities.productLabel', 'Producto:')}</span>
           <select
             className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
             value={selectedProduct || ''}
@@ -192,7 +198,11 @@ export default function AutomationBuilder({
                         {stage.name}
                       </h4>
                     </div>
-                    {isLastStage && <span className="text-[10px] bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-bold px-2 py-0.5 rounded-full shrink-0">Última</span>}
+                    {isLastStage && (
+                      <span className="text-[10px] bg-neutral-200 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 font-bold px-2 py-0.5 rounded-full shrink-0">
+                        {t('opportunities.lastBadge', 'Última')}
+                      </span>
+                    )}
                   </div>
 
                   {/* Aprobaciones HITL (Cuerpo de la Columna) */}
@@ -200,20 +210,22 @@ export default function AutomationBuilder({
                     {/* --- APROBACIONES HITL --- */}
                     <div className="flex items-center gap-2 mb-1">
                       <CaralIcon name="check" size={14} />
-                      <span className="text-xs font-bold text-neutral-800 uppercase tracking-wider">Aprobaciones</span>
+                      <span className="text-xs font-bold text-neutral-800 uppercase tracking-wider">
+                        {t('opportunities.approvalsHeader', 'Aprobaciones')}
+                      </span>
                     </div>
 
-                    {triggers.filter((t: any) => t.type === 'user_approval' || t.type === 'role_approval').map((t: any) => {
-                      const idx = triggers.indexOf(t);
+                    {triggers.filter((t: any) => t.type === 'user_approval' || t.type === 'role_approval').map((tItem: any) => {
+                      const idx = triggers.indexOf(tItem);
                       let iconName = 'user';
                       let label = '';
-                      if (t.type === 'user_approval') {
-                        const u = profiles.find(p => p.id.toString() === t.target.toString());
-                        label = `Usuario: ${u ? u.email : t.target}`;
-                      } else if (t.type === 'role_approval') {
-                        const r = roles.find(r => r.id.toString() === t.target.toString());
+                      if (tItem.type === 'user_approval') {
+                        const u = profiles.find(p => p.id.toString() === tItem.target.toString());
+                        label = `${t('opportunities.userPrefix', 'Usuario:')} ${u ? u.email : tItem.target}`;
+                      } else if (tItem.type === 'role_approval') {
+                        const r = roles.find(r => r.id.toString() === tItem.target.toString());
                         iconName = 'shield';
-                        label = `Rol: ${r ? r.name : t.target}`;
+                        label = `${t('opportunities.rolePrefix', 'Rol:')} ${r ? r.name : tItem.target}`;
                       }
 
                       return (
@@ -231,7 +243,7 @@ export default function AutomationBuilder({
 
                     {triggers.filter((t: any) => t.type === 'user_approval' || t.type === 'role_approval').length === 0 && (
                       <div className="text-xs text-neutral-800 italic text-center py-2 border border-dashed border-neutral-200 dark:border-neutral-700 rounded-lg">
-                        Ninguna
+                        {t('opportunities.none', 'Ninguna')}
                       </div>
                     )}
 
@@ -240,7 +252,7 @@ export default function AutomationBuilder({
                         onClick={() => setActiveStageAdd(stage.id)}
                         className="flex items-center justify-center gap-1 text-xs text-info-main font-bold mt-1 hover:bg-info-main/5 p-2 rounded-lg transition-colors border border-transparent hover:border-info-main/20"
                       >
-                        <CaralIcon name="plus" size={12} /> Añadir regla
+                        <CaralIcon name="plus" size={12} /> {t('opportunities.addRuleBtn', 'Añadir regla')}
                       </button>
                     )}
 
@@ -251,8 +263,8 @@ export default function AutomationBuilder({
                           value={newRuleType}
                           onChange={(e) => setNewRuleType(e.target.value as any)}
                         >
-                          <option value="role_approval">Aprobación por Rol</option>
-                          <option value="user_approval">Aprobación por Usuario</option>
+                          <option value="role_approval">{t('opportunities.approvalByRole', 'Aprobación por Rol')}</option>
+                          <option value="user_approval">{t('opportunities.approvalByUser', 'Aprobación por Usuario')}</option>
                         </select>
 
                         <select
@@ -260,7 +272,7 @@ export default function AutomationBuilder({
                           value={newRuleTarget}
                           onChange={(e) => setNewRuleTarget(e.target.value)}
                         >
-                          <option value="">Seleccione...</option>
+                          <option value="">{t('opportunities.selectOptionShort', 'Seleccione...')}</option>
                           {newRuleType === 'role_approval' && roles.map(r => (
                             <option key={r.id} value={r.id}>{r.name}</option>
                           ))}
@@ -271,7 +283,7 @@ export default function AutomationBuilder({
 
                         <div className="flex justify-end gap-2 mt-1">
                           <button onClick={() => setActiveStageAdd(null)} className="text-xs text-neutral-800 hover:text-neutral-700 font-medium px-2 py-1">
-                            Cancelar
+                            {t('opportunities.cancel', 'Cancelar')}
                           </button>
                           <Button
                             variant="info"
@@ -283,7 +295,7 @@ export default function AutomationBuilder({
                               setNewRuleTarget('');
                             }}
                           >
-                            Añadir
+                            {t('opportunities.addBtn', 'Añadir')}
                           </Button>
                         </div>
                       </div>
@@ -292,18 +304,22 @@ export default function AutomationBuilder({
                     {/* --- ACCIONES AUTOMÁTICAS --- */}
                     <div className="flex items-center gap-2 mb-1 mt-4">
                       <CaralIcon name="bolt" size={14} className="text-purple-600" />
-                      <span className="text-xs font-bold text-neutral-800 uppercase tracking-wider">Acciones (Al entrar)</span>
+                      <span className="text-xs font-bold text-neutral-800 uppercase tracking-wider">
+                        {t('opportunities.actionsOnEnterHeader', 'Acciones (Al entrar)')}
+                      </span>
                     </div>
 
-                    {triggers.filter((t: any) => t.type === 'add_comment').map((t: any) => {
-                      const idx = triggers.indexOf(t);
+                    {triggers.filter((t: any) => t.type === 'add_comment').map((tItem: any) => {
+                      const idx = triggers.indexOf(tItem);
                       return (
                         <div key={idx} className="flex items-start justify-between p-3 bg-purple-50 dark:bg-purple-900/10 rounded-lg border border-purple-100 dark:border-purple-900/50 shadow-sm">
                           <div className="flex items-start gap-2 min-w-0 flex-1">
                             <CaralIcon name="message-square" size={14} className="text-purple-600 mt-0.5 shrink-0" />
                             <div className="flex flex-col gap-1 min-w-0 flex-1">
-                              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 leading-tight">Agregar Comentario</span>
-                              <span className="text-xs text-neutral-800 italic truncate" title={t.text}>"{t.text}"</span>
+                              <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 leading-tight">
+                                {t('opportunities.addCommentAction', 'Agregar Comentario')}
+                              </span>
+                              <span className="text-xs text-neutral-800 italic truncate" title={tItem.text}>&ldquo;{tItem.text}&rdquo;</span>
                             </div>
                           </div>
                           <button onClick={() => handleRemoveRule(stage.id, idx)} className="text-danger-main hover:text-danger-dark p-1 shrink-0 ml-2">
@@ -315,7 +331,7 @@ export default function AutomationBuilder({
 
                     {triggers.filter((t: any) => t.type === 'add_comment').length === 0 && (
                       <div className="text-xs text-neutral-800 italic text-center py-2 border border-dashed border-neutral-200 dark:border-neutral-700 rounded-lg">
-                        Ninguna
+                        {t('opportunities.none', 'Ninguna')}
                       </div>
                     )}
 
@@ -324,7 +340,7 @@ export default function AutomationBuilder({
                         onClick={() => setActiveStageAddAction(stage.id)}
                         className="flex items-center justify-center gap-1 text-xs text-purple-600 font-bold mt-1 hover:bg-purple-100/50 p-2 rounded-lg transition-colors border border-transparent hover:border-purple-200"
                       >
-                        <CaralIcon name="plus" size={12} /> Añadir acción
+                        <CaralIcon name="plus" size={12} /> {t('opportunities.addActionBtn', 'Añadir acción')}
                       </button>
                     )}
 
@@ -335,13 +351,13 @@ export default function AutomationBuilder({
                           value={newActionType}
                           onChange={(e) => setNewActionType(e.target.value as any)}
                         >
-                          <option value="add_comment">Agregar Comentario</option>
+                          <option value="add_comment">{t('opportunities.addCommentAction', 'Agregar Comentario')}</option>
                         </select>
 
                         {newActionType === 'add_comment' && (
                           <textarea
                             className="p-2 rounded border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs w-full min-h-[60px] resize-none"
-                            placeholder="Escribe el comentario automático..."
+                            placeholder={t('opportunities.writeAutoCommentPlaceholder', 'Escribe el comentario automático...')}
                             value={newActionPayload}
                             onChange={(e) => setNewActionPayload(e.target.value)}
                           />
@@ -349,7 +365,7 @@ export default function AutomationBuilder({
 
                         <div className="flex justify-end gap-2 mt-1">
                           <button onClick={() => { setActiveStageAddAction(null); setNewActionPayload(''); }} className="text-xs text-neutral-800 hover:text-neutral-700 font-medium px-2 py-1">
-                            Cancelar
+                            {t('opportunities.cancel', 'Cancelar')}
                           </button>
                           <Button
                             variant="primary"
@@ -361,7 +377,7 @@ export default function AutomationBuilder({
                               setNewActionPayload('');
                             }}
                           >
-                            Añadir
+                            {t('opportunities.addBtn', 'Añadir')}
                           </Button>
                         </div>
                       </div>
@@ -388,10 +404,10 @@ export default function AutomationBuilder({
                     {/* Toggle Container */}
                     <div className={`relative z-10 flex flex-col items-center justify-center p-3 rounded-xl border-2 transition-colors ${hasAutoAdvanceRule ? 'bg-white dark:bg-neutral-900 border-success-main shadow-md shadow-success-main/10' : 'bg-neutral-50 dark:bg-neutral-900 border-neutral-200 dark:border-neutral-800'}`}>
                       <span className={`text-[10px] font-bold uppercase tracking-wider mb-2 text-center leading-tight ${hasAutoAdvanceRule ? 'text-success-main' : 'text-neutral-800'}`}>
-                        Avance<br />Automático
+                        {t('opportunities.autoAdvanceLabel', 'Avance Automático')}
                       </span>
                       <Toggle
-                        onChange={(e) => handleToggleRule(stage.id, 'auto_advance', !hasAutoAdvanceRule)}
+                        onChange={() => handleToggleRule(stage.id, 'auto_advance', !hasAutoAdvanceRule)}
                         checked={hasAutoAdvanceRule}
                       />
                     </div>
@@ -405,3 +421,4 @@ export default function AutomationBuilder({
     </div>
   );
 }
+

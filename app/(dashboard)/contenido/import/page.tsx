@@ -6,8 +6,10 @@ import { Button } from 'caralstable';
 import { useRouter } from 'next/navigation';
 import { parseDocusaurusMarkdown, ParsedDocusaurusDoc } from '@/utils/docusaurus-parser';
 import { MilkdownEditorWrapper } from '@/app/components/Editor/MilkdownEditor';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function ImportDocumentPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const supabase = createClient();
 
@@ -41,8 +43,8 @@ export default function ImportDocumentPage() {
   };
 
   const handleImport = async () => {
-    if (!parsedDoc) return alert('No hay documento parseado');
-    if (!selectedProductId) return alert('Selecciona un producto');
+    if (!parsedDoc) return alert(t('content.noParsedDocAlert', 'No hay documento parseado'));
+    if (!selectedProductId) return alert(t('content.selectProductAlert', 'Selecciona un producto'));
 
     try {
       setSaving(true);
@@ -68,15 +70,15 @@ export default function ImportDocumentPage() {
 
       if (error) {
         if (error.code === '23505') { // Unique violation
-          throw new Error('Ya existe un documento con ese slug para este producto.');
+          throw new Error(t('content.duplicateSlugError', 'Ya existe un documento con ese slug para este producto.'));
         }
         throw error;
       }
 
-      alert('Documento importado correctamente.');
+      alert(t('content.docImportedSuccess', 'Documento importado correctamente.'));
       router.push(`/contenido`);
     } catch (error: any) {
-      alert('Error al importar: ' + error.message);
+      alert(t('content.importError', 'Error al importar: ') + error.message);
     } finally {
       setSaving(false);
     }
@@ -86,10 +88,10 @@ export default function ImportDocumentPage() {
     <div className="flex flex-col gap-8 w-full max-w-6xl mx-auto py-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl text-neutral-900 dark:text-white font-poppins font-bold">
-          Importar de Docusaurus
+          {t('content.importTitle', 'Importar de Docusaurus')}
         </h1>
         <Button variant="ghost" onClick={() => router.push('/contenido')}>
-          Volver
+          {t('content.back', 'Volver')}
         </Button>
       </div>
 
@@ -98,20 +100,20 @@ export default function ImportDocumentPage() {
         {/* Selección de Producto y Archivo */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1">Producto Destino</label>
+            <label className="block text-sm font-medium mb-1">{t('content.targetProduct', 'Producto Destino')}</label>
             <select
               value={selectedProductId}
               onChange={(e) => setSelectedProductId(e.target.value)}
               className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-inherit"
             >
-              <option value="" disabled>Selecciona un producto</option>
+              <option value="" disabled>{t('content.selectProduct', 'Selecciona un producto')}</option>
               {products.map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium mb-1">Archivo Markdown (.md)</label>
+            <label className="block text-sm font-medium mb-1">{t('content.markdownFile', 'Archivo Markdown (.md)')}</label>
             <input
               type="file"
               accept=".md"
@@ -124,11 +126,11 @@ export default function ImportDocumentPage() {
         {/* Vista previa de metadatos extraídos */}
         {parsedDoc && (
           <div className="mt-4 p-4 bg-neutral-50 dark:bg-neutral-950 border border-neutral-200 dark:border-neutral-800 rounded-lg">
-            <h2 className="text-lg font-bold mb-4 text-blue-600 dark:text-blue-400">Vista Previa de Extracción</h2>
+            <h2 className="text-lg font-bold mb-4 text-blue-600 dark:text-blue-400">{t('content.previewExtraction', 'Vista Previa de Extracción')}</h2>
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
               <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Título</label>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">{t('content.previewTitle', 'Título')}</label>
                 <input 
                   value={parsedDoc.title} 
                   onChange={(e) => setParsedDoc({...parsedDoc, title: e.target.value})}
@@ -136,7 +138,7 @@ export default function ImportDocumentPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Slug</label>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">{t('content.previewSlug', 'Slug')}</label>
                 <input 
                   value={parsedDoc.slug} 
                   onChange={(e) => setParsedDoc({...parsedDoc, slug: e.target.value})}
@@ -144,7 +146,7 @@ export default function ImportDocumentPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Sección (Sidebar Label)</label>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">{t('content.previewSection', 'Sección (Sidebar Label)')}</label>
                 <input 
                   value={parsedDoc.section} 
                   onChange={(e) => setParsedDoc({...parsedDoc, section: e.target.value})}
@@ -152,7 +154,7 @@ export default function ImportDocumentPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Posición (Order)</label>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">{t('content.previewOrder', 'Posición (Order)')}</label>
                 <input 
                   type="number"
                   value={parsedDoc.order_index} 
@@ -164,7 +166,7 @@ export default function ImportDocumentPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Icono de Documento</label>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">{t('content.iconDocLabel', 'Icono de Documento')}</label>
                 <input 
                   value={parsedDoc.icon_name} 
                   onChange={(e) => setParsedDoc({...parsedDoc, icon_name: e.target.value})}
@@ -179,25 +181,25 @@ export default function ImportDocumentPage() {
                     onChange={(e) => setParsedDoc({...parsedDoc, use_brand: e.target.checked})}
                     className="rounded text-blue-600 focus:ring-blue-500"
                   />
-                  Es un Brand Logo de iconcaral2
+                  {t('content.isBrandIcon', 'Es un Brand Logo de iconcaral2')}
                 </label>
               </div>
             </div>
 
             <div className="mt-6 border-t border-neutral-200 dark:border-neutral-800 pt-4">
-              <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">Contenido Convertido</label>
+              <label className="block text-sm font-bold text-neutral-700 dark:text-neutral-300 mb-2">{t('content.convertedContent', 'Contenido Convertido')}</label>
               <div className="max-h-[500px] overflow-y-auto border border-neutral-300 dark:border-neutral-700 rounded-md">
                 <MilkdownEditorWrapper
                   content={parsedDoc.content}
                   onChange={(markdown) => setParsedDoc({...parsedDoc, content: markdown})}
                 />
               </div>
-              <p className="text-xs text-neutral-500 mt-2">Puedes editar el contenido antes de importarlo. El documento se guardará como borrador (Draft).</p>
+              <p className="text-xs text-neutral-500 mt-2">{t('content.convertedHelp', 'Puedes editar el contenido antes de importarlo. El documento se guardará como borrador (Draft).')}</p>
             </div>
 
             <div className="flex justify-end mt-6">
               <Button onClick={handleImport} variant="info" disabled={saving || !selectedProductId}>
-                {saving ? 'Importando...' : 'Importar a Base de Datos'}
+                {saving ? t('content.importing', 'Importando...') : t('content.importToDb', 'Importar a Base de Datos')}
               </Button>
             </div>
           </div>

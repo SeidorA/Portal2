@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { CaralIcon } from 'iconcaral2';
 import { Button } from 'caralstable';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 interface StorageItem {
   name: string;
@@ -15,6 +16,7 @@ interface StorageItem {
 }
 
 export default function RecursosPage() {
+  const { t } = useTranslation();
   const [items, setItems] = useState<StorageItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPath, setCurrentPath] = useState<string>('');
@@ -51,7 +53,7 @@ export default function RecursosPage() {
       setItems(filtered);
     } catch (error: any) {
       console.error('Error fetching storage items:', error.message);
-      alert('Error al cargar archivos: ' + error.message);
+      alert(t("resourcesAdmin.loadError", "Error al cargar archivos: ") + error.message);
     } finally {
       setLoading(false);
     }
@@ -101,7 +103,7 @@ export default function RecursosPage() {
       fetchItems(currentPath);
     } catch (error: any) {
       console.error('Error uploading:', error.message);
-      alert('Error al subir archivo: ' + error.message);
+      alert(t("resourcesAdmin.uploadError", "Error al subir archivo: ") + error.message);
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -133,8 +135,10 @@ export default function RecursosPage() {
 
   const handleDelete = async (item: StorageItem) => {
     const isFolder = item.id === null || item.metadata === null;
-    const typeStr = isFolder ? 'la carpeta' : 'el archivo';
-    if (!window.confirm(`¿Estás seguro de que deseas eliminar ${typeStr} "${item.name}"?`)) return;
+    const confirmMsg = isFolder
+      ? t("resourcesAdmin.deleteConfirmFolder", "¿Estás seguro de que deseas eliminar la carpeta \"{name}\"?").replace('{name}', item.name)
+      : t("resourcesAdmin.deleteConfirmFile", "¿Estás seguro de que deseas eliminar el archivo \"{name}\"?").replace('{name}', item.name);
+    if (!window.confirm(confirmMsg)) return;
 
     setUploading(true);
     try {
@@ -157,14 +161,14 @@ export default function RecursosPage() {
       fetchItems(currentPath);
     } catch (error: any) {
       console.error('Error deleting:', error.message);
-      alert('Error al eliminar: ' + error.message);
+      alert(t("resourcesAdmin.deleteError", "Error al eliminar: ") + error.message);
     } finally {
       setUploading(false);
     }
   };
 
   const createFolder = async () => {
-    const folderName = window.prompt("Nombre de la nueva carpeta:");
+    const folderName = window.prompt(t("resourcesAdmin.newFolderPrompt", "Nombre de la nueva carpeta:"));
     if (!folderName || folderName.trim() === "") return;
 
     // Supabase uses virtual folders, so we upload a placeholder file to create it
@@ -185,7 +189,7 @@ export default function RecursosPage() {
       fetchItems(currentPath);
     } catch (error: any) {
       console.error('Error creating folder:', error.message);
-      alert('Error al crear carpeta: ' + error.message);
+      alert(t("resourcesAdmin.createFolderError", "Error al crear carpeta: ") + error.message);
     } finally {
       setUploading(false);
     }
@@ -238,7 +242,7 @@ export default function RecursosPage() {
       fetchItems(currentPath);
     } catch (error: any) {
       console.error('Error moving:', error.message);
-      alert('Error al mover: ' + error.message);
+      alert(t("resourcesAdmin.moveError", "Error al mover: ") + error.message);
     } finally {
       setUploading(false);
     }
@@ -252,18 +256,18 @@ export default function RecursosPage() {
   const breadcrumbs = currentPath.split('/').filter(Boolean);
 
   return (
-    <div className="flex flex-col h-full bg-full font-poppins text-neutral-800 dark:text-neutral-200 text-neutral-900 animate-fade-in relative">
-      <div className="flex-none p-6 flex items-center justify-between p-4 bg-container rounded-xl">
+    <div className="flex flex-col h-full bg-full font-poppins text-neutral-800 dark:text-neutral-200 animate-fade-in relative">
+      <div className="flex-none flex items-center justify-between p-6 bg-container rounded-xl border border-neutral-200 dark:border-neutral-800">
         <div>
-          <h1 className="text-2xl font-semibold mb-2 flex items-center gap-2">
-            <CaralIcon name="image" size="m" /> Recursos
+          <h1 className="text-2xl font-semibold mb-2 flex items-center gap-2 text-neutral-900 dark:text-white">
+            <CaralIcon name="image" size="m" /> {t("resourcesAdmin.title", "Recursos")}
           </h1>
-          <div className="flex items-center gap-2 text-sm text-neutral-800">
+          <div className="flex items-center gap-2 text-sm text-neutral-600 dark:text-neutral-400">
             <button
               onClick={() => handleBreadcrumbClick(-1)}
               className="hover:text-info-main hover:underline transition-colors"
             >
-              raíz
+              {t("resourcesAdmin.root", "raíz")}
             </button>
             {breadcrumbs.map((crumb, idx) => (
               <React.Fragment key={idx}>
@@ -279,7 +283,7 @@ export default function RecursosPage() {
           </div>
         </div>
 
-        <div>
+        <div className="flex items-center gap-2">
           <input
             type="file"
             ref={fileInputRef}
@@ -293,7 +297,7 @@ export default function RecursosPage() {
             iconName="newFile"
             variant='ghost'
           >
-            Nueva Carpeta
+            {t("resourcesAdmin.newFolder", "Nueva Carpeta")}
           </Button>
           <Button
             onClick={() => fileInputRef.current?.click()}
@@ -301,19 +305,18 @@ export default function RecursosPage() {
             iconName="arrowUpToLine"
             variant='info'
           >
-            Subir Archivo
+            {t("resourcesAdmin.uploadFile", "Subir Archivo")}
           </Button>
-
         </div>
       </div>
 
       <div className="flex-1 overflow-auto pt-6">
         {loading ? (
-          <div className="text-center py-12 text-neutral-500">Cargando archivos...</div>
+          <div className="text-center py-12 text-neutral-500 font-poppins">{t("resourcesAdmin.loading", "Cargando archivos...")}</div>
         ) : items.length === 0 ? (
-          <div className="text-center py-20 flex flex-col items-center gap-4 text-neutral-500 border border-dashed border-neutral-300 dark:border-neutral-700 rounded-xl">
+          <div className="text-center py-20 flex flex-col items-center gap-4 text-neutral-500 border border-dashed border-neutral-300 dark:border-neutral-700 rounded-xl font-poppins">
             <CaralIcon name="folder" size="l" />
-            <p>Esta carpeta está vacía.</p>
+            <p>{t("resourcesAdmin.emptyFolder", "Esta carpeta está vacía.")}</p>
           </div>
         ) : (
           <div className="grid sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
@@ -331,7 +334,7 @@ export default function RecursosPage() {
                     <div className="text-info-main opacity-80 group-hover:opacity-100 transition-opacity">
                       <CaralIcon name="folder" size="l" />
                     </div>
-                    <span className="text-sm font-medium text-center truncate w-full" title={item.name}>{item.name}</span>
+                    <span className="text-sm font-medium text-center truncate w-full text-neutral-900 dark:text-white" title={item.name}>{item.name}</span>
                   </div>
                 );
               }
@@ -356,8 +359,8 @@ export default function RecursosPage() {
                     )}
                   </div>
                   <div className="p-3 flex flex-col gap-1">
-                    <span className="text-sm font-medium truncate w-full" title={item.name}>{item.name}</span>
-                    <span className="text-xs text-neutral-500 truncate">{item.metadata?.mimetype || 'Archivo'}</span>
+                    <span className="text-sm font-medium truncate w-full text-neutral-900 dark:text-white" title={item.name}>{item.name}</span>
+                    <span className="text-xs text-neutral-500 truncate">{item.metadata?.mimetype || t("resourcesAdmin.fileTypeFallback", "Archivo")}</span>
                   </div>
                 </div>
               );
@@ -369,19 +372,27 @@ export default function RecursosPage() {
       {/* Modal Mover */}
       {moveModalOpen && itemToMove && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 w-[400px] shadow-2xl flex flex-col gap-4">
-            <h3 className="text-lg font-semibold">Mover {itemToMove.id === null ? 'Carpeta' : 'Archivo'}</h3>
-            <p className="text-sm text-neutral-600">Estás moviendo <strong>{itemToMove.name}</strong>. Escribe la ruta de la carpeta destino (déjalo en blanco para mover a la raíz).</p>
+          <div className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-6 w-[400px] shadow-2xl flex flex-col gap-4 font-poppins">
+            <h3 className="text-lg font-semibold text-neutral-900 dark:text-white">
+              {t("resourcesAdmin.moveTitle", "Mover {type}").replace('{type}', itemToMove.id === null ? t("resourcesAdmin.folder", "Carpeta") : t("resourcesAdmin.fileTypeFallback", "Archivo"))}
+            </h3>
+            <p className="text-sm text-neutral-600 dark:text-neutral-400">
+              {t("resourcesAdmin.moveDesc", "Estás moviendo {name}. Escribe la ruta de la carpeta destino (déjalo en blanco para mover a la raíz).").replace('{name}', itemToMove.name)}
+            </p>
             <input
               type="text"
               value={destinationPath}
               onChange={(e) => setDestinationPath(e.target.value)}
-              placeholder="ej: uploads/imagenes"
-              className="w-full p-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-transparent text-sm outline-none focus:border-info-main"
+              placeholder={t("resourcesAdmin.movePlaceholder", "ej: uploads/imagenes")}
+              className="w-full p-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-transparent text-sm outline-none focus:border-info-main text-neutral-900 dark:text-white"
             />
             <div className="flex gap-2 justify-end mt-2">
-              <Button variant="ghost" onClick={() => setMoveModalOpen(false)}>Cancelar</Button>
-              <Button onClick={handleMove} isLoading={uploading}>Mover</Button>
+              <Button variant="ghost" onClick={() => setMoveModalOpen(false)}>
+                {t("resourcesAdmin.cancel", "Cancelar")}
+              </Button>
+              <Button variant="info" onClick={handleMove} isLoading={uploading}>
+                {t("resourcesAdmin.move", "Mover")}
+              </Button>
             </div>
           </div>
         </div>
@@ -390,13 +401,13 @@ export default function RecursosPage() {
       {/* Context Menu */}
       {contextMenu.visible && contextMenu.item && (
         <div
-          className="fixed z-[200] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow-xl rounded-xl py-2 flex flex-col min-w-[150px] animate-fade-in"
+          className="fixed z-[200] bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 shadow-xl rounded-xl py-2 flex flex-col min-w-[150px] animate-fade-in font-poppins"
           style={{ top: contextMenu.y, left: contextMenu.x }}
           onClick={(e) => e.stopPropagation()} // Prevent closing immediately if they click inside the menu
         >
           {contextMenu.item && (contextMenu.item.id !== null && contextMenu.item.metadata !== null) && (
             <button
-              className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left transition-colors border-b border-neutral-100 dark:border-neutral-800"
+              className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left transition-colors border-b border-neutral-100 dark:border-neutral-800 cursor-pointer"
               onClick={() => {
                 const url = getPublicUrl(contextMenu.item!.name);
                 navigator.clipboard.writeText(url);
@@ -404,28 +415,28 @@ export default function RecursosPage() {
               }}
             >
               <CaralIcon name="link" size="s" />
-              Copiar enlace
+              {t("resourcesAdmin.copyLink", "Copiar enlace")}
             </button>
           )}
           <button
-            className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left transition-colors cursor-pointer"
             onClick={() => {
               openMoveModal(contextMenu.item!);
               setContextMenu(prev => ({ ...prev, visible: false }));
             }}
           >
             <CaralIcon name="chevronsUp" size="s" />
-            Mover
+            {t("resourcesAdmin.move", "Mover")}
           </button>
           <button
-            className="flex items-center gap-2 px-4 py-2 text-sm text-danger-main hover:bg-danger-light w-full text-left transition-colors"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-danger-main hover:bg-danger-light dark:hover:bg-danger-dark/20 w-full text-left transition-colors cursor-pointer"
             onClick={() => {
               handleDelete(contextMenu.item!);
               setContextMenu(prev => ({ ...prev, visible: false }));
             }}
           >
             <CaralIcon name="trash" size="s" />
-            Eliminar
+            {t("resourcesAdmin.delete", "Eliminar")}
           </button>
         </div>
       )}

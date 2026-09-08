@@ -4,14 +4,15 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button, Tabs } from 'caralstable';
 import { createClient } from '@/utils/supabase/client';
-import { CaralIcon } from 'iconcaral2';
 import RequirementsBoard from './RequirementsBoard';
 import StageBuilder from './StageBuilder';
 import OpportunityFieldBuilder from './OpportunityFieldBuilder';
 import AutomationBuilder from './AutomationBuilder';
 import AccessBuilder from './AccessBuilder';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function ConfigurarPipelinePage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'etapas' | 'campos' | 'requisitos' | 'triggers' | 'accesos'>('etapas');
   const [stages, setStages] = useState<any[]>([]);
@@ -41,7 +42,6 @@ export default function ConfigurarPipelinePage() {
 
       if (productsData) setProducts(productsData);
       if (productsData && productsData.length > 0) {
-        setSelectedProduct(productsData[0].id);
         setSelectedProduct(productsData[0].id);
         loadConfigData(productsData[0].id);
       }
@@ -101,12 +101,12 @@ export default function ConfigurarPipelinePage() {
         .insert(toInsert);
 
       if (error) {
-        alert("Error al guardar: " + error.message);
+        alert(t('opportunities.errorSaving', "Error al guardar: ") + error.message);
         return;
       }
     }
 
-    alert('Configuración guardada exitosamente');
+    alert(t('opportunities.configSavedSuccess', 'Configuración guardada exitosamente'));
   };
 
   return (
@@ -114,7 +114,7 @@ export default function ConfigurarPipelinePage() {
 
       <div className='absolute bottom-15 right-15 z-10'>
         <Button variant="info" iconName="save" onClick={handleSave}>
-          Guardar Cambios
+          {t('opportunities.saveChanges', 'Guardar Cambios')}
         </Button>
       </div>
 
@@ -122,10 +122,10 @@ export default function ConfigurarPipelinePage() {
         <Button variant='ghost' className='text-neutral-800!' iconName='house' onClick={() => router.push('/')} />
         <span>/</span>
         <button onClick={() => router.push('/oportunidades')} className="hover:text-blue-600 transition-colors">
-          Oportunidades
+          {t('opportunities.breadcrumbOpportunities', 'Oportunidades')}
         </button>
         <span>/</span>
-        <span className="text-neutral-900 font-medium">Configuración de Pipeline</span>
+        <span className="text-neutral-900 font-medium">{t('opportunities.breadcrumbConfig', 'Configuración de Pipeline')}</span>
       </div>
 
       <div className="bg-container p-4 mb-4 border border-neutral-200 dark:border-neutral-800 rounded-lg">
@@ -135,15 +135,15 @@ export default function ConfigurarPipelinePage() {
           iconName='arrowLeft'
           className='mb-4 p-0!'
         >
-          Volver
+          {t('opportunities.backBtn', 'Volver')}
         </Button>
 
         <div className="mb-8">
           <h2 className="text-[28px] font-semibold text-neutral-900">
-            Pipeline de Oportunidades
+            {t('opportunities.pipelineTitle', 'Pipeline de Oportunidades')}
           </h2>
           <p className="text-neutral-800 text-sm">
-            Configura las etapas, requisitos obligatorios, automatizaciones y permisos.
+            {t('opportunities.pipelineSubtitle', 'Configura las etapas, requisitos obligatorios, automatizaciones y permisos.')}
           </p>
         </div>
 
@@ -152,11 +152,11 @@ export default function ConfigurarPipelinePage() {
         <div className="w-full">
           <Tabs
             tabs={[
-              { label: 'Estados del Pipeline' },
-              { label: 'Campos de Oportunidad' },
-              { label: 'Formulario de Requisitos' },
-              { label: 'Triggers y Automatizaciones' },
-              { label: 'Accesos' }
+              { label: t('opportunities.tabPipelineStages', 'Estados del Pipeline') },
+              { label: t('opportunities.tabOpportunityFields', 'Campos de Oportunidad') },
+              { label: t('opportunities.tabRequirementsMatrix', 'Formulario de Requisitos') },
+              { label: t('opportunities.tabTriggersAutomations', 'Triggers y Automatizaciones') },
+              { label: t('opportunities.tabAccesses', 'Accesos') }
             ]}
             activeIndex={
               activeTab === 'etapas' ? 0 :
@@ -185,10 +185,12 @@ export default function ConfigurarPipelinePage() {
         {activeTab === 'requisitos' && (
           <div className="flex flex-col gap-6">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-medium text-neutral-900 dark:text-white">Matriz de Requisitos Técnicos</h3>
+              <h3 className="text-lg font-medium text-neutral-900 dark:text-white">
+                {t('opportunities.techReqsMatrix', 'Matriz de Requisitos Técnicos')}
+              </h3>
 
               <div className="flex items-center gap-2">
-                <span className="text-sm text-neutral-600 dark:text-neutral-400">Producto:</span>
+                <span className="text-sm text-neutral-600 dark:text-neutral-400">{t('opportunities.productLabel', 'Producto:')}</span>
                 <select
                   className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
                   value={selectedProduct || ''}
@@ -242,3 +244,4 @@ export default function ConfigurarPipelinePage() {
     </div>
   );
 }
+

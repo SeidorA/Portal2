@@ -9,6 +9,7 @@ import { Brand, CaralIcon } from 'iconcaral2';
 import TableOfContents from '@/app/components/TableOfContents';
 import CopyHtmlButton from '@/app/components/CopyHtmlButton';
 import { extractNovedadStyle } from '@/app/utils/novedadStyle';
+import { NovedadDetailBack, NovedadDate } from './NovedadDetailClientParts';
 
 const renderTitle = (title: string, size: number = 24) => {
   if (!title) return title;
@@ -66,10 +67,7 @@ export default async function NovedadDetailPage({ params }: { params: Promise<{ 
       <Navbar />
       <div className="flex flex-col w-full max-w-[1400px] mx-auto py-12 px-4">
         <div className="flex items-center w-full mb-5">
-          <Link href="/novedades">
-            <Button variant="ghost" iconName='arrowLeft' className='w-fit'>Volver a Novedades</Button>
-          </Link>
-
+          <NovedadDetailBack />
         </div>
         <div className="flex w-full justify-between gap-10 items-start">
 
@@ -104,12 +102,11 @@ export default async function NovedadDetailPage({ params }: { params: Promise<{ 
                     {novedad.product.title}
                   </span>
                 )}
-                <time
+                <NovedadDate
+                  date={novedad.created_at}
                   style={{ color: customStyle.textColor ? `${customStyle.textColor}b3` : undefined }}
                   className={`text-sm ${customStyle.textColor ? '' : 'text-neutral-800 dark:text-neutral-400'} font-medium font-poppins`}
-                >
-                  {new Date(novedad.created_at).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}
-                </time>
+                />
               </div>
 
               <h1

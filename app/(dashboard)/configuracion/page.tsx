@@ -24,8 +24,8 @@ export default async function ConfiguracionPage() {
     .single();
 
   if (userRoleData && userRoleData.roles) {
-    roleName = userRoleData.roles.name;
-    if (roleName.toLowerCase() === 'admin' || roleName.toLowerCase() === 'administrador') {
+    roleName = (userRoleData.roles as any)?.name || (Array.isArray(userRoleData.roles) ? (userRoleData.roles[0] as any)?.name : null);
+    if (roleName && (roleName.toLowerCase() === 'admin' || roleName.toLowerCase() === 'administrador')) {
       isAdmin = true;
     }
   }
@@ -65,15 +65,6 @@ export default async function ConfiguracionPage() {
 
   return (
     <div className="mx-auto w-full p-8 pt-12 animate-fade-in pb-20">
-      <div className="mb-8">
-        <h1 className="text-4xl font-poppins font-extrabold text-neutral-900 dark:text-white tracking-tight">
-          Configuración
-        </h1>
-        <p className="text-lg text-neutral-700 dark:text-neutral-100 leading-relaxed mb-2">
-          Administra tus preferencias de visualización y detalles de tu cuenta.
-        </p>
-      </div>
-
       <ConfigForm user={user} allowedScreens={allowedScreens} />
     </div>
   );

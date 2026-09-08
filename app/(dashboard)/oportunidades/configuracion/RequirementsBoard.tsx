@@ -5,6 +5,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea
 import { CaralIcon } from 'iconcaral2';
 import { Button, Drawer } from 'caralstable';
 import { createClient } from '@/utils/supabase/client';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function RequirementsBoard({
   product,
@@ -17,6 +18,7 @@ export default function RequirementsBoard({
   configData: any[],
   onChange: (newConfig: any[]) => void
 }) {
+  const { t } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
   const [board, setBoard] = useState<Record<string, any[]>>({});
 
@@ -142,16 +144,16 @@ export default function RequirementsBoard({
     onChange(newConfig);
   };
 
-  if (!isMounted) return <div className="p-8 text-center text-neutral-500">Cargando tablero...</div>;
-  if (!product) return <div className="p-8 text-center text-neutral-500">Selecciona un producto</div>;
+  if (!isMounted) return <div className="p-8 text-center text-neutral-500">{t('opportunities.loadingBoard', 'Cargando tablero...')}</div>;
+  if (!product) return <div className="p-8 text-center text-neutral-500">{t('opportunities.selectProductPlaceholder', 'Selecciona un producto')}</div>;
 
   const columns = [
-    { id: 'general', title: 'General / Siempre Requerido' },
+    { id: 'general', title: t('opportunities.colGeneralRequired', 'General / Siempre Requerido') },
     ...stages.map(s => ({ id: s.id, title: s.name }))
   ];
 
   const handleSaveFeatureQuestion = async () => {
-    if (!fqTitle || !fqFeatureId) return alert('Debes escribir la pregunta y seleccionar una feature.');
+    if (!fqTitle || !fqFeatureId) return alert(t('opportunities.alertQuestionAndFeatureRequired', 'Debes escribir la pregunta y seleccionar una feature.'));
     setIsSavingFq(true);
     const newReq = {
       id: Date.now().toString(),
@@ -168,7 +170,7 @@ export default function RequirementsBoard({
 
     setIsSavingFq(false);
     if (error) {
-      alert('Error guardando en base de datos: ' + error.message);
+      alert(t('opportunities.errorSavingDb', 'Error guardando en base de datos: ') + error.message);
     } else {
       setIsCreatingFeatureQuestion(false);
       setFqTitle('');
@@ -178,7 +180,7 @@ export default function RequirementsBoard({
   };
 
   const handleDeleteFeatureQuestion = async (reqId: string) => {
-    if (!window.confirm("¿Estás seguro de que deseas eliminar esta pregunta de feature?")) return;
+    if (!window.confirm(t('opportunities.confirmDeleteFeatureQuestion', "¿Estás seguro de que deseas eliminar esta pregunta de feature?"))) return;
     const updatedRequirements = (product.requirements || []).filter((r: any) => r.id !== reqId);
 
     // Also remove it from configData required_fields
@@ -194,7 +196,7 @@ export default function RequirementsBoard({
       onChange(newConfigData);
       window.location.reload();
     } else {
-      alert("Error eliminando: " + reqError.message);
+      alert(t('opportunities.errorDeleting', "Error eliminando: ") + reqError.message);
     }
   };
 
@@ -214,7 +216,7 @@ export default function RequirementsBoard({
                     </span>
                   </div>
                   {col.id === 'general' && (
-                    <button onClick={() => setIsCreatingFeatureQuestion(true)} className="text-info-main hover:bg-info-light/20 p-1 rounded transition-colors" title="Crear Pregunta de Feature">
+                    <button onClick={() => setIsCreatingFeatureQuestion(true)} className="text-info-main hover:bg-info-light/20 p-1 rounded transition-colors" title={t('opportunities.createFeatureQuestionTooltip', 'Crear Pregunta de Feature')}>
                       <CaralIcon name="plus" size={16} />
                     </button>
                   )}
@@ -242,7 +244,7 @@ export default function RequirementsBoard({
                                         {...provided.draggableProps}
                                         {...provided.dragHandleProps}
                                         className={`text-[10px] flex items-center gap-1 font-bold px-2 py-1 rounded cursor-grab shadow-sm border transition-all ${snapshot.isDragging ? 'bg-info-main text-white border-info-main z-50 scale-105' : 'bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 border-neutral-300 dark:border-neutral-600 hover:border-info-main/50'}`}
-                                        title={`Arrastra para mover todos los items con el tag "${tag}"`}
+                                        title={t('opportunities.dragTagTitle', 'Arrastra para mover todos los items con el tag "{tag}"').replace('{tag}', String(tag))}
                                       >
                                         <CaralIcon name="gripVertical" size={12} className={snapshot.isDragging ? "text-white" : "text-neutral-400"} />
                                         {tag} ({items.filter(req => (req.tags || ['General']).includes(tag as string)).length})
@@ -271,13 +273,29 @@ export default function RequirementsBoard({
                                           <p className="text-xs font-semibold text-neutral-900 dark:text-white leading-tight mb-1">{req.title}</p>
                                           <div className="flex flex-wrap gap-1">
                                             {req._isFeature ? (
-                                              <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded uppercase font-bold border border-indigo-200">Feature</span>
+                                              <span className="text-[9px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded uppercase font-bold border border-indigo-200">
+                                                {t('opportunities.badgeFeature', 'Feature')}
+                                              </span>
                                             ) : (
-                                              <span className="text-[9px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded uppercase font-bold border border-slate-200">Req</span>
+                                              <span className="text-[9px] bg-slate-100 text-slate-700 px-1.5 py-0.5 rounded uppercase font-bold border border-slate-200">
+                                                {t('opportunities.badgeReq', 'Req')}
+                                              </span>
                                             )}
-                                            {req.type === 'options' && <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded uppercase font-bold">Opciones</span>}
-                                            {req.type === 'tasklist' && <span className="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded uppercase font-bold">Lista</span>}
-                                            {req.is_mandatory && <span className="text-[9px] bg-danger-light text-danger-main border border-danger-main/20 px-1.5 py-0.5 rounded uppercase font-bold">Oblig</span>}
+                                            {req.type === 'options' && (
+                                              <span className="text-[9px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded uppercase font-bold">
+                                                {t('opportunities.badgeOptions', 'Opciones')}
+                                              </span>
+                                            )}
+                                            {req.type === 'tasklist' && (
+                                              <span className="text-[9px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded uppercase font-bold">
+                                                {t('opportunities.badgeList', 'Lista')}
+                                              </span>
+                                            )}
+                                            {req.is_mandatory && (
+                                              <span className="text-[9px] bg-danger-light text-danger-main border border-danger-main/20 px-1.5 py-0.5 rounded uppercase font-bold">
+                                                {t('opportunities.badgeMandatoryShort', 'Oblig')}
+                                              </span>
+                                            )}
                                             {(req.tags || ['General']).map((tag: string, i: number) => (
                                               <span key={i} className="text-[9px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-neutral-700 px-1.5 py-0.5 rounded font-medium">{tag}</span>
                                             ))}
@@ -286,8 +304,7 @@ export default function RequirementsBoard({
                                         {req.type === 'feature_question' && (
                                           <button
                                             onClick={() => handleDeleteFeatureQuestion(req.id)}
-
-                                            title="Eliminar pregunta"
+                                            title={t('opportunities.deleteQuestion', 'Eliminar pregunta')}
                                           >
                                             <CaralIcon name="trash" size={14} />
                                           </button>
@@ -306,7 +323,7 @@ export default function RequirementsBoard({
                   )}
                 </Droppable>
               </div>
-            )
+            );
           })}
         </DragDropContext>
       </div>
@@ -314,34 +331,38 @@ export default function RequirementsBoard({
       <Drawer
         isOpen={isCreatingFeatureQuestion}
         onClose={() => setIsCreatingFeatureQuestion(false)}
-        title="Crear Pregunta de Feature"
+        title={t('opportunities.createFeatureQuestionTitle', 'Crear Pregunta de Feature')}
         position="right"
         size="md"
       >
         <div className="flex flex-col gap-4">
           <p className="text-sm text-neutral-600 dark:text-neutral-400">
-            Crea rápidamente una pregunta opcional para recolectar información sobre una Feature Comercial. Podrás arrastrar esta pregunta a cualquier etapa del Kanban.
+            {t('opportunities.createFeatureQuestionDesc', 'Crea rápidamente una pregunta opcional para recolectar información sobre una Feature Comercial. Podrás arrastrar esta pregunta a cualquier etapa del Kanban.')}
           </p>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Pregunta (Título)</label>
+            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              {t('opportunities.questionTitleLabel', 'Pregunta (Título)')}
+            </label>
             <input
               type="text"
               value={fqTitle}
               onChange={(e) => setFqTitle(e.target.value)}
-              placeholder="Ej: ¿Qué orígenes SAP te interesan?"
+              placeholder={t('opportunities.questionTitlePlaceholder', 'Ej: ¿Qué orígenes SAP te interesan?')}
               className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
             />
           </div>
 
           <div className="flex flex-col gap-1">
-            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">Selecciona la Feature Comercial vinculada</label>
+            <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+              {t('opportunities.linkedFeatureLabel', 'Selecciona la Feature Comercial vinculada')}
+            </label>
             <select
               value={fqFeatureId}
               onChange={(e) => setFqFeatureId(e.target.value)}
               className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
             >
-              <option value="">Selecciona una feature...</option>
+              <option value="">{t('opportunities.selectFeaturePlaceholder', 'Selecciona una feature...')}</option>
               {(product.features || []).map((f: any) => (
                 <option key={f.id} value={f.id}>{f.title}</option>
               ))}
@@ -350,7 +371,7 @@ export default function RequirementsBoard({
 
           <div className="pt-4 flex justify-end">
             <Button onClick={handleSaveFeatureQuestion} disabled={isSavingFq} variant="info">
-              {isSavingFq ? 'Guardando...' : 'Crear y Añadir al Tablero'}
+              {isSavingFq ? t('opportunities.saving', 'Guardando...') : t('opportunities.createAndAddToBoard', 'Crear y Añadir al Tablero')}
             </Button>
           </div>
         </div>
@@ -358,3 +379,4 @@ export default function RequirementsBoard({
     </>
   );
 }
+

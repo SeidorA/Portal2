@@ -1,25 +1,12 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { Opportunity } from './mockData';
 import { CaralIcon } from 'iconcaral2';
 import { createClient } from '@/utils/supabase/client';
 import { Timeline, TextInput, Button, Tabs } from 'caralstable';
 import OpportunityRequirementsForm from './OpportunityRequirementsForm';
-
-// Utilidad nativa para no requerir date-fns
-function formatRelativeTime(dateString: string) {
-  const date = new Date(dateString);
-  const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-  if (diffInSeconds < 60) return 'hace un momento';
-  const diffInMinutes = Math.floor(diffInSeconds / 60);
-  if (diffInMinutes < 60) return `hace ${diffInMinutes} min`;
-  const diffInHours = Math.floor(diffInMinutes / 60);
-  if (diffInHours < 24) return `hace ${diffInHours} horas`;
-  const diffInDays = Math.floor(diffInHours / 24);
-  if (diffInDays < 30) return `hace ${diffInDays} días`;
-  return date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-}
+import { useTranslation } from '@/app/context/LanguageContext';
 
 interface OpportunityDetailsProps {
   opportunity: Opportunity;
@@ -29,6 +16,7 @@ interface OpportunityDetailsProps {
 }
 
 export default function OpportunityDetails({ opportunity, onClose, initialTab = 'info', stages = [] }: OpportunityDetailsProps) {
+  const { t, language } = useTranslation();
   const [activeTab, setActiveTab] = useState<'info' | 'features' | 'reqs' | 'approvals'>(initialTab);
   const [activities, setActivities] = useState<any[]>([]);
   const [sections, setSections] = useState<any[]>([]);
@@ -36,6 +24,22 @@ export default function OpportunityDetails({ opportunity, onClose, initialTab = 
   const [newComment, setNewComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const supabase = createClient();
+
+  // Relative time helper
+  const formatRelativeTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diffInSeconds < 60) return t('opportunities.timeJustNow', 'hace un momento');
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) return t('opportunities.timeMinutesAgo', 'hace {min} min').replace('{min}', String(diffInMinutes));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) return t('opportunities.timeHoursAgo', 'hace {hours} horas').replace('{hours}', String(diffInHours));
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 30) return t('opportunities.timeDaysAgo', 'hace {days} días').replace('{days}', String(diffInDays));
+    return date.toLocaleDateString(language === 'en' ? 'en-US' : 'es-ES', { day: 'numeric', month: 'short' });
+  };
 
   const isLastStage = stages.length > 0 && opportunity.status === stages[stages.length - 1].id;
 
@@ -91,14 +95,14 @@ export default function OpportunityDetails({ opportunity, onClose, initialTab = 
 
   const handleCloseAction = async (action: 'won' | 'lost' | 'delete') => {
     if (action === 'delete') {
-      if (!confirm("¿Estás seguro de eliminar esta oportunidad de forma definitiva?")) return;
+      if (!confirm(t('opportunities.confirmDeleteOpp', "¿Estás seguro de eliminar esta oportunidad de forma definitiva?"))) return;
 
       // Eliminar actividades primero si no hay on delete cascade
       await supabase.from('opportunity_activities').delete().eq('opportunity_id', opportunity.id);
       await supabase.from('opportunities').delete().eq('id', opportunity.id);
     } else {
-      const confirmText = action === 'won' ? "Cerrar con Venta" : "Cerrar como Perdida";
-      if (!confirm(`¿Estás seguro de marcar esta oportunidad como "${confirmText}"? Ya no aparecerá en el tablero principal.`)) return;
+      const confirmText = action === 'won' ? t('opportunities.closeWon', "Cerrar con Venta") : t('opportunities.closeLost', "Cerrar como Perdida");
+      if (!confirm(t('opportunities.confirmCloseNotice', '¿Estás seguro de marcar esta oportunidad como "{action}"? Ya no aparecerá en el tablero principal.').replace('{action}', confirmText))) return;
 
       await supabase.from('opportunities').update({ status: action }).eq('id', opportunity.id);
 
@@ -111,7 +115,7 @@ export default function OpportunityDetails({ opportunity, onClose, initialTab = 
           user_id: userData.user.id,
           activity_type: 'status_change',
           content: {
-            message: `marcó la oportunidad como ${confirmText}`,
+            message: t('opportunities.markedOppAs', 'marcó la oportunidad como {action}').replace('{action}', confirmText),
             old_status: opportunity.status,
             new_status: action,
             user_name: userName
@@ -150,9 +154,9 @@ export default function OpportunityDetails({ opportunity, onClose, initialTab = 
         <div className="w-full -mt-2">
           <Tabs
             tabs={[
-              { label: 'Información' },
-              { label: 'Requerimientos' + (opportunity.missingRequirements ? ' 🔴' : '') },
-              { label: 'Aprobaciones' + (opportunity.requiresIntervention ? ' 🔴' : '') }
+              { label: t('opportunities.tabInformation', 'Información') },
+              { label: t('opportunities.tabRequirements', 'Requerimientos') + (opportunity.missingRequirements ? ' 🔴' : '') },
+              { label: t('opportunities.tabApprovals', 'Aprobaciones') + (opportunity.requiresIntervention ? ' 🔴' : '') }
             ]}
             activeIndex={activeTab === 'info' ? 0 : activeTab === 'reqs' ? 1 : 2}
             onChange={(idx) => setActiveTab(idx === 0 ? 'info' : idx === 1 ? 'reqs' : 'approvals')}
@@ -165,7 +169,7 @@ export default function OpportunityDetails({ opportunity, onClose, initialTab = 
             <div className="flex flex-col gap-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-neutral-300/10 p-4 rounded-xl border border-neutral-100">
                 <div>
-                  <span className="block text-xs font-medium text-neutral-800 mb-1">Cliente / Empresa</span>
+                  <span className="block text-xs font-medium text-neutral-800 mb-1">{t('opportunities.clientCompany', 'Cliente / Empresa')}</span>
                   <span className="text-sm font-semibold text-neutral-900">{company.name || opportunity.clientName || '-'}</span>
                 </div>
               </div>
@@ -185,7 +189,7 @@ export default function OpportunityDetails({ opportunity, onClose, initialTab = 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-neutral-300/10 p-4 rounded-xl border border-neutral-100">
                     {sectionFields.map(field => {
                       let answer = customAnswers[field.id];
-                      if (field.field_type === 'boolean') answer = answer ? 'Sí' : 'No';
+                      if (field.field_type === 'boolean') answer = answer ? (language === 'en' ? 'Yes' : 'Sí') : 'No';
 
                       return (
                         <div key={field.id}>
@@ -204,12 +208,12 @@ export default function OpportunityDetails({ opportunity, onClose, initialTab = 
               <div className="flex flex-col gap-4">
                 <h3 className="text-lg font-bold text-neutral-800 flex items-center gap-2">
                   <CaralIcon name="layers" size={20} className="text-neutral-400" />
-                  Otros Campos
+                  {t('opportunities.otherFields', 'Otros Campos')}
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-neutral-300/10 p-4 rounded-xl border border-neutral-100">
                   {fields.filter(f => !f.section_id).map(field => {
                     let answer = customAnswers[field.id];
-                    if (field.field_type === 'boolean') answer = answer ? 'Sí' : 'No';
+                    if (field.field_type === 'boolean') answer = answer ? (language === 'en' ? 'Yes' : 'Sí') : 'No';
 
                     return (
                       <div key={field.id}>
@@ -235,7 +239,7 @@ export default function OpportunityDetails({ opportunity, onClose, initialTab = 
             <div className="flex flex-col gap-4 mt-2 border-t border-neutral-200 dark:border-neutral-800 pt-6">
               <h3 className="text-lg font-bold text-neutral-800 flex items-center gap-2">
                 <CaralIcon name="history" size={20} className="text-neutral-400" />
-                Historial y Comentarios
+                {t('opportunities.historyAndComments', 'Historial y Comentarios')}
               </h3>
               <div className="flex flex-col ml-2">
                 {activities.length > 0 ? activities.map((act, idx) => (
@@ -254,14 +258,18 @@ export default function OpportunityDetails({ opportunity, onClose, initialTab = 
                         <span className="font-semibold text-neutral-900">{act.content.user_name || 'Usuario'}</span>
                         {act.activity_type === 'status_change' && (
                           <span className="text-neutral-800">
-                            movió esta oportunidad de <span className="font-semibold">{act.content.old_status}</span> a <span className="font-semibold">{act.content.new_status}</span>
+                            {act.content.message || (
+                              t('opportunities.movedOppFromTo', 'movió esta oportunidad de {old} a {new}')
+                                .replace('{old}', act.content.old_status || '')
+                                .replace('{new}', act.content.new_status || '')
+                            )}
                           </span>
                         )}
                         {act.activity_type === 'creation' && (
-                          <span className="text-neutral-800">creó la oportunidad</span>
+                          <span className="text-neutral-800">{t('opportunities.createdOpp', 'creó la oportunidad')}</span>
                         )}
                         {act.activity_type === 'comment' && (
-                          <span className="text-neutral-800">comentó</span>
+                          <span className="text-neutral-800">{t('opportunities.commented', 'comentó')}</span>
                         )}
 
                       </div>
@@ -273,12 +281,12 @@ export default function OpportunityDetails({ opportunity, onClose, initialTab = 
                     </div>
                   </Timeline>
                 )) : (
-                  <div className="text-sm text-neutral-500 italic mb-4 ml-2">No hay actividad registrada.</div>
+                  <div className="text-sm text-neutral-500 italic mb-4 ml-2">{t('opportunities.noActivity', 'No hay actividad registrada.')}</div>
                 )}
 
                 <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800 flex flex-col gap-3">
                   <TextInput
-                    placeholder="Escribe un comentario..."
+                    placeholder={t('opportunities.writeCommentPlaceholder', 'Escribe un comentario...')}
                     multiline
                     rows={3}
                     value={newComment}
@@ -291,7 +299,7 @@ export default function OpportunityDetails({ opportunity, onClose, initialTab = 
                       onClick={handleAddComment}
                       disabled={isSubmitting || !newComment.trim()}
                     >
-                      {isSubmitting ? 'Comentando...' : 'Comentar'}
+                      {isSubmitting ? t('opportunities.commentingBtn', 'Comentando...') : t('opportunities.commentBtn', 'Comentar')}
                     </Button>
                   </div>
                 </div>
@@ -327,19 +335,19 @@ export default function OpportunityDetails({ opportunity, onClose, initialTab = 
 
         {/* Footer Actions - Cierres Definitivos */}
         <div className="mt-8 pt-6 border-t border-neutral-200 dark:border-neutral-800 flex flex-col gap-4">
-          <h4 className="text-sm font-bold text-neutral-800 dark:text-neutral-200">Acciones de Cierre</h4>
+          <h4 className="text-sm font-bold text-neutral-800 dark:text-neutral-200">{t('opportunities.closingActions', 'Acciones de Cierre')}</h4>
           <div className="flex flex-wrap gap-3">
             {isLastStage && (
               <Button variant="success" iconName="check-circle" onClick={() => handleCloseAction('won')}>
-                Cerrar con Venta
+                {t('opportunities.closeWon', 'Cerrar con Venta')}
               </Button>
             )}
             <Button variant="warning" iconName="x" onClick={() => handleCloseAction('lost')}>
-              Cerrar como Perdida
+              {t('opportunities.closeLost', 'Cerrar como Perdida')}
             </Button>
             <div className="flex-1 min-w-[20px]" />
             <Button variant="danger" iconName="trash" onClick={() => handleCloseAction('delete')}>
-              Eliminar
+              {t('opportunities.delete', 'Eliminar')}
             </Button>
           </div>
         </div>
@@ -348,3 +356,4 @@ export default function OpportunityDetails({ opportunity, onClose, initialTab = 
     </div>
   );
 }
+

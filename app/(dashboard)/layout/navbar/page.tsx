@@ -7,6 +7,7 @@ import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea
 import { createClient } from "@/utils/supabase/client";
 import IconPickerModal from "@/app/components/IconPickerModal";
 import FileUploader from "@/app/components/FileUploader";
+import { useTranslation } from "@/app/context/LanguageContext";
 
 type NavChildMock = {
   id: string;
@@ -36,6 +37,8 @@ type NavItemMock = {
   producto?: string;
   seccion?: string;
   pagina?: string;
+  iconName?: string;
+  isBrand?: boolean;
 };
 
 const leftItemsMock: NavItemMock[] = [
@@ -85,6 +88,7 @@ const rightItemsMock: NavItemMock[] = [
 ];
 
 export default function NavBarConfigPage() {
+  const { t } = useTranslation();
   const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -159,9 +163,22 @@ export default function NavBarConfigPage() {
 
     setIsSaving(false);
     if (error) {
-      alert("Error al guardar: " + error.message);
+      alert(t("navbarBuilder.saveError", "Error al guardar: ") + error.message);
     } else {
-      alert("Configuración del NavBar guardada correctamente.");
+      alert(t("navbarBuilder.saveSuccess", "Configuración del NavBar guardada correctamente."));
+    }
+  };
+
+  const getItemTypeLabel = (type: string) => {
+    switch (type) {
+      case "dropdown": return t("navbarBuilder.typeDropdown", "Desplegable");
+      case "avatar": return t("navbarBuilder.typeAvatar", "Avatar / Sign In");
+      case "link interno": return t("navbarBuilder.typeInternalLink", "Link Interno");
+      case "link externo": return t("navbarBuilder.typeExternalLink", "Link Externo");
+      case "titulo": return t("navbarBuilder.typeTitle", "Título");
+      case "divisor": return t("navbarBuilder.typeDivider", "Divisor");
+      case "espectacular": return t("navbarBuilder.typeSpectacular", "Espectacular");
+      default: return type;
     }
   };
 
@@ -242,7 +259,7 @@ export default function NavBarConfigPage() {
     const newChild: NavChildMock = {
       id: `new-${Date.now()}`,
       type: "link interno",
-      title: "Nuevo Elemento",
+      title: t("navbarBuilder.newItem", "Nuevo Elemento"),
     };
 
     const updateList = (list: NavItemMock[], setList: any) => {
@@ -272,7 +289,7 @@ export default function NavBarConfigPage() {
   const handleAddParentItem = (listType: "left" | "right") => {
     const newItem: NavItemMock = {
       id: Date.now().toString(),
-      title: "Nuevo Elemento",
+      title: t("navbarBuilder.newItem", "Nuevo Elemento"),
       description: "",
       type: "link externo",
       visual: "texto",
@@ -305,21 +322,21 @@ export default function NavBarConfigPage() {
                 <div className="flex items-center gap-2 min-w-[120px] mb-3">
                   {item.type === "dropdown" ? (
                     <span className="bg-success-light text-success-hard border border-success-hard text-[10px] px-2 py-0.5 rounded-full font-poppins font-medium">
-                      Desplegable
+                      {getItemTypeLabel(item.type)}
                     </span>
                   ) : item.type === "avatar" ? (
                     <span className="bg-info-light text-info-hard border border-info-hard text-[10px] px-2 py-0.5 rounded-full font-poppins font-medium">
-                      Avatar / Sign In
+                      {getItemTypeLabel(item.type)}
                     </span>
                   ) : (
                     <span className="bg-neutral-200 text-neutral-600 border border-neutral-300 dark:bg-neutral-700 dark:text-neutral-300 dark:border-neutral-600 text-[10px] px-2 py-0.5 rounded-full font-poppins font-medium capitalize">
-                      {item.type}
+                      {getItemTypeLabel(item.type)}
                     </span>
                   )}
 
                   {item.cols && (
                     <span className="bg-warning-light text-warning-hard border border-warning-hard text-[10px] px-2 py-0.5 rounded-full font-poppins font-medium">
-                      {item.cols} Col
+                      {item.cols} {t("navbarBuilder.col", "Col")}
                     </span>
                   )}
                 </div>
@@ -337,7 +354,7 @@ export default function NavBarConfigPage() {
               {item.type === "dropdown" && (
                 <button
                   className="hover:text-neutral-900 dark:hover:text-white transition-colors"
-                  title="Expandir/Contraer"
+                  title={t("navbarBuilder.expandCollapse", "Expandir/Contraer")}
                   onClick={() => {
                     setExpandedItems(prev =>
                       prev.includes(item.id)
@@ -351,7 +368,7 @@ export default function NavBarConfigPage() {
               )}
               <button
                 className="hover:text-info-main transition-colors"
-                title="Editar"
+                title={t("navbarBuilder.edit", "Editar")}
                 onClick={() => {
                   setEditingItem(item);
                   setEditingList(leftItems.some(i => i.id === item.id) ? "left" : "right");
@@ -369,7 +386,9 @@ export default function NavBarConfigPage() {
               {Array.from({ length: item.cols || 1 }).map((_, colIndex) => (
                 <div key={colIndex} className="bg-neutral-100 border border-neutral-200 rounded-lg p-3">
                   <div className="flex items-center justify-between mb-3 border-b border-neutral-200 pb-2">
-                    <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">Col {colIndex + 1}</span>
+                    <span className="text-sm font-semibold text-neutral-800 dark:text-neutral-200">
+                      {t("navbarBuilder.col", "Col")} {colIndex + 1}
+                    </span>
                     <div className="flex gap-1">
                       <Button variant="ghost" isIconButton iconName="arrowsMaximize" />
                       <Button
@@ -443,25 +462,25 @@ export default function NavBarConfigPage() {
       <div className="flex items-center justify-between bg-container px-6 py-4 rounded-xl">
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 dark:text-white font-poppins">
-            Configuración del NavBar
+            {t("navbarBuilder.title", "Configuración del NavBar")}
           </h1>
           <p className="text-neutral-800 font-poppins mt-1">
-            Organiza los elementos de la barra de navegación usando drag & drop.
+            {t("navbarBuilder.subtitle", "Organiza los elementos de la barra de navegación usando drag & drop.")}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button variant="outline" onClick={() => {
+          <Button variant="light" hasBorder onClick={() => {
             setLeftItems(leftItemsMock);
             setRightItems(rightItemsMock);
           }}>
-            Descartar
+            {t("navbarBuilder.discard", "Descartar")}
           </Button>
           <Button
-            variant="primary"
+            variant="info"
             onClick={handleSave}
             disabled={isSaving}
           >
-            {isSaving ? "Guardando..." : "Guardar Cambios"}
+            {isSaving ? t("navbarBuilder.saving", "Guardando...") : t("navbarBuilder.saveChanges", "Guardar Cambios")}
           </Button>
         </div>
       </div>
@@ -472,7 +491,7 @@ export default function NavBarConfigPage() {
           <section className="bg-container border border-neutral-200 dark:border-neutral-700 rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-neutral-900 dark:text-white font-poppins flex items-center gap-2">
-                Accesos <span className="text-neutral-800 font-normal">(Izquierda)</span>
+                {t("navbarBuilder.leftAccess", "Accesos")} <span className="text-neutral-800 font-normal">({t("navbarBuilder.left", "Izquierda")})</span>
               </h2>
               <Button variant="ghost" isIconButton iconName="plus" onClick={() => handleAddParentItem("left")} />
             </div>
@@ -494,7 +513,7 @@ export default function NavBarConfigPage() {
           <section className="bg-container border border-neutral-200 dark:border-neutral-700 rounded-xl p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-neutral-900 dark:text-white font-poppins flex items-center gap-2">
-                Accesos <span className="text-neutral-800 font-normal">(Derecha)</span>
+                {t("navbarBuilder.leftAccess", "Accesos")} <span className="text-neutral-800 font-normal">({t("navbarBuilder.right", "Derecha")})</span>
               </h2>
               <Button variant="ghost" isIconButton iconName="plus" onClick={() => handleAddParentItem("right")} />
             </div>
@@ -518,7 +537,7 @@ export default function NavBarConfigPage() {
       <Drawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
-        title="Editar elemento"
+        title={t("navbarBuilder.editItem", "Editar elemento")}
         className="!z-[9999]"
         size="lg"
       >
@@ -527,7 +546,9 @@ export default function NavBarConfigPage() {
             {editingItem.type !== "avatar" && (
               <>
                 <div>
-                  <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Nombre</label>
+                  <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                    {t("navbarBuilder.name", "Nombre")}
+                  </label>
                   <input
                     className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                     value={editingItem.title}
@@ -535,7 +556,9 @@ export default function NavBarConfigPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Descripción (Opcional)</label>
+                  <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                    {t("navbarBuilder.descriptionOptional", "Descripción (Opcional)")}
+                  </label>
                   <textarea
                     className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main min-h-[80px]"
                     value={editingItem.description}
@@ -545,40 +568,46 @@ export default function NavBarConfigPage() {
               </>
             )}
             <div>
-              <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Tipo</label>
+              <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                {t("navbarBuilder.type", "Tipo")}
+              </label>
               <select
                 className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                 value={editingItem.type}
                 onChange={(e) => setEditingItem({ ...editingItem, type: e.target.value as any })}
               >
-                <option value="link externo">Link Externo</option>
-                <option value="link interno">Link Interno</option>
-                <option value="dropdown">Desplegable</option>
-                <option value="avatar">Avatar / Sign In</option>
+                <option value="link externo">{t("navbarBuilder.typeExternalLink", "Link Externo")}</option>
+                <option value="link interno">{t("navbarBuilder.typeInternalLink", "Link Interno")}</option>
+                <option value="dropdown">{t("navbarBuilder.typeDropdown", "Desplegable")}</option>
+                <option value="avatar">{t("navbarBuilder.typeAvatar", "Avatar / Sign In")}</option>
               </select>
             </div>
             {editingItem.type === "avatar" && (
               <div className="bg-info-light border border-info-main p-4 rounded text-info-dark text-sm font-poppins">
-                Este elemento carga automáticamente los datos y opciones del usuario activo (o mostrará iniciar sesión si no hay sesión iniciada), por lo que no requiere configuración adicional de su aspecto.
+                {t("navbarBuilder.avatarInfo", "Este elemento carga automáticamente los datos y opciones del usuario activo (o mostrará iniciar sesión si no hay sesión iniciada), por lo que no requiere configuración adicional de su aspecto.")}
               </div>
             )}
             {editingItem.type !== "avatar" && (
               <>
                 <div>
-                  <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Visual</label>
+                  <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                    {t("navbarBuilder.visual", "Visual")}
+                  </label>
                   <select
                     className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                     value={editingItem.visual}
                     onChange={(e) => setEditingItem({ ...editingItem, visual: e.target.value as any })}
                   >
-                    <option value="texto">Solo texto</option>
-                    <option value="texto-icono">Texto + Icono</option>
-                    <option value="icono">Solo icono</option>
+                    <option value="texto">{t("navbarBuilder.visualText", "Solo texto")}</option>
+                    <option value="texto-icono">{t("navbarBuilder.visualTextIcon", "Texto + Icono")}</option>
+                    <option value="icono">{t("navbarBuilder.visualIcon", "Solo icono")}</option>
                   </select>
                 </div>
                 {(editingItem.visual === "texto-icono" || editingItem.visual === "icono") && (
                   <div>
-                    <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Icono</label>
+                    <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                      {t("navbarBuilder.icon", "Icono")}
+                    </label>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 border border-neutral-300 dark:border-neutral-700 rounded flex items-center justify-center text-neutral-600 dark:text-neutral-300">
                         {editingItem.iconName ? (
@@ -591,12 +620,12 @@ export default function NavBarConfigPage() {
                           <CaralIcon name="image" size="m" />
                         )}
                       </div>
-                      <Button variant="outline" onClick={() => setIsIconPickerOpen(true)}>
-                        Seleccionar Icono
+                      <Button variant="light" hasBorder onClick={() => setIsIconPickerOpen(true)}>
+                        {t("navbarBuilder.selectIcon", "Seleccionar Icono")}
                       </Button>
                       {editingItem.iconName && (
                         <Button variant="ghost" onClick={() => setEditingItem({ ...editingItem, iconName: undefined, isBrand: undefined })}>
-                          Quitar
+                          {t("navbarBuilder.remove", "Quitar")}
                         </Button>
                       )}
                     </div>
@@ -606,7 +635,9 @@ export default function NavBarConfigPage() {
             )}
             {editingItem.type === "dropdown" && (
               <div>
-                <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Columnas (Max 4)</label>
+                <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                  {t("navbarBuilder.columnsMax", "Columnas (Max 4)")}
+                </label>
                 <input
                   type="number"
                   min={1}
@@ -623,7 +654,9 @@ export default function NavBarConfigPage() {
             
             {editingItem.type === "link externo" && (
               <div>
-                <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">URL del Link</label>
+                <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                  {t("navbarBuilder.url", "URL del Link")}
+                </label>
                 <input
                   className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                   value={editingItem.url || ""}
@@ -635,13 +668,15 @@ export default function NavBarConfigPage() {
             {editingItem.type === "link interno" && (
               <div className="flex flex-col gap-4">
                 <div>
-                  <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Producto</label>
+                  <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                    {t("navbarBuilder.product", "Producto")}
+                  </label>
                   <select
                     className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                     value={editingItem.producto || ""}
                     onChange={(e) => setEditingItem({ ...editingItem, producto: e.target.value, seccion: "", pagina: "" })}
                   >
-                    <option value="">Selecciona un producto</option>
+                    <option value="">{t("navbarBuilder.selectProduct", "Selecciona un producto")}</option>
                     {dbProducts.map(p => (
                       <option key={p.id} value={p.slug}>{p.title}</option>
                     ))}
@@ -649,13 +684,15 @@ export default function NavBarConfigPage() {
                 </div>
                 {editingItem.producto && (
                   <div>
-                    <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Sección</label>
+                    <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                      {t("navbarBuilder.section", "Sección")}
+                    </label>
                     <select
                       className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                       value={editingItem.seccion || ""}
                       onChange={(e) => setEditingItem({ ...editingItem, seccion: e.target.value, pagina: "" })}
                     >
-                      <option value="">Selecciona una sección</option>
+                      <option value="">{t("navbarBuilder.selectSection", "Selecciona una sección")}</option>
                       {Array.from(new Set(
                         dbDocs.filter(d => {
                           const prod = dbProducts.find(p => p.slug === editingItem.producto);
@@ -669,13 +706,15 @@ export default function NavBarConfigPage() {
                 )}
                 {editingItem.seccion && (
                   <div>
-                    <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Página</label>
+                    <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                      {t("navbarBuilder.page", "Página")}
+                    </label>
                     <select
                       className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                       value={editingItem.pagina || ""}
                       onChange={(e) => setEditingItem({ ...editingItem, pagina: e.target.value })}
                     >
-                      <option value="">Selecciona una página</option>
+                      <option value="">{t("navbarBuilder.selectPage", "Selecciona una página")}</option>
                       {dbDocs.filter(d => {
                         const prod = dbProducts.find(p => p.slug === editingItem.producto);
                         return prod && d.product_id === prod.id && (d.section || 'General') === editingItem.seccion;
@@ -700,18 +739,26 @@ export default function NavBarConfigPage() {
                   setIsDrawerOpen(false);
                 }}
               >
-                Guardar
+                {t("navbarBuilder.save", "Guardar")}
               </Button>
             </div>
 
             <div className="mt-8 border-t border-danger-main/30 pt-4">
-              <h4 className="text-neutral-900 font-bold mb-1 text-lg font-poppins">Zona de peligro</h4>
-              <p className="text-sm text-neutral-800 mb-4 font-poppins">Tenga cuidado con las siguientes funciones ya que no se pueden deshacer.</p>
+              <h4 className="text-neutral-900 font-bold mb-1 text-lg font-poppins">
+                {t("navbarBuilder.dangerZone", "Zona de peligro")}
+              </h4>
+              <p className="text-sm text-neutral-800 mb-4 font-poppins">
+                {t("navbarBuilder.dangerZoneHelp", "Tenga cuidado con las siguientes funciones ya que no se pueden deshacer.")}
+              </p>
 
-              <div className="border rder-danger-main bg-danger-light rounded-lg p-4 flex items-center justify-between">
+              <div className="border border-danger-main bg-danger-light rounded-lg p-4 flex items-center justify-between">
                 <div>
-                  <h5 className="text-danger-dark font-bold font-poppins text-[15px]">Eliminar Elemento</h5>
-                  <p className="text-danger-dark text-sm mt-0.5 font-poppins">El elemento no estará más disponible en el navbar.</p>
+                  <h5 className="text-danger-dark font-bold font-poppins text-[15px]">
+                    {t("navbarBuilder.deleteItem", "Eliminar Elemento")}
+                  </h5>
+                  <p className="text-danger-dark text-sm mt-0.5 font-poppins">
+                    {t("navbarBuilder.deleteItemHelp", "El elemento no estará más disponible en el navbar.")}
+                  </p>
                 </div>
                 <Button
                   variant="danger"
@@ -725,7 +772,7 @@ export default function NavBarConfigPage() {
                     setIsDrawerOpen(false);
                   }}
                 >
-                  Eliminar
+                  {t("navbarBuilder.delete", "Eliminar")}
                 </Button>
               </div>
             </div>
@@ -737,36 +784,40 @@ export default function NavBarConfigPage() {
       <Drawer
         isOpen={isChildDrawerOpen}
         onClose={() => setIsChildDrawerOpen(false)}
-        title="Editar componente"
+        title={t("navbarBuilder.editComponent", "Editar componente")}
         size="lg"
         className="!z-[9999]"
       >
         {editingChild && (
           <div className="flex flex-col gap-5 p-4 h-full">
             <div>
-              <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Tipo</label>
+              <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                {t("navbarBuilder.type", "Tipo")}
+              </label>
               <select
                 className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                 value={editingChild.child.type}
                 onChange={(e) => setEditingChild({ ...editingChild, child: { ...editingChild.child, type: e.target.value as any } })}
               >
-                <option value="link interno">Link Interno</option>
-                <option value="link externo">Link Externo</option>
-                <option value="titulo">Título</option>
-                <option value="divisor">Divisor</option>
+                <option value="link interno">{t("navbarBuilder.typeInternalLink", "Link Interno")}</option>
+                <option value="link externo">{t("navbarBuilder.typeExternalLink", "Link Externo")}</option>
+                <option value="titulo">{t("navbarBuilder.typeTitle", "Título")}</option>
+                <option value="divisor">{t("navbarBuilder.typeDivider", "Divisor")}</option>
                 <option value="espectacular" disabled={
                   (() => {
                     if (editingChild.child.type === 'espectacular') return false;
                     const parent = leftItems.find(i => i.id === editingChild.parentId) || rightItems.find(i => i.id === editingChild.parentId);
                     return parent?.children?.[editingChild.colIndex]?.some(c => c.type === 'espectacular' && c.id !== editingChild.child.id) ?? false;
                   })()
-                }>Espectacular</option>
+                }>{t("navbarBuilder.typeSpectacular", "Espectacular")}</option>
               </select>
             </div>
 
             {editingChild.child.type !== 'divisor' && (
               <div>
-                <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Título</label>
+                <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                  {t("navbarBuilder.typeTitle", "Título")}
+                </label>
                 <input
                   className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                   value={editingChild.child.title || ""}
@@ -778,7 +829,9 @@ export default function NavBarConfigPage() {
             {(editingChild.child.type === 'link interno' || editingChild.child.type === 'link externo' || editingChild.child.type === 'espectacular') && (
               <>
                 <div>
-                  <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Descripción</label>
+                  <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                    {t("navbarBuilder.description", "Descripción")}
+                  </label>
                   <textarea
                     className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main resize-none"
                     rows={2}
@@ -788,7 +841,9 @@ export default function NavBarConfigPage() {
                 </div>
                 {editingChild.child.type !== 'espectacular' && (
                   <div>
-                    <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Icono</label>
+                    <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                      {t("navbarBuilder.icon", "Icono")}
+                    </label>
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 border border-neutral-300 dark:border-neutral-700 rounded flex items-center justify-center text-neutral-600 dark:text-neutral-300">
                         {editingChild.child.iconName ? (
@@ -801,12 +856,12 @@ export default function NavBarConfigPage() {
                           <CaralIcon name="image" size="m" />
                         )}
                       </div>
-                      <Button variant="outline" onClick={() => setIsIconPickerOpen(true)}>
-                        Seleccionar Icono
+                      <Button variant="light" hasBorder onClick={() => setIsIconPickerOpen(true)}>
+                        {t("navbarBuilder.selectIcon", "Seleccionar Icono")}
                       </Button>
                       {editingChild.child.iconName && (
                         <Button variant="ghost" onClick={() => setEditingChild({ ...editingChild, child: { ...editingChild.child, iconName: undefined, isBrand: undefined } })}>
-                          Quitar
+                          {t("navbarBuilder.remove", "Quitar")}
                         </Button>
                       )}
                     </div>
@@ -815,7 +870,9 @@ export default function NavBarConfigPage() {
                 {editingChild.child.type === 'espectacular' && (
                   <>
                     <div>
-                      <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Imagen</label>
+                      <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                        {t("navbarBuilder.image", "Imagen")}
+                      </label>
                       <div className="flex flex-col gap-2">
                         {editingChild.child.imageUrl && (
                           <img src={editingChild.child.imageUrl} alt="preview" className="w-full h-32 object-cover rounded border border-neutral-300 dark:border-neutral-700" />
@@ -828,7 +885,9 @@ export default function NavBarConfigPage() {
                       </div>
                     </div>
                     <div>
-                      <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Texto del Botón</label>
+                      <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                        {t("navbarBuilder.buttonText", "Texto del Botón")}
+                      </label>
                       <input
                         className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                         value={editingChild.child.buttonText || ""}
@@ -836,14 +895,16 @@ export default function NavBarConfigPage() {
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Tipo de Enlace</label>
+                      <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                        {t("navbarBuilder.linkType", "Tipo de Enlace")}
+                      </label>
                       <select
                         className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                         value={editingChild.child.linkType || "interno"}
                         onChange={(e) => setEditingChild({ ...editingChild, child: { ...editingChild.child, linkType: e.target.value as any } })}
                       >
-                        <option value="interno">Interno</option>
-                        <option value="externo">Externo</option>
+                        <option value="interno">{t("navbarBuilder.linkTypeInternal", "Interno")}</option>
+                        <option value="externo">{t("navbarBuilder.linkTypeExternal", "Externo")}</option>
                       </select>
                     </div>
                   </>
@@ -853,7 +914,9 @@ export default function NavBarConfigPage() {
 
             {(editingChild.child.type === 'link externo' || (editingChild.child.type === 'espectacular' && editingChild.child.linkType === 'externo')) && (
               <div>
-                <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">URL del Link</label>
+                <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                  {t("navbarBuilder.url", "URL del Link")}
+                </label>
                 <input
                   className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                   value={editingChild.child.url || ""}
@@ -865,13 +928,15 @@ export default function NavBarConfigPage() {
             {(editingChild.child.type === 'link interno' || (editingChild.child.type === 'espectacular' && (!editingChild.child.linkType || editingChild.child.linkType === 'interno'))) && (
               <div className="flex flex-col gap-4">
                 <div>
-                  <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Producto</label>
+                  <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                    {t("navbarBuilder.product", "Producto")}
+                  </label>
                   <select
                     className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                     value={editingChild.child.producto || ""}
                     onChange={(e) => setEditingChild({ ...editingChild, child: { ...editingChild.child, producto: e.target.value, seccion: "", pagina: "" } })}
                   >
-                    <option value="">Selecciona un producto</option>
+                    <option value="">{t("navbarBuilder.selectProduct", "Selecciona un producto")}</option>
                     {dbProducts.map(p => (
                       <option key={p.id} value={p.slug}>{p.title}</option>
                     ))}
@@ -879,13 +944,15 @@ export default function NavBarConfigPage() {
                 </div>
                 {editingChild.child.producto && (
                   <div>
-                    <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Sección</label>
+                    <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                      {t("navbarBuilder.section", "Sección")}
+                    </label>
                     <select
                       className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                       value={editingChild.child.seccion || ""}
                       onChange={(e) => setEditingChild({ ...editingChild, child: { ...editingChild.child, seccion: e.target.value, pagina: "" } })}
                     >
-                      <option value="">Selecciona una sección</option>
+                      <option value="">{t("navbarBuilder.selectSection", "Selecciona una sección")}</option>
                       {Array.from(new Set(
                         dbDocs.filter(d => {
                           const prod = dbProducts.find(p => p.slug === editingChild.child.producto);
@@ -899,13 +966,15 @@ export default function NavBarConfigPage() {
                 )}
                 {editingChild.child.producto && editingChild.child.seccion && (
                   <div>
-                    <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">Página</label>
+                    <label className="text-sm font-semibold mb-1 block text-neutral-900 dark:text-neutral-200 font-poppins">
+                      {t("navbarBuilder.page", "Página")}
+                    </label>
                     <select
                       className="w-full border border-neutral-300 dark:border-neutral-700 bg-transparent rounded p-2 text-sm text-neutral-900 dark:text-white font-poppins outline-none focus:border-info-main"
                       value={editingChild.child.pagina || ""}
                       onChange={(e) => setEditingChild({ ...editingChild, child: { ...editingChild.child, pagina: e.target.value } })}
                     >
-                      <option value="">Selecciona una página</option>
+                      <option value="">{t("navbarBuilder.selectPage", "Selecciona una página")}</option>
                       {dbDocs.filter(d => {
                         const prod = dbProducts.find(p => p.slug === editingChild.child.producto);
                         return prod && d.product_id === prod.id && (d.section || 'General') === editingChild.child.seccion;
@@ -949,18 +1018,26 @@ export default function NavBarConfigPage() {
                   setIsChildDrawerOpen(false);
                 }}
               >
-                Guardar
+                {t("navbarBuilder.save", "Guardar")}
               </Button>
             </div>
 
             <div className="mt-8 border-t border-danger-main/30 pt-4">
-              <h4 className="text-neutral-900 font-bold mb-1 text-lg font-poppins">Zona de peligro</h4>
-              <p className="text-sm text-neutral-800 mb-4 font-poppins">Tenga cuidado con las siguientes funciones ya que no se pueden deshacer.</p>
+              <h4 className="text-neutral-900 font-bold mb-1 text-lg font-poppins">
+                {t("navbarBuilder.dangerZone", "Zona de peligro")}
+              </h4>
+              <p className="text-sm text-neutral-800 mb-4 font-poppins">
+                {t("navbarBuilder.dangerZoneHelp", "Tenga cuidado con las siguientes funciones ya que no se pueden deshacer.")}
+              </p>
 
               <div className="border border-danger-main bg-danger-light rounded-lg p-4 flex items-center justify-between">
                 <div>
-                  <h5 className="text-danger-dark font-bold font-poppins text-[15px]">Eliminar Componente</h5>
-                  <p className="text-danger-dark text-sm mt-0.5 font-poppins">El componente interno se eliminará de la columna.</p>
+                  <h5 className="text-danger-dark font-bold font-poppins text-[15px]">
+                    {t("navbarBuilder.deleteComponent", "Eliminar Componente")}
+                  </h5>
+                  <p className="text-danger-dark text-sm mt-0.5 font-poppins">
+                    {t("navbarBuilder.deleteComponentHelp", "El componente interno se eliminará de la columna.")}
+                  </p>
                 </div>
                 <Button
                   variant="danger"
@@ -993,7 +1070,7 @@ export default function NavBarConfigPage() {
                     setIsChildDrawerOpen(false);
                   }}
                 >
-                  Eliminar
+                  {t("navbarBuilder.delete", "Eliminar")}
                 </Button>
               </div>
             </div>

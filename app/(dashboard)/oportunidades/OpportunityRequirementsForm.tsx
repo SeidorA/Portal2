@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createClient } from '@/utils/supabase/client';
 import { Button, TextInput, Toggle } from 'caralstable';
 import { CaralIcon } from 'iconcaral2';
+import { useTranslation } from '@/app/context/LanguageContext';
 
 interface OpportunityRequirementsFormProps {
   opportunity: any;
@@ -21,6 +22,7 @@ const statusToStageNameMap: Record<string, string> = {
 };
 
 export default function OpportunityRequirementsForm({ opportunity, onAnswersUpdated, view = 'requirements', fieldSource = 'requirements', mode = 'stage' }: OpportunityRequirementsFormProps) {
+  const { t } = useTranslation();
   const supabase = createClient();
   const [isLoading, setIsLoading] = useState(true);
   const [productRequirements, setProductRequirements] = useState<any[]>([]);
@@ -124,8 +126,6 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
       const product = productsData[0];
       const allCombined = [...(product.requirements || []), ...(product.features || [])];
       const allRequirements = mode === 'general' ? allCombined : (fieldSource === 'features' ? (product.features || []) : (product.requirements || []));
-
-      console.log("All requirements for mode", mode, ":", allRequirements);
 
       setProductRequirements(allRequirements);
       setAllProductFeatures(product.features || []);
@@ -265,9 +265,6 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
     let autoAdvanced = false;
     let newStageName = "";
 
-    // Para avanzar: si existe regla auto_advance, los datos deben estar completos. 
-    // Además TODAS las reglas de aprobación deben estar cumplidas.
-    // Si NO hay regla de auto_advance (solo aprobaciones), no importa si los datos están completos o no.
     const canAdvance = (!hasAutoAdvanceRule || allCompleted) && allApprovalsMet;
 
     if (canAdvance && currentStageConfig) {
@@ -297,8 +294,8 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
           content: {
             old_status: oldStageName,
             new_status: newStageName,
-            user_name: 'Sistema (Automatización)',
-            message: `avanzó automáticamente la oportunidad a ${newStageName}`
+            user_name: t('opportunities.systemAutomation', 'Sistema (Automatización)'),
+            message: t('opportunities.autoAdvancedTo', 'avanzó automáticamente la oportunidad a {stage}').replace('{stage}', newStageName)
           }
         });
 
@@ -312,7 +309,7 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
               user_id: userData.user.id,
               activity_type: 'comment',
               content: {
-                user_name: 'Sistema (Automatización)',
+                user_name: t('opportunities.systemAutomation', 'Sistema (Automatización)'),
                 text: action.text
               }
             });
@@ -325,14 +322,14 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
 
     if (!error) {
       if (autoAdvanced) {
-        alert(`¡Excelente! Todos los requisitos fueron completados. La oportunidad avanzó automáticamente a ${newStageName}.`);
+        alert(t('opportunities.successAllReqsCompleted', '¡Excelente! Todos los requisitos fueron completados. La oportunidad avanzó automáticamente a {stage}.').replace('{stage}', newStageName));
       } else {
-        alert('Requisitos guardados correctamente.');
+        alert(t('opportunities.reqsSavedSuccess', 'Requisitos guardados correctamente.'));
       }
       if (onAnswersUpdated) onAnswersUpdated();
       window.location.reload();
     } else {
-      alert("Error al guardar: " + error.message);
+      alert(t('opportunities.errorSaving', 'Error al guardar: ') + error.message);
     }
   };
 
@@ -396,8 +393,8 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
               content: {
                 old_status: oldStageName,
                 new_status: newStageName,
-                user_name: 'Sistema (Aprobación)',
-                message: `avanzó la oportunidad a ${newStageName} tras la última aprobación`
+                user_name: t('opportunities.systemApproval', 'Sistema (Aprobación)'),
+                message: t('opportunities.advancedAfterApproval', 'avanzó la oportunidad a {stage} tras la última aprobación').replace('{stage}', newStageName)
               }
             });
 
@@ -411,14 +408,14 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
                   user_id: userData.user.id,
                   activity_type: 'comment',
                   content: {
-                    user_name: 'Sistema (Automatización)',
+                    user_name: t('opportunities.systemAutomation', 'Sistema (Automatización)'),
                     text: action.text
                   }
                 });
               }
             }
           }
-          alert(`Aprobación registrada. La oportunidad avanzó a ${newStageName}.`);
+          alert(t('opportunities.approvalRegisteredAdvanced', 'Aprobación registrada. La oportunidad avanzó a {stage}.').replace('{stage}', newStageName));
           if (onAnswersUpdated) onAnswersUpdated();
           window.location.reload();
           return;
@@ -427,21 +424,21 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
 
       // If couldn't advance, just reload the view to show as Approved
       await loadRequirements();
-      alert('Aprobación registrada con éxito.');
+      alert(t('opportunities.approvalRegisteredSuccess', 'Aprobación registrada con éxito.'));
     } else {
-      alert('Error al registrar aprobación: ' + error.message);
+      alert(t('opportunities.errorApproving', 'Error al registrar aprobación: ') + error.message);
     }
     setIsSaving(false);
   };
 
   if (isLoading) {
-    return <div className="p-4 text-sm text-neutral-500">Cargando requisitos técnicos...</div>;
+    return <div className="p-4 text-sm text-neutral-500">{t('opportunities.loadingTechReqs', 'Cargando requisitos técnicos...')}</div>;
   }
 
   if (productRequirements.length === 0) {
     return (
       <div className="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg text-sm text-neutral-500 text-center">
-        No se encontraron requisitos técnicos para el producto {opportunity.productName || 'seleccionado'}.
+        {t('opportunities.noTechReqsFound', 'No se encontraron requisitos técnicos para el producto {product}.').replace('{product}', opportunity.productName || '')}
       </div>
     );
   }
@@ -465,7 +462,7 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
             onChange={(e) => handleAnswerChange(req.id, e.target.value)}
             className="w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-info-main"
           >
-            <option value="" disabled>Selecciona una opción...</option>
+            <option value="" disabled>{t('opportunities.selectOptionPlaceholder', 'Selecciona una opción...')}</option>
             {req.options?.map((opt: string) => (
               <option key={opt} value={opt}>{opt}</option>
             ))}
@@ -512,16 +509,16 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
       return (
         <div className="flex flex-col gap-2 mt-2">
           {!options ? (
-            <div className="text-xs text-neutral-500 italic">Cargando opciones desde API...</div>
+            <div className="text-xs text-neutral-500 italic">{t('opportunities.loadingApiOptions', 'Cargando opciones desde API...')}</div>
           ) : options.length === 0 ? (
-            <div className="text-xs text-neutral-500 italic">No se encontraron opciones (API vacía o error).</div>
+            <div className="text-xs text-neutral-500 italic">{t('opportunities.noApiOptionsFound', 'No se encontraron opciones (API vacía o error).')}</div>
           ) : (
             <select
               value={value || ''}
               onChange={(e) => handleAnswerChange(req.id, e.target.value)}
               className="w-full h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-info-main"
             >
-              <option value="" disabled>Selecciona una opción externa...</option>
+              <option value="" disabled>{t('opportunities.selectExternalOption', 'Selecciona una opción externa...')}</option>
               {options.map((opt: any, i: number) => {
                 const optValue = typeof opt === 'object' && opt !== null ? String(opt.id || opt.name || opt.value || JSON.stringify(opt)) : String(opt);
                 const optLabel = typeof opt === 'object' && opt !== null ? String(opt.name || opt.title || opt.label || opt.id || JSON.stringify(opt)) : String(opt);
@@ -540,7 +537,7 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
           <TextInput
             value={typeof value === 'string' ? value : ''}
             onChange={(e) => handleAnswerChange(req.id, e.target.value)}
-            placeholder="Escribe aquí..."
+            placeholder={t('opportunities.writeHerePlaceholder', 'Escribe aquí...')}
           />
         </div>
       );
@@ -554,34 +551,34 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
           <div className="bg-warning-light border border-warning-main rounded-xl p-4 flex flex-col gap-3">
             <h4 className="font-bold text-warning-hard text-sm flex items-center gap-2">
               <CaralIcon name="shield" size={16} />
-              Aprobaciones Requeridas
+              {t('opportunities.requiredApprovals', 'Aprobaciones Requeridas')}
             </h4>
             <p className="text-sm text-warning-hard dark:text-warning-600 mb-2">
-              Para que la oportunidad avance automáticamente a la siguiente etapa, se requieren las siguientes aprobaciones, además de completar los requisitos técnicos obligatorios.
+              {t('opportunities.requiredApprovalsDesc', 'Para que la oportunidad avance automáticamente a la siguiente etapa, se requieren las siguientes aprobaciones, además de completar los requisitos técnicos obligatorios.')}
             </p>
             <div className="flex flex-col gap-2">
-              {currentStageConfig.trigger_automations.filter((t: any) => t.type !== 'auto_advance').map((t: any, idx: number) => {
-                const isApprovedUser = t.type === 'user_approval' && approvals.some(a => a.approved_by === t.target);
-                const isApprovedRole = t.type === 'role_approval' && approvals.some(a => a.role_used === t.target);
+              {currentStageConfig.trigger_automations.filter((t: any) => t.type !== 'auto_advance').map((tItem: any, idx: number) => {
+                const isApprovedUser = tItem.type === 'user_approval' && approvals.some(a => a.approved_by === tItem.target);
+                const isApprovedRole = tItem.type === 'role_approval' && approvals.some(a => a.role_used === tItem.target);
                 const isApproved = isApprovedUser || isApprovedRole;
 
                 let canApprove = false;
                 if (!isApproved && currentUser) {
-                  if (t.type === 'user_approval' && currentUser.id === t.target) canApprove = true;
-                  if (t.type === 'role_approval' && currentUserRoles.includes(t.target)) canApprove = true;
+                  if (tItem.type === 'user_approval' && currentUser.id === tItem.target) canApprove = true;
+                  if (tItem.type === 'role_approval' && currentUserRoles.includes(tItem.target)) canApprove = true;
                 }
 
-                let label = t.type === 'user_approval' ? `Usuario Específico` : `Rol Específico`;
+                let label = tItem.type === 'user_approval' ? t('opportunities.specificUser', 'Usuario Específico') : t('opportunities.specificRole', 'Rol Específico');
 
                 return (
                   <div key={idx} className="flex items-center justify-between p-3 bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-700 shadow-sm">
-                    <span className="text-sm font-medium text-neutral-800 dark:text-neutral-300">Requiere Aprobación de: <strong className="text-info-main">{label}</strong></span>
+                    <span className="text-sm font-medium text-neutral-800 dark:text-neutral-300">{t('opportunities.requiresApprovalOf', 'Requiere Aprobación de:')} <strong className="text-info-main">{label}</strong></span>
                     {isApproved ? (
-                      <span className="text-xs font-bold text-success-main bg-success-light px-3 py-1.5 rounded-md">Aprobado</span>
+                      <span className="text-xs font-bold text-success-main bg-success-light px-3 py-1.5 rounded-md">{t('opportunities.approved', 'Aprobado')}</span>
                     ) : canApprove ? (
-                      <Button variant="info" size="sm" onClick={() => handleApprove(t)} disabled={isSaving}>Aprobar Pase</Button>
+                      <Button variant="info" size="sm" onClick={() => handleApprove(tItem)} disabled={isSaving}>{t('opportunities.approvePass', 'Aprobar Pase')}</Button>
                     ) : (
-                      <span className="text-xs font-medium text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-3 py-1.5 rounded-md">Pendiente</span>
+                      <span className="text-xs font-medium text-neutral-500 bg-neutral-100 dark:bg-neutral-800 px-3 py-1.5 rounded-md">{t('opportunities.pending', 'Pendiente')}</span>
                     )}
                   </div>
                 );
@@ -592,7 +589,7 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
           <div className="p-6 bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center text-center gap-3">
             <CaralIcon name="shield-check" size={32} className="text-neutral-400" />
             <p className="text-sm font-medium text-neutral-600 dark:text-neutral-400">
-              Esta etapa no requiere aprobaciones manuales.
+              {t('opportunities.noManualApprovals', 'Esta etapa no requiere aprobaciones manuales.')}
             </p>
           </div>
         )}
@@ -612,8 +609,8 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
           return (
             <div className="p-8 text-center bg-neutral-50 dark:bg-neutral-800/50 rounded-xl border border-neutral-200 dark:border-neutral-800">
               <CaralIcon name="check-circle" size={32} className="mx-auto text-green-500 mb-2" />
-              <h4 className="text-neutral-900 dark:text-white font-medium">Todo listo</h4>
-              <p className="text-sm text-neutral-500 mt-1">No hay requisitos pendientes para esta etapa.</p>
+              <h4 className="text-neutral-900 dark:text-white font-medium">{t('opportunities.allReady', 'Todo listo')}</h4>
+              <p className="text-sm text-neutral-500 mt-1">{t('opportunities.noPendingRequirements', 'No hay requisitos pendientes para esta etapa.')}</p>
             </div>
           );
         }
@@ -622,7 +619,7 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
           <div className="flex flex-col gap-4">
             <h4 className="text-md font-bold text-neutral-800 flex items-center gap-2">
               <CaralIcon name="target" size={18} className="text-info-main" />
-              {mode === 'general' ? 'Requerimiento del cliente' : 'Requisitos de la etapa'}
+              {mode === 'general' ? t('opportunities.clientRequirement', 'Requerimiento del cliente') : t('opportunities.stageRequirements', 'Requisitos de la etapa')}
             </h4>
             <div className="grid grid-cols-1 gap-4 bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-xl p-5 shadow-sm">
               {visibleReqs.map((req) => (
@@ -631,8 +628,8 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
                     {isRequirementCompleted(req, answers[req.id]) && <div className='flex items-center justify-center rounded-full p-2 bg-success-light border border-success-main text-success-main'><CaralIcon name="check" size={16} /></div>}
                     <div>
                       <span className="font-semibold text-neutral-900 dark:text-white text-sm">{req.title}</span>
-                      {req.is_mandatory && <span className="ml-2 text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase font-bold">Obligatorio</span>}
-                      {req.depends_on && <span className="ml-2 text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded uppercase font-bold">Dependiente</span>}
+                      {req.is_mandatory && <span className="ml-2 text-[10px] bg-red-100 text-red-600 px-1.5 py-0.5 rounded uppercase font-bold">{t('opportunities.mandatoryBadge', 'Obligatorio')}</span>}
+                      {req.depends_on && <span className="ml-2 text-[10px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded uppercase font-bold">{t('opportunities.dependentBadge', 'Dependiente')}</span>}
                       {req.description && (
                         <p className="text-xs text-neutral-800 dark:text-neutral-400 mt-1">{req.description}</p>
                       )}
@@ -651,8 +648,8 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
       <div className={`flex items-center p-4 rounded-xl border mt-2 ${mode === 'general' ? 'justify-end bg-neutral-50 dark:bg-neutral-800/50 border-neutral-200' : 'justify-between bg-info-main/5 border-info-main/20'}`}>
         {mode !== 'general' && (
           <div className="flex flex-col">
-            <span className="text-info-main font-bold text-sm">Etapa Actual</span>
-            <h4 className="text-lg font-bold text-neutral-900 dark:text-white">{statusToStageNameMap[opportunity.status]}</h4>
+            <span className="text-info-main font-bold text-sm">{t('opportunities.currentStage', 'Etapa Actual')}</span>
+            <h4 className="text-lg font-bold text-neutral-900 dark:text-white">{statusToStageNameMap[opportunity.status] || opportunity.status}</h4>
           </div>
         )}
         <Button
@@ -661,10 +658,11 @@ export default function OpportunityRequirementsForm({ opportunity, onAnswersUpda
           onClick={handleSave}
           disabled={isSaving}
         >
-          {isSaving ? 'Guardando...' : mode === 'general' ? 'Guardar Respuestas' : 'Guardar Requisitos'}
+          {isSaving ? t('opportunities.saving', 'Guardando...') : mode === 'general' ? t('opportunities.saveAnswers', 'Guardar Respuestas') : t('opportunities.saveRequirements', 'Guardar Requisitos')}
         </Button>
       </div>
 
     </div>
   );
 }
+
