@@ -5,11 +5,25 @@ import { MCP_TOOL_DEFINITIONS, executeMcpTool } from '../server/tools';
 
 export const dynamic = 'force-dynamic';
 
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': '*',
+    },
+  });
+}
+
 export async function GET(request: NextRequest) {
   // 1. Validar autenticación
   const auth = await authenticateMcpRequest(request);
   if ('error' in auth) {
-    return NextResponse.json({ error: auth.error }, { status: auth.status });
+    return NextResponse.json({ error: auth.error }, { 
+      status: auth.status,
+      headers: { 'Access-Control-Allow-Origin': '*' } 
+    });
   }
 
   const { searchParams } = new URL(request.url);
@@ -29,7 +43,8 @@ export async function GET(request: NextRequest) {
       });
 
       // Enviar evento inicial 'endpoint' especificando a dónde debe enviar los mensajes POST el cliente
-      const endpointUrl = `/api/mcp/sse/messages?sessionId=${encodeURIComponent(sessionId)}&token=${encodeURIComponent(token)}`;
+      const origin = request.nextUrl.origin;
+      const endpointUrl = `${origin}/api/mcp/sse/messages?sessionId=${encodeURIComponent(sessionId)}&token=${encodeURIComponent(token)}`;
       const encoder = new TextEncoder();
       controller.enqueue(encoder.encode(`event: endpoint\ndata: ${endpointUrl}\n\n`));
 
@@ -47,21 +62,51 @@ export async function GET(request: NextRequest) {
       'Cache-Control': 'no-cache, no-transform',
       Connection: 'keep-alive',
       'X-Accel-Buffering': 'no',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Headers': '*',
     },
   });
 }
 
 export async function POST(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const sessionId = searchParams.get('sessionId');
+  let sessionId = searchParams.get('sessionId') || 
+                  searchParams.get('session_id') || 
+                  request.headers.get('x-session-id') || 
+                  request.headers.get('mcp-session-id');
+
+  // Fallback si el cliente no envía sessionId en query: buscar sesión activa por token o la más reciente
+  if (!sessionId) {
+    const token = searchParams.get('token') || 
+                  searchParams.get('apiKey') || 
+                  request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
+    if (token) {
+      for (const [id, s] of Array.from(sessions.entries()).reverse()) {
+        if (s.token === token) {
+          sessionId = id;
+          break;
+        }
+      }
+    }
+    if (!sessionId && sessions.size > 0) {
+      const allSessions = Array.from(sessions.keys());
+      sessionId = allSessions[allSessions.length - 1];
+    }
+  }
 
   if (!sessionId) {
-    return NextResponse.json({ error: 'Falta el parámetro sessionId' }, { status: 400 });
+    return NextResponse.json({ error: 'Falta el parámetro sessionId o no hay sesiones activas' }, { 
+      status: 400,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
   }
 
   const session = sessions.get(sessionId);
   if (!session) {
-    return NextResponse.json({ error: 'Sesión SSE no encontrada o cerrada' }, { status: 404 });
+    return NextResponse.json({ error: 'Sesión SSE no encontrada o cerrada' }, { 
+      status: 404,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
   }
 
   let body: any;
