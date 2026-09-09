@@ -69,57 +69,63 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  let body: any;
+  try {
+    body = await request.json();
+  } catch (e) {
+    return NextResponse.json({ error: 'JSON inválido en el cuerpo de la petición' }, { 
+      status: 400,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  const { jsonrpc, id, method, params } = body || {};
+
+  if (!method) {
+    return NextResponse.json({ error: 'Falta el campo method' }, { 
+      status: 400,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
+  }
+
+  // Resolver sesión o autenticar petición independiente
   const { searchParams } = new URL(request.url);
   let sessionId = searchParams.get('sessionId') || 
                   searchParams.get('session_id') || 
                   request.headers.get('x-session-id') || 
                   request.headers.get('mcp-session-id');
 
-  // Fallback si el cliente no envía sessionId en query: buscar sesión activa por token o la más reciente
-  if (!sessionId) {
+  let session = sessionId ? sessions.get(sessionId) : undefined;
+
+  if (!session) {
     const token = searchParams.get('token') || 
                   searchParams.get('apiKey') || 
                   request.headers.get('authorization')?.replace(/^Bearer\s+/i, '');
     if (token) {
-      for (const [id, s] of Array.from(sessions.entries()).reverse()) {
+      for (const [sId, s] of Array.from(sessions.entries()).reverse()) {
         if (s.token === token) {
-          sessionId = id;
+          session = s;
           break;
         }
       }
     }
-    if (!sessionId && sessions.size > 0) {
-      const allSessions = Array.from(sessions.keys());
-      sessionId = allSessions[allSessions.length - 1];
+    if (!session && sessions.size > 0) {
+      const allSessions = Array.from(sessions.values());
+      session = allSessions[allSessions.length - 1];
     }
   }
 
-  if (!sessionId) {
-    return NextResponse.json({ error: 'Falta el parámetro sessionId o no hay sesiones activas' }, { 
-      status: 400,
-      headers: { 'Access-Control-Allow-Origin': '*' }
-    });
-  }
-
-  const session = sessions.get(sessionId);
-  if (!session) {
-    return NextResponse.json({ error: 'Sesión SSE no encontrada o cerrada' }, { 
-      status: 404,
-      headers: { 'Access-Control-Allow-Origin': '*' }
-    });
-  }
-
-  let body: any;
-  try {
-    body = await request.json();
-  } catch (e) {
-    return NextResponse.json({ error: 'JSON inválido en el cuerpo de la petición' }, { status: 400 });
-  }
-
-  const { jsonrpc, id, method, params } = body || {};
-
-  if (!method) {
-    return NextResponse.json({ error: 'Falta el campo method' }, { status: 400 });
+  // Obtener autenticación (desde la sesión activa o directamente desde la petición HTTP)
+  let auth = session?.auth;
+  if (!auth) {
+    const authResult = await authenticateMcpRequest(request);
+    if ('error' in authResult) {
+      return NextResponse.json({ error: authResult.error }, { 
+        status: authResult.status,
+        headers: { 'Access-Control-Allow-Origin': '*' }
+      });
+    }
+    auth = authResult;
   }
 
   // Procesar método JSON-RPC
@@ -127,7 +133,7 @@ export async function POST(request: NextRequest) {
     if (method === 'initialize') {
       const response = {
         jsonrpc: jsonrpc || '2.0',
-        id,
+        id: id ?? 1,
         result: {
           protocolVersion: '2024-11-05',
           capabilities: {
@@ -139,34 +145,46 @@ export async function POST(request: NextRequest) {
           },
         },
       };
-      sendSseEvent(session, 'message', response);
-      return new Response('Accepted', { status: 202 });
+      if (session) sendSseEvent(session, 'message', response);
+      return NextResponse.json(response, { 
+        status: 200,
+        headers: { 'Access-Control-Allow-Origin': '*' }
+      });
     }
 
     if (method === 'notifications/initialized' || method === 'initialized') {
-      return new Response('Accepted', { status: 202 });
+      return new Response(null, { 
+        status: 204,
+        headers: { 'Access-Control-Allow-Origin': '*' }
+      });
     }
 
     if (method === 'ping') {
       const response = {
         jsonrpc: jsonrpc || '2.0',
-        id,
+        id: id ?? null,
         result: {},
       };
-      sendSseEvent(session, 'message', response);
-      return new Response('Accepted', { status: 202 });
+      if (session) sendSseEvent(session, 'message', response);
+      return NextResponse.json(response, { 
+        status: 200,
+        headers: { 'Access-Control-Allow-Origin': '*' }
+      });
     }
 
     if (method === 'tools/list') {
       const response = {
         jsonrpc: jsonrpc || '2.0',
-        id,
+        id: id ?? 1,
         result: {
           tools: MCP_TOOL_DEFINITIONS,
         },
       };
-      sendSseEvent(session, 'message', response);
-      return new Response('Accepted', { status: 202 });
+      if (session) sendSseEvent(session, 'message', response);
+      return NextResponse.json(response, { 
+        status: 200,
+        headers: { 'Access-Control-Allow-Origin': '*' }
+      });
     }
 
     if (method === 'tools/call') {
@@ -174,25 +192,29 @@ export async function POST(request: NextRequest) {
       const toolArgs = params?.arguments || {};
 
       try {
-        const result = await executeMcpTool(toolName, toolArgs, session.auth);
+        const result = await executeMcpTool(toolName, toolArgs, auth);
         const response = {
           jsonrpc: jsonrpc || '2.0',
-          id,
+          id: id ?? 1,
           result: {
             content: [
               {
                 type: 'text',
-                text: JSON.stringify(result, null, 2),
+                text: typeof result === 'string' ? result : JSON.stringify(result, null, 2),
               },
             ],
             structuredContent: result,
           },
         };
-        sendSseEvent(session, 'message', response);
+        if (session) sendSseEvent(session, 'message', response);
+        return NextResponse.json(response, { 
+          status: 200,
+          headers: { 'Access-Control-Allow-Origin': '*' }
+        });
       } catch (err: any) {
         const errorResponse = {
           jsonrpc: jsonrpc || '2.0',
-          id,
+          id: id ?? 1,
           result: {
             content: [
               {
@@ -203,24 +225,33 @@ export async function POST(request: NextRequest) {
             isError: true,
           },
         };
-        sendSseEvent(session, 'message', errorResponse);
+        if (session) sendSseEvent(session, 'message', errorResponse);
+        return NextResponse.json(errorResponse, { 
+          status: 200,
+          headers: { 'Access-Control-Allow-Origin': '*' }
+        });
       }
-      return new Response('Accepted', { status: 202 });
     }
 
     // Método desconocido
     const response = {
       jsonrpc: jsonrpc || '2.0',
-      id,
+      id: id ?? null,
       error: {
         code: -32601,
         message: `Método no soportado: ${method}`,
       },
     };
-    sendSseEvent(session, 'message', response);
-    return new Response('Accepted', { status: 202 });
+    if (session) sendSseEvent(session, 'message', response);
+    return NextResponse.json(response, { 
+      status: 200,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
   } catch (err: any) {
     console.error(`[MCP SSE POST] Error procesando método ${method}:`, err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ error: err.message }, { 
+      status: 500,
+      headers: { 'Access-Control-Allow-Origin': '*' }
+    });
   }
 }
