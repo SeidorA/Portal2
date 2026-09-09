@@ -1,6 +1,6 @@
 services:
   portal2:
-    image: cloudseidoranalytics/portal2:14b81b63ec3d8d72dfeaf42106b2ab226b3b628c
+    image: cloudseidoranalytics/portal2:4233f3c0c912947690e223851daa382a83b9f6cd
     ports:
       - "3000:3000"
     environment:
