@@ -19,6 +19,7 @@
     "@milkdown/preset-gfm": "^7.22.1",
     "@milkdown/react": "^7.22.1",
     "@milkdown/theme-nord": "^7.22.1",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "@prosemirror-adapter/react": "^0.5.5",
     "@supabase/ssr": "^0.12.4",
     "@supabase/supabase-js": "^2.112.3",
