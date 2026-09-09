@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import { CaralIcon, Brand } from 'iconcaral2';
 import { Tabs, Timeline } from 'caralstable';
 import { RoadmapData } from './Editor/RoadmapEditor';
+import { useTranslation } from '@/app/context/LanguageContext';
+import { extractLanguageContent } from '@/utils/multilingual-content';
 
 interface RoadmapViewerProps {
   content: string;
@@ -11,12 +13,16 @@ interface RoadmapViewerProps {
 }
 
 export default function RoadmapViewer({ content, productTitle, productIcon }: RoadmapViewerProps) {
+  const { language } = useTranslation();
+  const activeLang = (language as 'es' | 'en') || 'es';
+
   let rawData: any = null;
   let data: RoadmapData | null = null;
 
   try {
     if (content) {
-      rawData = JSON.parse(content);
+      const localizedContent = extractLanguageContent(content, activeLang);
+      rawData = JSON.parse(localizedContent);
       // Backward compatibility logic
       if (rawData.year && rawData.quarters && !rawData.years) {
         data = {
@@ -31,9 +37,24 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
     console.error("Error parsing roadmap JSON", e);
   }
 
-  if (!data || !data.years) {
-    return <div className="p-10 text-neutral-500">El roadmap está vacío o tiene un formato inválido.</div>;
-  }
+  const formatMonthName = (monthName: string) => {
+    if (activeLang !== 'en') return monthName;
+    const monthsMap: Record<string, string> = {
+      'enero': 'January',
+      'febrero': 'February',
+      'marzo': 'March',
+      'abril': 'April',
+      'mayo': 'May',
+      'junio': 'June',
+      'julio': 'July',
+      'agosto': 'August',
+      'septiembre': 'September',
+      'octubre': 'October',
+      'noviembre': 'November',
+      'diciembre': 'December',
+    };
+    return monthsMap[monthName.toLowerCase().trim()] || monthName;
+  };
 
   const [showPast, setShowPast] = useState(false);
   const [viewMode, setViewMode] = useState<'cards' | 'timeline'>(() => {
@@ -56,6 +77,14 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
       }
     }
   }, [data?.defaultView]);
+
+  if (!data || !data.years) {
+    return (
+      <div className="p-10 text-neutral-500">
+        {activeLang === 'en' ? 'The roadmap is empty or has an invalid format.' : 'El roadmap está vacío o tiene un formato inválido.'}
+      </div>
+    );
+  }
 
   const handleTabChange = (index: number) => {
     const selectedMode = index === 0 ? 'cards' : 'timeline';
@@ -87,9 +116,7 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
 
   const visibleYears = data.years.map(y => {
     const visibleQuarters = y.quarters.filter((q, qi) => {
-      // Si el Q no tiene información en ningún mes, no mostrarlo directamente
       if (!quarterHasFeatures(q)) return false;
-
       const isPast = isPastQuarter(y.year, qi);
       return showPast ? isPast : !isPast;
     });
@@ -98,34 +125,34 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
 
   return (
     <div className="flex flex-col gap-10 w-full mt-4">
-
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         {data.description ? (
           <div className="text-lg text-neutral-700 dark:text-neutral-300">
             <p className="leading-relaxed">{data.description}</p>
           </div>
         ) : <div />}
-
-
       </div>
 
-      <div className="w-full min-h-40 rounded-2xl flex items-center gap-5 justify-center bg-neutral-100 text-seidor-main"
+      <div className="w-full min-h-40 rounded-2xl flex items-center gap-5 justify-center bg-neutral-100 dark:bg-neutral-800 text-seidor-main dark:text-seidor-light p-6"
         style={{
           backgroundImage: "url('/img/haz/7.png')",
           backgroundSize: "50% auto",
           backgroundRepeat: "no-repeat",
           backgroundPosition: "-20% 60%",
-        }
-        }
+        }}
       >
         <Brand name={(productIcon as any) || "SAP"} size={60} />
-        <h1 className='font-extrabold text-9xl '>Roadmap {productTitle || 'SAP'}</h1>
+        <h1 className='font-extrabold text-5xl md:text-7xl'>Roadmap {productTitle || 'SAP'}</h1>
       </div>
 
-      <p>Cada avance que verán está pensado para sumar valor real a los usuarios, mejorar la eficiencia del equipo y mantenernos un paso adelante en innovación.</p>
+      <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
+        {activeLang === 'en'
+          ? 'Every advancement you see is designed to add real value to users, improve team efficiency, and keep us one step ahead in innovation.'
+          : 'Cada avance que verán está pensado para sumar valor real a los usuarios, mejorar la eficiencia del equipo y mantenernos un paso adelante en innovación.'}
+      </p>
 
       {hasPastQuarters && (
-        <div className='w-full min-h-24 flex gap-2 justify-center items-center bg-seidor-main rounded-lg text-neutral-100 hover:bg-seidor-hard transition-all duration-300 cursor-pointer'
+        <div className='w-full min-h-20 flex gap-2 justify-center items-center bg-seidor-main rounded-lg text-neutral-100 hover:bg-seidor-hard transition-all duration-300 cursor-pointer select-none p-4'
           style={{
             backgroundImage: "url('/img/haz/3.png')",
             backgroundSize: "40% auto",
@@ -134,20 +161,28 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
           }}
           onClick={() => setShowPast(!showPast)}
         >
-          <p className='font-extrabold text-2xl'> {showPast ? 'Ocultar timeline' : 'Ver anteriores'} </p>
+          <p className='font-extrabold text-xl md:text-2xl'>
+            {showPast
+              ? (activeLang === 'en' ? 'Hide timeline' : 'Ocultar timeline')
+              : (activeLang === 'en' ? 'View previous' : 'Ver anteriores')}
+          </p>
           <CaralIcon name={showPast ? 'chevronUp' : 'chevronDown'} size={24} />
         </div>
       )}
 
-
-      <p>A continuación, encontrarán un resumen de las principales iniciativas organizadas por trimestre 👇</p>
-
+      <p className="text-neutral-700 dark:text-neutral-300">
+        {activeLang === 'en'
+          ? 'Below you will find a summary of the main initiatives organized by quarter 👇'
+          : 'A continuación, encontrarán un resumen de las principales iniciativas organizadas por trimestre 👇'}
+      </p>
 
       <div className="w-full bg-full/10 py-4 sticky top-15 z-50 backdrop-blur-md">
-
         <div className="w-100">
           <Tabs
-            tabs={[{ label: 'Vista por Trimestre' }, { label: 'Línea de Tiempo' }]}
+            tabs={[
+              { label: activeLang === 'en' ? 'Quarterly View' : 'Vista por Trimestre' },
+              { label: activeLang === 'en' ? 'Timeline' : 'Línea de Tiempo' }
+            ]}
             activeIndex={viewMode === 'cards' ? 0 : 1}
             onChange={handleTabChange}
           />
@@ -157,20 +192,19 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
       {viewMode === 'cards' ? (
         visibleYears.length === 0 ? (
           <div className="p-8 text-center text-neutral-500 dark:text-neutral-400 italic bg-neutral-50 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800">
-            No hay iniciativas programadas para este período.
+            {activeLang === 'en' ? 'No initiatives scheduled for this period.' : 'No hay iniciativas programadas para este período.'}
           </div>
         ) : (
         <div className="flex flex-col gap-16">
           {visibleYears.map((y, yi) => (
             <div key={yi} className="flex flex-col gap-8">
               <h2 className="text-4xl font-extrabold text-blue-600 dark:text-blue-400 border-b-2 border-blue-200 dark:border-blue-900 pb-2">
-                Año {y.year}
+                {activeLang === 'en' ? 'Year' : 'Año'} {y.year}
               </h2>
 
               <div className="flex flex-col gap-10">
                 {y.quarters.map((q, qi) => (
                   <div key={q.id} className="flex flex-col gap-6">
-
                     {/* Quarter Header */}
                     <h3 className="text-2xl font-poppins font-semibold text-neutral-900 dark:text-white">
                       {q.name}
@@ -188,8 +222,8 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
                           />
 
                           {/* Month Header */}
-                          <h4 className="relative z-10 text-[1.3rem] font-bold font-poppins mb-8 text-neutral-100 pt-2 text-shadow-md darl:text-shadow-lg  ">
-                            {m.name} | {y.year}
+                          <h4 className="relative z-10 text-[1.3rem] font-bold font-poppins mb-8 text-neutral-100 pt-2 text-shadow-md dark:text-shadow-lg">
+                            {formatMonthName(m.name)} | {y.year}
                           </h4>
 
                           {/* Features List */}
@@ -207,28 +241,28 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
                                   )}
                                   {f.type === 'enhancement' && (
                                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#daf4ec] text-[#13644a] border border-[#13644a]">
-                                      Mejora
+                                      {activeLang === 'en' ? 'Enhancement' : 'Mejora'}
                                       <CaralIcon name="wrench" size={12} />
                                     </span>
                                   )}
                                   {f.type === 'integration' && (
                                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-[#9ecfff] text-[#002f5d] border border-[#2b88d8]">
-                                      Integrations
+                                      {activeLang === 'en' ? 'Integrations' : 'Integraciones'}
                                       <CaralIcon name="cube" size={12} />
                                     </span>
                                   )}
 
                                   {f.completed && (
                                     <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                                      <CaralIcon name="check" size={12} /> Completado
+                                      <CaralIcon name="check" size={12} /> {activeLang === 'en' ? 'Completed' : 'Completado'}
                                     </span>
                                   )}
                                 </div>
 
                                 {/* Title & Icon */}
-                                <div className="flex items-start gap-3 mt-1 text-neutral-900 dark:text-black!">
+                                <div className="flex items-start gap-3 mt-1 text-neutral-900 dark:text-white">
                                   {f.icon && (
-                                    <span className="shrink-0 mt-0.5 ">
+                                    <span className="shrink-0 mt-0.5">
                                       {f.isBrand ? (
                                         <Brand name={f.icon as any} size={28} />
                                       ) : (
@@ -243,7 +277,7 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
 
                                 {/* Description */}
                                 {f.description && (
-                                  <p className="text-neutral-700 dark:text-neutral-400 text-[0.95rem] leading-relaxed mt-1">
+                                  <p className="text-neutral-700 dark:text-neutral-300 text-[0.95rem] leading-relaxed mt-1">
                                     {f.description}
                                   </p>
                                 )}
@@ -253,7 +287,7 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
 
                             {m.features.length === 0 && (
                               <div className="text-neutral-400 italic text-sm text-center py-4">
-                                Sin features programadas
+                                {activeLang === 'en' ? 'No scheduled features' : 'Sin features programadas'}
                               </div>
                             )}
                           </div>
@@ -270,7 +304,7 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
       ) : (
         visibleYears.length === 0 ? (
           <div className="p-8 text-center text-neutral-500 dark:text-neutral-400 italic bg-neutral-50 dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 w-full max-w-5xl mx-auto">
-            No hay iniciativas programadas para este período.
+            {activeLang === 'en' ? 'No initiatives scheduled for this period.' : 'No hay iniciativas programadas para este período.'}
           </div>
         ) : (
         <div className="flex flex-col w-full max-w-5xl mx-auto">
@@ -291,7 +325,7 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
                       >
                         <div className="flex flex-col bg-container rounded-xl p-8 shadow-sm border border-neutral-200 dark:border-neutral-800 w-full overflow-hidden relative mb-12 ml-4 animate-slide-up" style={{ animationDelay: `${mi * 150}ms` }}>
                           <h3 className="text-2xl font-extrabold text-neutral-900 dark:text-white mb-6 z-10">
-                            {m.name} | {y.year}
+                            {formatMonthName(m.name)} | {y.year}
                           </h3>
 
                           <div className="flex flex-col gap-8 pl-4">
@@ -318,7 +352,7 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
                                       </h5>
                                     </div>
                                     {f.description && (
-                                      <p className="text-neutral-700 dark:text-neutral-100 text-[0.95rem] mt-2 pl-[36px]">
+                                      <p className="text-neutral-700 dark:text-neutral-300 text-[0.95rem] mt-2 pl-[36px]">
                                         {f.description}
                                       </p>
                                     )}
@@ -328,7 +362,7 @@ export default function RoadmapViewer({ content, productTitle, productIcon }: Ro
                             ))}
                             {m.features.length === 0 && (
                               <div className="text-neutral-400 italic text-sm pl-2">
-                                Sin iniciativas
+                                {activeLang === 'en' ? 'No initiatives' : 'Sin iniciativas'}
                               </div>
                             )}
                           </div>
