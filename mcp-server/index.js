@@ -19,7 +19,7 @@ if (!PORTAL_API_KEY) {
 const server = new Server(
   {
     name: "portal-docs-mcp",
-    version: "1.0.0",
+    version: "1.1.0",
   },
   {
     capabilities: {
@@ -28,9 +28,13 @@ const server = new Server(
   }
 );
 
-// Helper para hacer fetch con autenticación
+// Helper para hacer fetch con autenticación a la API de MCP del portal
 async function portalFetch(endpoint, options = {}) {
-  const url = `${PORTAL_URL}/api/mcp/docs${endpoint}`;
+  const path = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = path.startsWith('/api/')
+    ? `${PORTAL_URL}${path}`
+    : `${PORTAL_URL}/api/mcp${path}`;
+
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -60,6 +64,7 @@ async function portalFetch(endpoint, options = {}) {
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
+      // Herramientas para la Base de Conocimiento (documentation)
       {
         name: "search_docs",
         description: "Busca en la documentación del portal usando palabras clave",
@@ -94,6 +99,109 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           required: ["id", "content"],
         },
       },
+
+      // Herramientas para Documentos Tipo A4 (portal_documents)
+      {
+        name: "list_a4_documents",
+        description: "Lista los documentos tipo A4 disponibles en el portal con búsqueda opcional por título y paginación.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            search: { type: "string", description: "Filtro opcional para buscar por título" },
+            limit: { type: "number", description: "Cantidad máxima de documentos a retornar (defecto: 20)" },
+            offset: { type: "number", description: "Desplazamiento para paginación (defecto: 0)" },
+          },
+        },
+      },
+      {
+        name: "get_a4_document",
+        description: "Obtiene los detalles completos de un documento tipo A4 (título, páginas Markdown, configuración visual/portada, metadatos y productos relacionados).",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: { type: "string", description: "ID del documento A4 (UUID)" },
+          },
+          required: ["id"],
+        },
+      },
+      {
+        name: "create_a4_document",
+        description: "Crea un nuevo documento tipo A4 multipágina en el portal.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            title: { type: "string", description: "Título del nuevo documento A4" },
+            pages: {
+              type: "array",
+              items: { type: "string" },
+              description: "Array de strings en formato Markdown, donde cada string representa una página A4.",
+            },
+            settings: {
+              type: "object",
+              description: "Configuración opcional de página y portada (hasCover, template, customTitle, subtitleText, subtitleColor, showFooter, noTableBorders, etc.)",
+            },
+            metadata: {
+              type: "object",
+              description: "Metadatos opcionales (tags, status: 'draft'|'published', restriction: 'public'|'private', language, description)",
+            },
+            related_products: {
+              type: "array",
+              items: { type: "string" },
+              description: "Array de UUIDs de productos del portal relacionados con este documento.",
+            },
+          },
+          required: ["title"],
+        },
+      },
+      {
+        name: "edit_a4_document",
+        description: "Edita un documento tipo A4 existente. Permite actualizar su título, contenido de páginas, configuración de portada, metadatos o productos asociados.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: { type: "string", description: "ID del documento A4 a modificar (UUID)" },
+            title: { type: "string", description: "Nuevo título (opcional)" },
+            pages: {
+              type: "array",
+              items: { type: "string" },
+              description: "Nuevo array de páginas Markdown (opcional)",
+            },
+            settings: {
+              type: "object",
+              description: "Ajustes de configuración o portada a actualizar (opcional)",
+            },
+            metadata: {
+              type: "object",
+              description: "Metadatos a actualizar (opcional)",
+            },
+            related_products: {
+              type: "array",
+              items: { type: "string" },
+              description: "Nueva lista de IDs de productos asociados (opcional)",
+            },
+            action_description: {
+              type: "string",
+              description: "Descripción breve del cambio para registrar en el historial de edición (opcional)",
+            },
+          },
+          required: ["id"],
+        },
+      },
+      {
+        name: "duplicate_a4_document",
+        description: "Duplica o clona un documento tipo A4 existente generando una copia idéntica con un nuevo ID y título opcional.",
+        inputSchema: {
+          type: "object",
+          properties: {
+            id: { type: "string", description: "ID del documento A4 que se desea duplicar (UUID)" },
+            new_title: {
+              type: "string",
+              description: "Título para la copia clonada (opcional, por defecto 'Copia de [Título Original]')",
+            },
+          },
+          required: ["id"],
+        },
+      },
     ],
   };
 });
@@ -102,9 +210,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     switch (request.params.name) {
+      // Documentation endpoints
       case "search_docs": {
         const { query } = request.params.arguments;
-        const data = await portalFetch(`/search?q=${encodeURIComponent(query)}`);
+        const data = await portalFetch(`/docs/search?q=${encodeURIComponent(query)}`);
         const resultObject = {
           results: data.results || [],
           total: (data.results || []).length,
@@ -117,7 +226,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "get_doc_content": {
         const { id } = request.params.arguments;
-        const data = await portalFetch(`/content?id=${id}`);
+        const data = await portalFetch(`/docs/content?id=${id}`);
         const resultObject = {
           document: data.document || {},
         };
@@ -129,7 +238,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       case "edit_doc": {
         const { id, content } = request.params.arguments;
-        const data = await portalFetch(`/edit`, {
+        const data = await portalFetch(`/docs/edit`, {
           method: 'POST',
           body: JSON.stringify({ id, content }),
         });
@@ -143,8 +252,68 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
       }
 
+      // A4 Document endpoints
+      case "list_a4_documents": {
+        const { search = '', limit = 20, offset = 0 } = request.params.arguments || {};
+        const queryParams = new URLSearchParams();
+        if (search) queryParams.set('search', search);
+        if (limit) queryParams.set('limit', String(limit));
+        if (offset) queryParams.set('offset', String(offset));
+
+        const data = await portalFetch(`/documents/list?${queryParams.toString()}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+          structuredContent: data,
+        };
+      }
+
+      case "get_a4_document": {
+        const { id } = request.params.arguments;
+        const data = await portalFetch(`/documents/content?id=${encodeURIComponent(id)}`);
+        return {
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+          structuredContent: data,
+        };
+      }
+
+      case "create_a4_document": {
+        const { title, pages, settings, metadata, related_products } = request.params.arguments;
+        const data = await portalFetch(`/documents/create`, {
+          method: 'POST',
+          body: JSON.stringify({ title, pages, settings, metadata, related_products }),
+        });
+        return {
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+          structuredContent: data,
+        };
+      }
+
+      case "edit_a4_document": {
+        const { id, title, pages, settings, metadata, related_products, action_description } = request.params.arguments;
+        const data = await portalFetch(`/documents/edit`, {
+          method: 'POST',
+          body: JSON.stringify({ id, title, pages, settings, metadata, related_products, action_description }),
+        });
+        return {
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+          structuredContent: data,
+        };
+      }
+
+      case "duplicate_a4_document": {
+        const { id, new_title } = request.params.arguments;
+        const data = await portalFetch(`/documents/duplicate`, {
+          method: 'POST',
+          body: JSON.stringify({ id, new_title }),
+        });
+        return {
+          content: [{ type: "text", text: JSON.stringify(data, null, 2) }],
+          structuredContent: data,
+        };
+      }
+
       default:
-        throw new Error("Unknown tool");
+        throw new Error(`Unknown tool: ${request.params.name}`);
     }
   } catch (error) {
     return {
