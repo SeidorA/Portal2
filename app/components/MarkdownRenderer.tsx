@@ -157,6 +157,41 @@ const preprocessLineBreaks = (text: string) => {
   }).join('\n');
 };
 
+const preprocessBullets = (text: string) => {
+  return text.split('\n').map(line => {
+    const trimmed = line.trim();
+    const isTableRow = trimmed.startsWith('|') && trimmed.endsWith('|');
+
+    if (isTableRow) {
+      const cells = line.split('|');
+      const processedCells = cells.map((cell, idx) => {
+        // Ignorar bordes externos de la tabla
+        if (idx === 0 || idx === cells.length - 1) {
+          return cell;
+        }
+
+        return cell.replace(/(<br\s*\/?>\s*)?•\s*/gi, (match, hasBr, offset) => {
+          const textBefore = cell.slice(0, offset).trim();
+          if (!textBefore) {
+            return '• ';
+          }
+          return '<br/>• ';
+        });
+      });
+      return processedCells.join('|');
+    }
+
+    // Fuera de tablas
+    return line.replace(/(<br\s*\/?>\s*)?•\s*/gi, (match, hasBr, offset) => {
+      const textBefore = line.slice(0, offset).trim();
+      if (!textBefore) {
+        return '• ';
+      }
+      return '<br/>• ';
+    });
+  }).join('\n');
+};
+
 const renderTableCellContent = (children: any): any => {
   if (typeof children === 'string') {
     if (/<br\s*\/?>/i.test(children)) {
@@ -186,7 +221,7 @@ export default function MarkdownRenderer({ content, noTableBorders = false, lang
   const { language } = useTranslation();
   const activeLang = lang || (language as 'es' | 'en') || 'es';
   const localizedContent = extractLanguageContent(content || '', activeLang);
-  const processedContent = preprocessLineBreaks(preprocessCustomComponents(preprocessAdmonitions(localizedContent)));
+  const processedContent = preprocessBullets(preprocessLineBreaks(preprocessCustomComponents(preprocessAdmonitions(localizedContent))));
 
   return (
     <div className={`prose prose-neutral dark:prose-invert max-w-none 

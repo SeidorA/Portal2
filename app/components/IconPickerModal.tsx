@@ -163,7 +163,7 @@ export default function IconPickerModal({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      setSelectedIcon(icon);
+                      setSelectedIcon(prev => (prev === icon ? '' : icon));
                     }}
                     className={`flex flex-col items-center justify-center p-3 rounded-lg gap-2 transition-all cursor-pointer ${
                       selectedIcon === icon
@@ -203,7 +203,21 @@ export default function IconPickerModal({
               </span>
             </button>
 
-            <div className="flex gap-2">
+            <div className="flex items-center gap-2">
+              {Boolean(selectedIcon || initialIconName) && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setSelectedIcon('');
+                    onSelect('', false);
+                    onClose();
+                  }}
+                  className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 text-xs"
+                >
+                  {t('iconPicker.remove', 'Quitar ícono')}
+                </Button>
+              )}
               <Button type="button" variant="ghost" onClick={onClose}>
                 {t('iconPicker.cancel', 'Cancelar')}
               </Button>

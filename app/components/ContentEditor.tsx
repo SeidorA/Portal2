@@ -251,14 +251,30 @@ export default function ContentEditor({ isOpen, docToEdit, productId, defaultDoc
                     <CaralIcon name="image" size={24} className="text-neutral-400" />
                   )}
                 </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => setIsIconPickerOpen(true)}
-                  className="w-full justify-start text-neutral-600 dark:text-neutral-400 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                >
-                  {docIconName ? t('content.changeIcon', 'Cambiar Ícono...') : t('content.selectIcon', 'Seleccionar Ícono...')}
-                </Button>
+                <div className="flex items-center gap-2 flex-1">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setIsIconPickerOpen(true)}
+                    className="w-full justify-start text-neutral-600 dark:text-neutral-400 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  >
+                    {docIconName ? t('content.changeIcon', 'Cambiar Ícono...') : t('content.selectIcon', 'Seleccionar Ícono...')}
+                  </Button>
+                  {docIconName && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={() => {
+                        setDocIconName('');
+                        setDocUseBrand(false);
+                      }}
+                      className="text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 p-2 shrink-0 border border-neutral-300 dark:border-neutral-700"
+                      title={t('content.removeIcon', 'Eliminar ícono')}
+                    >
+                      <CaralIcon name="trash" size={18} />
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
 

@@ -12,6 +12,7 @@ export interface DocInsertProps {
   coverImage?: string;
   format?: string;
   language?: string;
+  lang?: string;
   downloadUrl?: string;
   onDownload?: string;
   brand?: string;
@@ -26,6 +27,7 @@ export default function DocInsert({
   coverImage: initialCoverImage,
   format,
   language,
+  lang,
   downloadUrl: rawDownloadUrl,
   onDownload,
   brand,
@@ -90,6 +92,18 @@ export default function DocInsert({
     ? restriction
     : (doc.content?.metadata?.restriction || 'public');
 
+  // Obtener idioma desde props directas o metadatos del documento
+  const rawLanguage = language || lang || doc?.content?.metadata?.language || doc?.content?.metadata?.lang;
+  const getLanguageLabel = (l?: string) => {
+    if (!l) return null;
+    const lower = l.trim().toLowerCase();
+    if (lower === 'es' || lower === 'esp' || lower === 'español' || lower === 'spanish') return 'ES';
+    if (lower === 'en' || lower === 'eng' || lower === 'inglés' || lower === 'ingles' || lower === 'english') return 'EN';
+    if (lower === 'pt' || lower === 'portugués' || lower === 'portugues' || lower === 'portuguese') return 'PT';
+    return l.toUpperCase();
+  };
+  const languageLabel = getLanguageLabel(rawLanguage);
+
   return (
     <div className="flex flex-col md:!flex-row w-full bg-container border border-neutral-200 dark:border-neutral-800 rounded-2xl overflow-hidden my-6 shadow-sm hover:shadow-md transition-shadow">
       {/* Cover Image / Brand Side */}
@@ -131,9 +145,9 @@ export default function DocInsert({
                 {format.toUpperCase()}
               </span>
             )}
-            {language && (
-              <span className="inline-block px-2.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-800 rounded-md text-[11px] font-medium">
-                {language}
+            {languageLabel && (
+              <span className="inline-block px-2.5 py-0.5 bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 rounded-md text-[11px] font-semibold border border-neutral-200 dark:border-neutral-700">
+                {languageLabel}
               </span>
             )}
             {docRestriction === 'internal' && (
