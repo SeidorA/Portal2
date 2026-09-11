@@ -14,6 +14,7 @@ export const metadata: Metadata = {
 };
 
 import { LanguageProvider } from "./context/LanguageContext";
+import PageTracker from "./components/PageTracker";
 
 export default function RootLayout({
   children,
@@ -28,6 +29,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col font-poppins bg-full h-screen overflow-hidden" suppressHydrationWarning>
         <LanguageProvider>
+          <PageTracker />
           {children}
         </LanguageProvider>
       </body>

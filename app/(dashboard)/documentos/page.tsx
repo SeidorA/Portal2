@@ -5,6 +5,7 @@ import { Button, Tabs, TextInput, Drawer, Timeline } from 'caralstable';
 import { CaralIcon } from 'iconcaral2';
 import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
+import BookmarkButton from '@/app/components/BookmarkButton';
 import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function DocumentosPage() {
@@ -181,6 +182,17 @@ export default function DocumentosPage() {
                     </span>
                   </div>
                 )}
+
+                {/* Overlay for bookmark button */}
+                <div className="absolute top-2 left-2 z-10">
+                  <BookmarkButton
+                    url={`/documentos/edit/${doc.id}`}
+                    title={doc.title}
+                    category="Documentos A4"
+                    size={16}
+                    className="p-1.5 bg-black/40 hover:bg-black/60 backdrop-blur-md rounded-md text-white shadow-sm"
+                  />
+                </div>
 
                 {/* Overlay for type icon */}
                 <div className="absolute top-2 right-2 p-1.5 bg-black/30 backdrop-blur-sm rounded-md text-white">

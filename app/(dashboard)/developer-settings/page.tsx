@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
-export default function ApiKeysPage() {
+export default function DeveloperSettingsPage() {
   redirect('/perfil?tab=apis');
 }

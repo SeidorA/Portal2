@@ -9,11 +9,16 @@
         "variant": "info"
       },
       {
+        "label": "Perfil",
+        "icon": "user",
+        "href": "/perfil",
+        "variant": "ghost"
+      },
+      {
         "label": "Oportunidades",
         "icon": "list",
         "href": "/oportunidades",
-        "variant": "ghost",
-        "className": "text-neutral-900"
+        "variant": "ghost"
       }
     ]
   },
@@ -31,17 +36,22 @@
         "icon": "gear",
         "href": "/roles",
         "variant": "ghost"
-      },
+      }
+    ]
+  },
+  {
+    "title": "Contenido",
+    "items": [
       {
-        "label": "Contenido",
-        "icon": "edit",
-        "href": "/contenido",
+        "label": "Productos",
+        "icon": "cube",
+        "href": "/productos",
         "variant": "ghost"
       },
       {
-        "label": "Products",
-        "icon": "plus",
-        "href": "/productos",
+        "label": "Base de conocimiento",
+        "icon": "book",
+        "href": "/contenido",
         "variant": "ghost"
       },
       {
@@ -53,35 +63,12 @@
     ]
   },
   {
-    "title": "Preferencias",
-    "items": [
-      {
-        "label": "Perfil",
-        "icon": "user",
-        "href": "/perfil",
-        "variant": "ghost"
-      },
-      {
-        "label": "Configuración",
-        "icon": "wrench",
-        "href": "/configuracion",
-        "variant": "ghost"
-      },
-      {
-        "label": "Developer Settings",
-        "icon": "code",
-        "href": "/developer-settings",
-        "variant": "ghost"
-      }
-    ]
-  },
-  {
     "title": "Ayuda",
     "items": [
       {
         "label": "Documentación",
         "icon": "book",
-        "href": "/docs",
+        "href": "/documentacion/intro",
         "variant": "ghost"
       },
       {
@@ -93,6 +80,7 @@
       {
         "label": "Mi portal",
         "icon": "Daiana",
+        "isBrand": true,
         "href": "/mi-portal",
         "variant": "ghost"
       }

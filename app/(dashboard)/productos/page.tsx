@@ -137,7 +137,7 @@ const ApiDependencySelector = ({ url, apiScript, value, onChange }: { url: strin
   }
 
   return (
-    <div className="max-h-48 overflow-y-auto border border-neutral-300 dark:border-neutral-700 rounded-md bg-white dark:bg-neutral-900 p-2 flex flex-col gap-1.5">
+    <div className="max-h-48 overflow-y-auto border border-neutral-300 dark:border-neutral-700 rounded-md bg-container p-2 flex flex-col gap-1.5">
       {data.map((opt: any, i: number) => {
         const optValue = typeof opt === 'object' && opt !== null ? String(opt.value || opt.id || opt.name || JSON.stringify(opt)) : String(opt)
         const optLabel = typeof opt === 'object' && opt !== null ? String(opt.label || opt.title || opt.name || opt.id || JSON.stringify(opt)) : String(opt)
@@ -153,6 +153,165 @@ const ApiDependencySelector = ({ url, apiScript, value, onChange }: { url: strin
   )
 }
 
+export interface DownloadableAsset {
+  id: string
+  url: string
+  name: string
+  format: string
+  size?: string
+}
+
+interface ProductAssetsState {
+  logo_type?: 'brand' | 'custom'
+  brand_icon?: string
+  brand_is_color?: boolean
+  custom_logo?: string
+  custom_logo_dark?: string
+  theme_base?: 'caral' | 'custom'
+  enable_graphic_module?: boolean
+  downloadable_assets?: DownloadableAsset[]
+  brand_info?: string
+  isotype_info?: string
+  safety_zone_info?: string
+  positive_negative_info?: string
+  color_palette_info?: string
+  typography_info?: string
+  colors?: {
+    primary?: string
+    secondary?: string
+    accent?: string
+    bg_light?: string
+    bg_dark?: string
+    text_main?: string
+    [key: string]: string | undefined
+  }
+  color_tokens?: {
+    primary?: string
+    secondary?: string
+    accent?: string
+    bg_light?: string
+    text_main?: string
+    [key: string]: string | undefined
+  }
+  logo_light?: string
+  logo_dark?: string
+  logo_positive_bw?: string
+  logo_negative_bw?: string
+  safety_zone_image?: string
+  icon_dark?: string
+  cover_images?: string[]
+  use_brand?: boolean
+  [key: string]: any
+}
+
+export const CARAL_COLOR_SLOTS = [
+  { key: 'primary', label: 'Primary', defaultName: 'Seidor Main', defaultHex: '#07153A' },
+  { key: 'secondary', label: 'Secondary', defaultName: 'Seidor Hard', defaultHex: '#1F3A70' },
+  { key: 'accent', label: 'Assent', defaultName: 'Info main', defaultHex: '#0085FF' },
+  { key: 'text_main', label: 'Text', defaultName: 'Neutral 900', defaultHex: '#18181B' },
+  { key: 'bg_light', label: 'Background', defaultName: 'Neutral 100', defaultHex: '#F4F4F5' },
+] as const
+
+export const CARAL_COLOR_LIBRARY = [
+  // Seidor
+  { name: 'Seidor Main', hex: '#07153A', group: 'Seidor' },
+  { name: 'Seidor Hard', hex: '#1F3A70', group: 'Seidor' },
+  { name: 'Seidor ligth', hex: '#6DB4FE', group: 'Seidor' },
+  // Info
+  { name: 'Info Main', hex: '#0085FF', group: 'Info' },
+  { name: 'info hard', hex: '#005BB5', group: 'Info' },
+  { name: 'info ligth', hex: '#99D5FF', group: 'Info' },
+  // Success
+  { name: 'Success Main', hex: '#00E19B', group: 'Success' },
+  { name: 'Success Hard', hex: '#009668', group: 'Success' },
+  { name: 'Success ligth', hex: '#99F5D7', group: 'Success' },
+  // Warning
+  { name: 'Warning Main', hex: '#FFB81C', group: 'Warning' },
+  { name: 'Warning Hard', hex: '#B87D00', group: 'Warning' },
+  { name: 'Warning ligth', hex: '#FFE3A3', group: 'Warning' },
+  // Danger
+  { name: 'Danger Main', hex: '#FF3B30', group: 'Danger' },
+  { name: 'Danger Hard', hex: '#B81A12', group: 'Danger' },
+  { name: 'Danger ligth', hex: '#FFB2AD', group: 'Danger' },
+  // Indigo
+  { name: 'Indigo Main', hex: '#6366F1', group: 'Indigo' },
+  { name: 'Indigo Hard', hex: '#4338CA', group: 'Indigo' },
+  { name: 'Indigo ligth', hex: '#C7D2FE', group: 'Indigo' },
+  // Sakura
+  { name: 'Sakura Main', hex: '#EC4899', group: 'Sakura' },
+  { name: 'Sakura Hard', hex: '#BE185D', group: 'Sakura' },
+  { name: 'Sakura ligth', hex: '#FBCFE8', group: 'Sakura' },
+  // Neutral
+  { name: 'Neutral 900', hex: '#18181B', group: 'Neutral' },
+  { name: 'Neutral 800', hex: '#27272A', group: 'Neutral' },
+  { name: 'Neutral 500', hex: '#71717A', group: 'Neutral' },
+  { name: 'Neutral 400', hex: '#A1A1AA', group: 'Neutral' },
+  { name: 'Neutral 100', hex: '#F4F4F5', group: 'Neutral' },
+]
+
+const COLOR_PRESETS = [
+  {
+    name: 'Caral Clásico',
+    key: 'presetCaral',
+    primary: '#07153A',
+    secondary: '#1F3A70',
+    accent: '#0085FF',
+    bg_light: '#F4F4F5',
+    bg_dark: '#0B1329',
+    text_main: '#18181B'
+  },
+  {
+    name: 'Seidor Corporate',
+    key: 'presetSeidor',
+    primary: '#001A70',
+    secondary: '#00A3E0',
+    accent: '#FFB81C',
+    bg_light: '#FFFFFF',
+    bg_dark: '#0A1128',
+    text_main: '#0F172A'
+  },
+  {
+    name: 'Ocean Blue',
+    key: 'presetOcean',
+    primary: '#0F172A',
+    secondary: '#3B82F6',
+    accent: '#38BDF8',
+    bg_light: '#F0F9FF',
+    bg_dark: '#0C192C',
+    text_main: '#0F172A'
+  },
+  {
+    name: 'Emerald Tech',
+    key: 'presetEmerald',
+    primary: '#064E3B',
+    secondary: '#059669',
+    accent: '#34D399',
+    bg_light: '#F0FDF4',
+    bg_dark: '#06281E',
+    text_main: '#064E3B'
+  },
+  {
+    name: 'Crimson Red',
+    key: 'presetCrimson',
+    primary: '#4C0519',
+    secondary: '#E11D48',
+    accent: '#FB7185',
+    bg_light: '#FFF1F2',
+    bg_dark: '#1F060D',
+    text_main: '#4C0519'
+  },
+  {
+    name: 'Amber Spark',
+    key: 'presetAmber',
+    primary: '#451A03',
+    secondary: '#D97706',
+    accent: '#FBBF24',
+    bg_light: '#FFFBEB',
+    bg_dark: '#1C0F02',
+    text_main: '#451A03'
+  }
+]
+
 export default function ProductosPage() {
   const { t } = useTranslation()
   const [products, setProducts] = useState<any[]>([])
@@ -166,7 +325,41 @@ export default function ProductosPage() {
   const [availableRoles, setAvailableRoles] = useState<any[]>([])
 
   // Assets State
-  const [newAssets, setNewAssets] = useState<{ logo_light?: string, logo_dark?: string, icon_dark?: string, cover_images?: string[] }>({})
+  const [newAssets, setNewAssets] = useState<ProductAssetsState>({
+    logo_type: 'brand',
+    brand_icon: '',
+    brand_is_color: true,
+    theme_base: 'caral',
+    colors: {
+      primary: '#07153A',
+      secondary: '#1F3A70',
+      accent: '#0085FF',
+      bg_light: '#F4F4F5',
+      bg_dark: '#0F172A',
+      text_main: '#18181B'
+    },
+    color_tokens: {
+      primary: 'Seidor Main',
+      secondary: 'Seidor Hard',
+      accent: 'Info main',
+      bg_light: 'Neutral 100',
+      text_main: 'Neutral 900'
+    },
+    logo_light: '',
+    logo_dark: '',
+    logo_positive_bw: '',
+    logo_negative_bw: '',
+    safety_zone_image: '',
+    icon_dark: '',
+    cover_images: [],
+    use_brand: true,
+    enable_graphic_module: true,
+    downloadable_assets: []
+  })
+  const [isUploadingAssets, setIsUploadingAssets] = useState(false)
+  const [isDraggingRack, setIsDraggingRack] = useState(false)
+  const [activeColorSlot, setActiveColorSlot] = useState<'primary' | 'secondary' | 'accent' | 'text_main' | 'bg_light' | null>(null)
+  const [previewMode, setPreviewMode] = useState<'light' | 'dark'>('light')
 
   // Create Form State
   const [newTitle, setNewTitle] = useState('')
@@ -298,14 +491,120 @@ export default function ProductosPage() {
     setNewFeatIsConditional(false)
     setNewFeatApiUrl('')
     setNewFeatApiScript('')
-    setNewAssets({})
+    setNewAssets({
+      logo_type: 'brand',
+      brand_icon: '',
+      brand_is_color: true,
+      custom_logo: '',
+      custom_logo_dark: '',
+      theme_base: 'caral',
+      colors: {
+        primary: '#07153A',
+        secondary: '#1F3A70',
+        accent: '#0085FF',
+        bg_light: '#F4F4F5',
+        bg_dark: '#0F172A',
+        text_main: '#18181B'
+      },
+      color_tokens: {
+        primary: 'Seidor Main',
+        secondary: 'Seidor Hard',
+        accent: 'Info main',
+        bg_light: 'Neutral 100',
+        text_main: 'Neutral 900'
+      },
+      logo_light: '',
+      logo_dark: '',
+      logo_positive_bw: '',
+      logo_negative_bw: '',
+      safety_zone_image: '',
+      icon_dark: '',
+      cover_images: [],
+      use_brand: true,
+      enable_graphic_module: true,
+      downloadable_assets: [],
+      brand_info: '',
+      isotype_info: '',
+      safety_zone_info: '',
+      positive_negative_info: '',
+      color_palette_info: '',
+      typography_info: ''
+    })
+    setActiveColorSlot(null)
     setDrawerTab('general')
     setIsDrawerOpen(true)
+  }
+
+  const handleUploadDownloadableAssets = async (files: FileList | File[]) => {
+    if (!files || files.length === 0) return
+    const fileList = Array.from(files)
+    if (fileList.length === 0) return
+
+    setIsUploadingAssets(true)
+    try {
+      const uploadPromises = fileList.map(async (file) => {
+        try {
+          const ext = file.name.split('.').pop()?.toLowerCase() || 'png'
+          const cleanFileName = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`
+          const filePath = `downloadable-assets/${cleanFileName}`
+
+          const { error } = await supabase.storage.from('portal-assets').upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          })
+
+          if (error) {
+            console.error('Error uploading file:', file.name, error)
+            return null
+          }
+
+          const { data: { publicUrl } } = supabase.storage.from('portal-assets').getPublicUrl(filePath)
+
+          const formatSize = (bytes: number) => {
+            if (bytes < 1024) return `${bytes} B`
+            if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+            return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+          }
+
+          return {
+            id: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            url: publicUrl,
+            name: file.name,
+            format: ext.toUpperCase(),
+            size: formatSize(file.size)
+          } as DownloadableAsset
+        } catch (err) {
+          console.error('Error processing file:', file.name, err)
+          return null
+        }
+      })
+
+      const results = await Promise.all(uploadPromises)
+      const validItems = results.filter((item): item is DownloadableAsset => item !== null)
+
+      if (validItems.length > 0) {
+        setNewAssets(prev => ({
+          ...prev,
+          downloadable_assets: [...(prev.downloadable_assets || []), ...validItems]
+        }))
+      }
+    } catch (err: any) {
+      alert(err.message || 'Error al subir los archivos')
+    } finally {
+      setIsUploadingAssets(false)
+    }
   }
 
   const handleFormSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     try {
+      const finalAssets = {
+        ...newAssets,
+        use_brand: newAssets.logo_type === 'brand' ? (newAssets.brand_is_color ?? true) : false,
+        brand_icon: newAssets.logo_type === 'brand' ? (newAssets.brand_icon || newIconName) : undefined,
+        brand_is_color: newAssets.brand_is_color ?? true
+      }
+
       let productId = editingId
       if (editingId) {
         const { error } = await supabase
@@ -318,16 +617,16 @@ export default function ProductosPage() {
             link: newLink,
             category: newCategory,
             is_super: newIsSuper,
-            light_image: newLightImage,
-            dark_image: newDarkImage,
+            light_image: newLightImage || '',
+            dark_image: newDarkImage || '',
             link_demo: newLinkDemo,
             link_landing: newLinkLanding,
             link_docs: newLinkDocs,
-            icon_name: newIconName,
+            icon_name: newAssets.logo_type === 'brand' ? (newAssets.brand_icon || newIconName) : (newIconName || ''),
             hide_in_bento: newHideInBento || false,
             requirements: newRequirements,
             features: newFeatures,
-            assets: { ...newAssets, use_brand: newUseBrand }
+            assets: finalAssets
           })
           .eq('id', editingId)
         if (error) throw error
@@ -343,17 +642,17 @@ export default function ProductosPage() {
               link: newLink,
               category: newCategory,
               is_super: newIsSuper,
-              light_image: newLightImage,
-              dark_image: newDarkImage,
+              light_image: newLightImage || '',
+              dark_image: newDarkImage || '',
               order_index: products.length,
               link_demo: newLinkDemo,
               link_landing: newLinkLanding,
               link_docs: newLinkDocs,
-              icon_name: newIconName,
+              icon_name: newAssets.logo_type === 'brand' ? (newAssets.brand_icon || newIconName) : (newIconName || ''),
               hide_in_bento: newHideInBento,
               requirements: newRequirements,
               features: newFeatures,
-              assets: { ...newAssets, use_brand: newUseBrand }
+              assets: finalAssets
             }
           ]).select()
         if (error) throw error
@@ -440,7 +739,52 @@ export default function ProductosPage() {
     setNewFeatIsConditional(false)
     setNewFeatApiUrl('')
     setNewFeatApiScript('')
-    setNewAssets(p.assets || {})
+    const assetsData = p.assets || {}
+    const hasBrand = Boolean(assetsData.brand_icon || p.icon_name)
+    const initialLogoType: 'brand' | 'custom' = assetsData.logo_type || (hasBrand ? 'brand' : (assetsData.custom_logo ? 'custom' : 'brand'))
+
+    setNewAssets({
+      logo_type: initialLogoType,
+      brand_icon: assetsData.brand_icon || p.icon_name || '',
+      brand_is_color: assetsData.brand_is_color ?? (assetsData.use_brand ?? true),
+      custom_logo: assetsData.custom_logo || '',
+      custom_logo_dark: assetsData.custom_logo_dark || '',
+      theme_base: assetsData.theme_base || 'caral',
+      colors: {
+        primary: assetsData.colors?.primary || '#07153A',
+        secondary: assetsData.colors?.secondary || '#1F3A70',
+        accent: assetsData.colors?.accent || '#0085FF',
+        bg_light: assetsData.colors?.bg_light || '#F4F4F5',
+        bg_dark: assetsData.colors?.bg_dark || '#0F172A',
+        text_main: assetsData.colors?.text_main || '#18181B',
+        ...(assetsData.colors || {})
+      },
+      color_tokens: {
+        primary: assetsData.color_tokens?.primary || 'Seidor Main',
+        secondary: assetsData.color_tokens?.secondary || 'Seidor Hard',
+        accent: assetsData.color_tokens?.accent || 'Info main',
+        bg_light: assetsData.color_tokens?.bg_light || 'Neutral 100',
+        text_main: assetsData.color_tokens?.text_main || 'Neutral 900',
+        ...(assetsData.color_tokens || {})
+      },
+      logo_light: assetsData.logo_light || '',
+      logo_dark: assetsData.logo_dark || '',
+      logo_positive_bw: assetsData.logo_positive_bw || '',
+      logo_negative_bw: assetsData.logo_negative_bw || '',
+      safety_zone_image: assetsData.safety_zone_image || '',
+      icon_dark: assetsData.icon_dark || '',
+      cover_images: assetsData.cover_images || [],
+      use_brand: assetsData.use_brand ?? true,
+      enable_graphic_module: assetsData.enable_graphic_module ?? true,
+      downloadable_assets: assetsData.downloadable_assets || [],
+      brand_info: assetsData.brand_info || '',
+      isotype_info: assetsData.isotype_info || '',
+      safety_zone_info: assetsData.safety_zone_info || '',
+      positive_negative_info: assetsData.positive_negative_info || '',
+      color_palette_info: assetsData.color_palette_info || '',
+      typography_info: assetsData.typography_info || ''
+    })
+    setActiveColorSlot(null)
     setDrawerTab('general')
     setIsDrawerOpen(true)
 
@@ -477,7 +821,7 @@ export default function ProductosPage() {
                 key={p.id}
                 className={`
                   border rounded-xl p-4 flex gap-4 relative transition-all
-                  border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900
+                  border-neutral-200 dark:border-neutral-800 bg-container
                   hover:shadow-md
                 `}
               >
@@ -546,10 +890,10 @@ export default function ProductosPage() {
         <div className="w-full mb-6">
           <Tabs
             tabs={[
-              { label: t('products.tabGeneral', 'General') }, 
-              { label: t('products.tabVisibility', 'Visibilidad') }, 
-              { label: t('products.tabRequirements', 'Requisitos') }, 
-              { label: t('products.tabFeatures', 'Features') }, 
+              { label: t('products.tabGeneral', 'General') },
+              { label: t('products.tabVisibility', 'Visibilidad') },
+              { label: t('products.tabRequirements', 'Requisitos') },
+              { label: t('products.tabFeatures', 'Features') },
               { label: t('products.tabAssets', 'Assets') }
             ]}
             activeIndex={drawerTab === 'general' ? 0 : drawerTab === 'visibility' ? 1 : drawerTab === 'requirements' ? 2 : drawerTab === 'features' ? 3 : 4}
@@ -566,7 +910,7 @@ export default function ProductosPage() {
                   <button
                     type="button"
                     onClick={() => setIsIconPickerOpen(true)}
-                    className="w-10 h-10 flex items-center justify-center rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
+                    className="w-10 h-10 flex items-center justify-center rounded-md border border-neutral-300 dark:border-neutral-700 bg-container hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors"
                   >
                     {newIconName ? (
                       newUseBrand ? (
@@ -588,7 +932,7 @@ export default function ProductosPage() {
                     required
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
                     placeholder={t('products.titlePlaceholder', 'Ej: Crestone')}
                   />
                 </div>
@@ -600,7 +944,7 @@ export default function ProductosPage() {
                   <input
                     value={newLink}
                     onChange={(e) => setNewLink(e.target.value)}
-                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
                     placeholder={t('products.slugPlaceholder', 'Ej: crestone')}
                   />
                 </div>
@@ -616,7 +960,7 @@ export default function ProductosPage() {
                   <textarea
                     value={newDesc}
                     onChange={(e) => setNewDesc(e.target.value)}
-                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500 h-28 resize-none"
+                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500 h-28 resize-none"
                     placeholder={t('products.productDesc', 'Descripción del producto...')}
                   />
                 </div>
@@ -632,7 +976,7 @@ export default function ProductosPage() {
                   <select
                     value={newStatus}
                     onChange={(e) => setNewStatus(e.target.value)}
-                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
                   >
                     <option value="Publicada">{t('products.statusPublished', 'Publicada')}</option>
                     <option value="Borrador">{t('products.statusDraft', 'Borrador')}</option>
@@ -645,7 +989,7 @@ export default function ProductosPage() {
                   <select
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500"
+                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
                   >
                     <option value="own_tech">Own Tech</option>
                     <option value="actin">Act-in</option>
@@ -658,13 +1002,13 @@ export default function ProductosPage() {
                 <div className="bg-[#EAF0F6] dark:bg-neutral-800/50 px-4 py-2 font-semibold text-[#667C99] dark:text-neutral-300 text-sm">
                   {t('products.links', 'Links')}
                 </div>
-                <div className="p-4 grid grid-cols-3 gap-4 bg-white dark:bg-neutral-900/20">
+                <div className="p-4 grid grid-cols-3 gap-4 bg-container/20">
                   <div className="flex flex-col">
                     <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">Live Demo</label>
                     <input
                       value={newLinkDemo}
                       onChange={(e) => setNewLinkDemo(e.target.value)}
-                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
                       placeholder="Crestone.io"
                     />
                   </div>
@@ -673,7 +1017,7 @@ export default function ProductosPage() {
                     <input
                       value={newLinkLanding}
                       onChange={(e) => setNewLinkLanding(e.target.value)}
-                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
                       placeholder="Crestone"
                     />
                   </div>
@@ -684,7 +1028,7 @@ export default function ProductosPage() {
                     <input
                       value={newLinkDocs}
                       onChange={(e) => setNewLinkDocs(e.target.value)}
-                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500"
+                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
                       placeholder="Crestone-help.com"
                     />
                   </div>
@@ -704,7 +1048,7 @@ export default function ProductosPage() {
                 </div>
 
                 {!newHideInBento && (
-                  <div className="p-4 bg-white dark:bg-neutral-900/20">
+                  <div className="p-4 bg-container/20">
                     <div className="grid grid-cols-2 gap-6 mb-6">
                       <div>
                         <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">
@@ -802,7 +1146,7 @@ export default function ProductosPage() {
 
           {drawerTab === 'visibility' && (
             <div className="flex flex-col gap-6 px-1">
-              <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
+              <div className="bg-container rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
                 <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
                   {t('products.visibilityTitle', 'Visibilidad por Roles')}
                 </h3>
@@ -865,7 +1209,7 @@ export default function ProductosPage() {
 
           {drawerTab === 'requirements' && (
             <div className="flex flex-col gap-6 px-1">
-              <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
+              <div className="bg-container rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
                 <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{t('products.reqTitle', 'Requisitos')}</h3>
                 <p className="text-sm text-neutral-800 mb-6">{t('products.reqSubtitle', 'Administra los requisitos técnicos de este producto.')}</p>
 
@@ -877,14 +1221,14 @@ export default function ProductosPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div className="flex flex-col gap-1">
                             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.titleField', 'Título')}</label>
-                            <input type="text" value={newReqTitle} onChange={(e) => setNewReqTitle(e.target.value)} placeholder="Ej: Entornos soportados" className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm" />
+                            <input type="text" value={newReqTitle} onChange={(e) => setNewReqTitle(e.target.value)} placeholder="Ej: Entornos soportados" className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm" />
                           </div>
                           <div className="flex flex-col gap-1">
                             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.reqType', 'Tipo de Requisito')}</label>
                             <select
                               value={newReqType}
                               onChange={(e: any) => setNewReqType(e.target.value)}
-                              className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+                              className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm"
                             >
                               <option value="text">{t('products.reqTypeDesc', 'Texto Descriptivo')}</option>
                               <option value="options">{t('products.reqTypeOptions', 'Lista de Opciones')}</option>
@@ -896,7 +1240,7 @@ export default function ProductosPage() {
                           {newReqType !== 'feature_question' && (
                             <div className="flex flex-col gap-1">
                               <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.reqDescInstructions', 'Descripción / Instrucciones')}</label>
-                              <input type="text" value={newReqDesc} onChange={(e) => setNewReqDesc(e.target.value)} placeholder="Ej: Seleccione al menos uno" className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm" />
+                              <input type="text" value={newReqDesc} onChange={(e) => setNewReqDesc(e.target.value)} placeholder="Ej: Seleccione al menos uno" className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm" />
                             </div>
                           )}
                         </div>
@@ -907,7 +1251,7 @@ export default function ProductosPage() {
                             <select
                               value={newReqLinkedFeatureId}
                               onChange={(e) => setNewReqLinkedFeatureId(e.target.value)}
-                              className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+                              className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm"
                             >
                               <option value="">{t('products.selectFeaturePlaceholder', 'Selecciona una feature...')}</option>
                               {newFeatures.map(f => (
@@ -921,7 +1265,7 @@ export default function ProductosPage() {
                         {newReqType === 'boolean' && (
                           <div className="flex flex-col gap-1 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-800 mb-2">
                             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.checkboxText', 'Texto de la Casilla')}</label>
-                            <input type="text" value={newReqBooleanLabel} onChange={(e) => setNewReqBooleanLabel(e.target.value)} placeholder="Ej: Confirmo que he verificado..." className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm" />
+                            <input type="text" value={newReqBooleanLabel} onChange={(e) => setNewReqBooleanLabel(e.target.value)} placeholder="Ej: Confirmo que he verificado..." className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm" />
                           </div>
                         )}
 
@@ -956,7 +1300,7 @@ export default function ProductosPage() {
                                   }
                                 }}
                                 placeholder={newReqType === 'options' ? "Ej: AWS, presiona Enter" : "Ej: 5432: PostgreSQL, presiona Enter"}
-                                className="flex-1 h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+                                className="flex-1 h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm"
                               />
                               <Button
                                 type="button"
@@ -996,7 +1340,7 @@ export default function ProductosPage() {
                                     setNewReqDependsOnId(e.target.value)
                                     setNewReqDependsOnValue('')
                                   }}
-                                  className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+                                  className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm"
                                 >
                                   <option value="">{t('products.selectOptionsReq', 'Selecciona un requisito de opciones...')}</option>
                                   {newRequirements.filter(r => r.type === 'options' && r.id !== (editingReqIndex !== null ? newRequirements[editingReqIndex].id : '')).map(req => (
@@ -1010,7 +1354,7 @@ export default function ProductosPage() {
                                   value={newReqDependsOnValue}
                                   onChange={(e: any) => setNewReqDependsOnValue(e.target.value)}
                                   disabled={!newReqDependsOnId}
-                                  className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+                                  className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm"
                                 >
                                   <option value="">{t('products.selectAnOption', 'Selecciona una opción...')}</option>
                                   {newRequirements.find(r => r.id === newReqDependsOnId)?.options?.map((opt, i) => (
@@ -1050,7 +1394,7 @@ export default function ProductosPage() {
                                 }
                               }}
                               placeholder="Ej: Networking, Seguridad..."
-                              className="flex-1 h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+                              className="flex-1 h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm"
                             />
                             <Button
                               type="button"
@@ -1071,8 +1415,8 @@ export default function ProductosPage() {
                           <input id="req-mandatory" type="checkbox" checked={newReqMandatory} onChange={(e) => setNewReqMandatory(e.target.checked)} className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500" />
                           <label htmlFor="req-mandatory" className="text-sm text-neutral-700 dark:text-neutral-300 cursor-pointer">{t('products.isMandatory', 'Es obligatorio')}</label>
                         </div>
-                        
-                        
+
+
                         <div className="flex justify-end gap-2">
                           <Button type="button" variant="light" onClick={() => {
                             setNewReqTitle('')
@@ -1174,7 +1518,7 @@ export default function ProductosPage() {
 
                       return (
                         <div key={req.id} className={`flex flex-col ${depth > 0 ? 'mt-2' : 'mb-2'}`} style={{ marginLeft: depth > 0 ? `${depth * 2}rem` : '0' }}>
-                          <div className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-lg flex items-start justify-between bg-white dark:bg-neutral-900 shadow-sm relative z-10">
+                          <div className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-lg flex items-start justify-between bg-container shadow-sm relative z-10">
                             <div className="flex-1 pr-4">
                               <div className="flex items-center gap-2 mb-1">
                                 <h4 className="font-semibold text-neutral-900 dark:text-white">{req.title}</h4>
@@ -1189,7 +1533,7 @@ export default function ProductosPage() {
                                 ))}
                               </div>
                               {req.type !== 'feature_question' && <p className="text-sm text-neutral-800">{req.description}</p>}
-                              
+
                               {req.type === 'feature_question' && (
                                 <div className="mt-2 text-xs text-neutral-700 dark:text-neutral-300 bg-amber-50/50 p-2 rounded border border-amber-200/50">
                                   {t('products.linkedToFeature', 'Vinculado a la feature comercial:')} <strong className="font-semibold">{newFeatures.find(f => f.id === req.linked_feature_id)?.title || t('products.unknown', 'Desconocida')}</strong>
@@ -1254,7 +1598,7 @@ export default function ProductosPage() {
                                 <div className="absolute -left-4 top-4 w-4 h-px bg-neutral-300 dark:bg-neutral-700"></div>
                                 <div className="absolute -left-4 -top-4 bottom-0 w-px bg-neutral-300 dark:bg-neutral-700"></div>
                                 <div className="mb-2 relative z-10">
-                                  <span className="text-[11px] font-semibold bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 px-3 py-1 rounded-full border border-neutral-200 dark:border-neutral-700 shadow-sm">
+                                  <span className="text-[11px] font-semibold bg-container text-neutral-600 dark:text-neutral-400 px-3 py-1 rounded-full border border-neutral-200 dark:border-neutral-700 shadow-sm">
                                     {opt}
                                   </span>
                                 </div>
@@ -1311,7 +1655,7 @@ export default function ProductosPage() {
 
           {drawerTab === 'features' && (
             <div className="flex flex-col gap-6 px-1">
-              <div className="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
+              <div className="bg-container rounded-xl border border-neutral-200 dark:border-neutral-800 p-6">
                 <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">{t('products.featuresTitle', 'Features')}</h3>
                 <p className="text-sm text-neutral-800 mb-6">{t('products.featuresSubtitle', 'Administra los features técnicos de este producto.')}</p>
 
@@ -1323,14 +1667,14 @@ export default function ProductosPage() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                           <div className="flex flex-col gap-1">
                             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.titleField', 'Título')}</label>
-                            <input type="text" value={newFeatTitle} onChange={(e) => setNewFeatTitle(e.target.value)} placeholder="Ej: Entornos soportados" className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm" />
+                            <input type="text" value={newFeatTitle} onChange={(e) => setNewFeatTitle(e.target.value)} placeholder="Ej: Entornos soportados" className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm" />
                           </div>
                           <div className="flex flex-col gap-1">
                             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.featureType', 'Tipo de Feature')}</label>
                             <select
                               value={newFeatType}
                               onChange={(e: any) => setNewFeatType(e.target.value)}
-                              className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+                              className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm"
                             >
                               <option value="text">{t('products.reqTypeDesc', 'Texto Descriptivo')}</option>
                               <option value="options">{t('products.reqTypeOptions', 'Lista de Opciones')}</option>
@@ -1341,14 +1685,14 @@ export default function ProductosPage() {
                           </div>
                           <div className="flex flex-col gap-1">
                             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.reqDescInstructions', 'Descripción / Instrucciones')}</label>
-                            <input type="text" value={newFeatDesc} onChange={(e) => setNewFeatDesc(e.target.value)} placeholder="Ej: Seleccione al menos uno" className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm" />
+                            <input type="text" value={newFeatDesc} onChange={(e) => setNewFeatDesc(e.target.value)} placeholder="Ej: Seleccione al menos uno" className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm" />
                           </div>
                         </div>
 
                         {newFeatType === 'boolean' && (
                           <div className="flex flex-col gap-1 p-4 bg-neutral-50 dark:bg-neutral-800/50 rounded-lg border border-neutral-200 dark:border-neutral-800 mb-2">
                             <label className="text-sm font-medium text-neutral-700 dark:text-neutral-300">{t('products.checkboxText', 'Texto de la Casilla')}</label>
-                            <input type="text" value={newFeatBooleanLabel} onChange={(e) => setNewFeatBooleanLabel(e.target.value)} placeholder="Ej: Confirmo que he verificado..." className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm" />
+                            <input type="text" value={newFeatBooleanLabel} onChange={(e) => setNewFeatBooleanLabel(e.target.value)} placeholder="Ej: Confirmo que he verificado..." className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm" />
                           </div>
                         )}
 
@@ -1361,7 +1705,7 @@ export default function ProductosPage() {
                                 value={newFeatApiUrl}
                                 onChange={(e) => setNewFeatApiUrl(e.target.value)}
                                 placeholder="https://.../api/data.json"
-                                className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+                                className="h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm"
                               />
                             </div>
                             <div className="flex flex-col gap-1">
@@ -1370,7 +1714,7 @@ export default function ProductosPage() {
                                 value={newFeatApiScript}
                                 onChange={(e) => setNewFeatApiScript(e.target.value)}
                                 placeholder="return data.items.map(item => ({ value: item.id, label: item.name }));"
-                                className="h-24 p-3 font-mono rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-xs text-neutral-800 dark:text-neutral-200"
+                                className="h-24 p-3 font-mono rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-xs text-neutral-800 dark:text-neutral-200"
                               />
                               <p className="text-xs text-neutral-800 mt-1">{t('products.scriptHelper', "Escribe código JS para transformar 'data' en un array de objetos con `value` y `label`, o un array simple de strings.")}</p>
                             </div>
@@ -1408,7 +1752,7 @@ export default function ProductosPage() {
                                   }
                                 }}
                                 placeholder={newFeatType === 'options' ? "Ej: AWS, presiona Enter" : "Ej: 5432: PostgreSQL, presiona Enter"}
-                                className="flex-1 h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+                                className="flex-1 h-10 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm"
                               />
                               <Button
                                 type="button"
@@ -1448,7 +1792,7 @@ export default function ProductosPage() {
                                     setNewFeatDependsOnId(e.target.value)
                                     setNewFeatDependsOnValue('')
                                   }}
-                                  className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+                                  className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm"
                                 >
                                   <option value="">{t('products.selectParentFeature', 'Selecciona un feature padre...')}</option>
                                   {newFeatures.filter(r => (r.type === 'options' || r.type === 'api_select') && r.id !== (editingFeatIndex !== null ? newFeatures[editingFeatIndex].id : '')).map(req => (
@@ -1462,11 +1806,11 @@ export default function ProductosPage() {
                                   const parentFeat = newFeatures.find(r => r.id === newFeatDependsOnId);
                                   if (parentFeat?.type === 'api_select') {
                                     return (
-                                      <ApiDependencySelector 
-                                        url={parentFeat.api_url || ''} 
-                                        apiScript={parentFeat.api_script} 
-                                        value={newFeatDependsOnValue} 
-                                        onChange={(v) => setNewFeatDependsOnValue(v)} 
+                                      <ApiDependencySelector
+                                        url={parentFeat.api_url || ''}
+                                        apiScript={parentFeat.api_script}
+                                        value={newFeatDependsOnValue}
+                                        onChange={(v) => setNewFeatDependsOnValue(v)}
                                       />
                                     )
                                   }
@@ -1475,7 +1819,7 @@ export default function ProductosPage() {
                                       value={newFeatDependsOnValue}
                                       onChange={(e: any) => setNewFeatDependsOnValue(e.target.value)}
                                       disabled={!newFeatDependsOnId}
-                                      className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+                                      className="h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm"
                                     >
                                       <option value="">{t('products.selectAnOption', 'Selecciona una opción...')}</option>
                                       {parentFeat?.options?.map((opt, i) => (
@@ -1517,7 +1861,7 @@ export default function ProductosPage() {
                                 }
                               }}
                               placeholder="Ej: Networking, Seguridad..."
-                              className="flex-1 h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-sm"
+                              className="flex-1 h-9 px-3 rounded-md border border-neutral-300 dark:border-neutral-700 bg-container text-sm"
                             />
                             <Button
                               type="button"
@@ -1538,8 +1882,8 @@ export default function ProductosPage() {
                           <input id="req-mandatory" type="checkbox" checked={newFeatMandatory} onChange={(e) => setNewFeatMandatory(e.target.checked)} className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500" />
                           <label htmlFor="req-mandatory" className="text-sm text-neutral-700 dark:text-neutral-300 cursor-pointer">{t('products.isMandatory', 'Es obligatorio')}</label>
                         </div>
-                        
-                        
+
+
                         <div className="flex justify-end gap-2">
                           <Button type="button" variant="light" onClick={() => {
                             setNewFeatTitle('')
@@ -1639,7 +1983,7 @@ export default function ProductosPage() {
 
                       return (
                         <div key={req.id} className={`flex flex-col ${depth > 0 ? 'mt-2' : 'mb-2'}`} style={{ marginLeft: depth > 0 ? `${depth * 2}rem` : '0' }}>
-                          <div className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-lg flex items-start justify-between bg-white dark:bg-neutral-900 shadow-sm relative z-10">
+                          <div className="p-4 border border-neutral-200 dark:border-neutral-800 rounded-lg flex items-start justify-between bg-container shadow-sm relative z-10">
                             <div className="flex-1 pr-4">
                               <div className="flex items-center gap-2 mb-1">
                                 <h4 className="font-semibold text-neutral-900 dark:text-white">{req.title}</h4>
@@ -1720,7 +2064,7 @@ export default function ProductosPage() {
                                 <div className="absolute -left-4 top-4 w-4 h-px bg-neutral-300 dark:bg-neutral-700"></div>
                                 <div className="absolute -left-4 -top-4 bottom-0 w-px bg-neutral-300 dark:bg-neutral-700"></div>
                                 <div className="mb-2 relative z-10">
-                                  <span className="text-[11px] font-semibold bg-white dark:bg-neutral-900 text-neutral-600 dark:text-neutral-400 px-3 py-1 rounded-full border border-neutral-200 dark:border-neutral-700 shadow-sm">
+                                  <span className="text-[11px] font-semibold bg-container text-neutral-600 dark:text-neutral-400 px-3 py-1 rounded-full border border-neutral-200 dark:border-neutral-700 shadow-sm">
                                     {opt}
                                   </span>
                                 </div>
@@ -1775,109 +2119,1294 @@ export default function ProductosPage() {
           )}
 
           {drawerTab === 'assets' && (
-            <div className="flex flex-col gap-6 px-4 py-4">
-              <h3 className="text-xl font-bold text-neutral-900 dark:text-white mb-2">{t('products.assetsTitle', 'Assets del Producto')}</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Logo Light */}
-                <div>
-                  <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">{t('products.fullLogoLight', 'Logo Completo (Claro)')}</label>
-                  <div className="h-40 rounded-lg bg-[#EAEFF4] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center overflow-hidden relative">
-                    {newAssets?.logo_light ? (
-                      <>
-                        <img src={newAssets.logo_light} alt="Logo Claro" className="w-full h-full object-contain p-2" />
-                        <button type="button" onClick={() => setNewAssets({...newAssets, logo_light: ''})} className="absolute top-2 right-2 bg-white/80 p-1 rounded text-red-500 hover:bg-white">{t('products.remove', 'Quitar')}</button>
-                      </>
-                    ) : (
-                      <div className="flex items-center flex-col opacity-70 hover:opacity-100 transition-opacity">
-                        <FileUploader onUploadSuccess={(url) => setNewAssets({...newAssets, logo_light: url})} />
+            <div className="flex flex-col gap-8 px-2 py-4">
+              {/* Header */}
+              <div className="border-b border-neutral-200 dark:border-neutral-800 pb-4">
+                <h3 className="text-xl font-bold text-neutral-900 flex items-center gap-2">
+                  <CaralIcon name="eye" size={24} className="text-blue-600 dark:text-blue-400" />
+                  {t('products.assetsTitle', 'Identidad Gráfica & Assets del Producto')}
+                </h3>
+                <p className="text-xs text-neutral-700 mt-1">
+                  {t('products.assetsSubtitle', 'Configura el logotipo, tema base, paleta de colores y recursos de marca del producto.')}
+                </p>
+              </div>
+
+              {/* 1. Origen del Logo / Isotipo */}
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <h4 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">1</span>
+                    {t('products.logoOriginSection', '1. Origen del Logo / Isotipo')}
+                  </h4>
+                  <p className="text-xs text-neutral-800">
+                    {t('products.logoOriginDesc', 'Define si el producto utilizará un ícono de Brand de iconcaral2 o un logotipo personalizado.')}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Opción A: Brand de iconcaral2 */}
+                  <div
+                    onClick={() => setNewAssets(prev => ({ ...prev, logo_type: 'brand' }))}
+                    className={`cursor-pointer rounded-xl p-4 border transition-all flex flex-col gap-3 ${(newAssets.logo_type ?? 'brand') === 'brand'
+                      ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 shadow-sm'
+                      : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-container'
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                          <CaralIcon name="check" size={18} />
+                        </div>
+                        <div>
+                          <span className="text-sm font-semibold text-neutral-900 dark:text-white block">
+                            {t('products.logoOriginBrand', 'Brand de iconcaral2')}
+                          </span>
+                          <span className="text-[11px] text-neutral-800">
+                            {t('products.logoOriginBrandDesc', 'Selecciona entre la biblioteca corporativa de Brand')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${(newAssets.logo_type ?? 'brand') === 'brand' ? 'border-blue-600 bg-blue-600' : 'border-neutral-400'
+                        }`}>
+                        {(newAssets.logo_type ?? 'brand') === 'brand' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
+                    </div>
+
+                    {(newAssets.logo_type ?? 'brand') === 'brand' && (
+                      <div className="mt-2 flex flex-col gap-3">
+                        {/* Selector de Ícono Brand Principal */}
+                        <div className="pt-3 border-t border-blue-100 dark:border-blue-900/40 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white/70 dark:bg-neutral-900/70 p-3 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-lg bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center shrink-0">
+                              {(newAssets.brand_icon || newIconName) ? (
+                                (newAssets.brand_is_color ?? newUseBrand) ? (
+                                  <Brand name={(newAssets.brand_icon || newIconName) as any} size={28} />
+                                ) : (
+                                  <CaralIcon name={(newAssets.brand_icon || newIconName) as any} size={28} className="text-blue-600 dark:text-blue-400" />
+                                )
+                              ) : (
+                                <CaralIcon name="image" size={24} className="text-neutral-400" />
+                              )}
+                            </div>
+                            <div>
+                              <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+                                {(newAssets.brand_icon || newIconName) || t('products.noIconSelected', 'Sin ícono seleccionado')}
+                              </p>
+                              <p className="text-[10px] text-neutral-500">
+                                {(newAssets.brand_is_color ?? newUseBrand) ? t('products.brandColorMode', 'Modo Color') : t('products.brandMonoMode', 'Modo Monocromático')}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                const nextColor = !(newAssets.brand_is_color ?? true)
+                                setNewAssets(prev => ({ ...prev, brand_is_color: nextColor }))
+                                setNewUseBrand(nextColor)
+                              }}
+                              className="px-2.5 py-1.5 text-[11px] font-medium rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 hover:bg-neutral-50 text-neutral-700 dark:text-neutral-300 transition-colors"
+                            >
+                              {(newAssets.brand_is_color ?? newUseBrand) ? '🎨 Color' : '⬛ Mono'}
+                            </button>
+                            <Button
+                              type="button"
+                              size="sm"
+                              variant="info"
+                              onClick={(e: any) => {
+                                e.stopPropagation()
+                                setIsIconPickerOpen(true)
+                              }}
+                            >
+                              {(newAssets.brand_icon || newIconName) ? t('products.changeBrandIcon', 'Cambiar Ícono') : t('products.selectBrandIcon', 'Seleccionar Ícono')}
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Versión Dark del Isotipo (Carga de archivo para modo oscuro) */}
+                        <div className="p-3 bg-neutral-900/90 dark:bg-neutral-950 border border-neutral-700/80 rounded-lg flex flex-col gap-2" onClick={e => e.stopPropagation()}>
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-blue-400"></span>
+                              <span className="text-xs font-bold text-neutral-100">
+                                {t('products.brandDarkVersion', 'Versión Dark del Isotipo (Modo Oscuro)')}
+                              </span>
+                            </div>
+                            <span className="text-[10px] bg-neutral-800 text-neutral-300 px-2 py-0.5 rounded font-mono">
+                              Dark Isotype
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-neutral-400">
+                            {t('products.brandDarkVersionDesc', 'Carga un archivo de imagen (SVG/PNG) optimizado para fondos oscuros.')}
+                          </p>
+
+                          <div className="h-24 rounded-lg bg-[#0F172A] border border-neutral-700/60 flex flex-col items-center justify-center overflow-hidden relative">
+                            {newAssets?.icon_dark ? (
+                              <>
+                                <img src={newAssets.icon_dark} alt="Icon Dark" className="w-full h-full object-contain p-2" />
+                                <button
+                                  type="button"
+                                  onClick={() => setNewAssets(prev => ({ ...prev, icon_dark: '' }))}
+                                  className="absolute top-1.5 right-1.5 bg-neutral-800/90 hover:bg-neutral-800 text-red-400 text-xs font-bold px-2 py-0.5 rounded shadow-xs transition-colors"
+                                >
+                                  {t('products.removeAsset', 'Quitar')}
+                                </button>
+                              </>
+                            ) : (
+                              <div className="flex items-center flex-col opacity-80 hover:opacity-100 transition-opacity">
+                                <FileUploader onUploadSuccess={(url) => setNewAssets(prev => ({ ...prev, icon_dark: url }))} />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Opción B: Subir Logo Personalizado */}
+                  <div
+                    onClick={() => setNewAssets(prev => ({ ...prev, logo_type: 'custom' }))}
+                    className={`cursor-pointer rounded-xl p-4 border transition-all flex flex-col gap-3 ${newAssets.logo_type === 'custom'
+                      ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 shadow-sm'
+                      : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-container'
+                      }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-lg bg-purple-100 dark:bg-purple-900/50 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+                          <CaralIcon name="upload" size={18} />
+                        </div>
+                        <div>
+                          <span className="text-sm font-semibold text-neutral-900 dark:text-white block">
+                            {t('products.logoOriginCustom', 'Subir Logo Personalizado')}
+                          </span>
+                          <span className="text-[11px] text-neutral-800">
+                            {t('products.logoOriginCustomDesc', 'Carga un archivo de imagen propio (PNG, SVG, WebP)')}
+                          </span>
+                        </div>
+                      </div>
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${newAssets.logo_type === 'custom' ? 'border-blue-600 bg-blue-600' : 'border-neutral-400'
+                        }`}>
+                        {newAssets.logo_type === 'custom' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
+                    </div>
+
+                    {newAssets.logo_type === 'custom' && (
+                      <div className="mt-2 pt-3 border-t border-purple-100 dark:border-purple-900/40 flex flex-col gap-3" onClick={e => e.stopPropagation()}>
+                        {/* Custom Logo (Modo Claro) */}
+                        <div className="bg-white/70 dark:bg-neutral-900/70 p-3 rounded-lg border border-neutral-200 dark:border-neutral-800 flex flex-col gap-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                              {t('products.customLogoLight', 'Logo Personalizado (Modo Claro)')}
+                            </span>
+                            <span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 text-neutral-500 px-2 py-0.5 rounded font-mono">
+                              Light
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-neutral-800">
+                            {t('products.customLogoLightDesc', 'Versión para fondos claros (SVG, PNG, WebP)')}
+                          </p>
+                          {newAssets.custom_logo ? (
+                            <div className="flex items-center justify-between gap-3 bg-neutral-50 dark:bg-neutral-800/50 p-2 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                              <div className="flex items-center gap-3">
+                                <img src={newAssets.custom_logo} alt="Custom Logo Light" className="w-10 h-10 object-contain bg-container rounded p-1 border border-neutral-200 dark:border-neutral-700" />
+                                <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 truncate max-w-[180px]">Logo Claro Cargado</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setNewAssets(prev => ({ ...prev, custom_logo: '', logo_light: '' }))}
+                                className="text-xs text-red-500 hover:text-red-700 font-medium px-2 py-1 rounded bg-red-50 dark:bg-red-950/30"
+                              >
+                                {t('products.removeAsset', 'Quitar')}
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="py-2 flex flex-col items-center justify-center">
+                              <FileUploader
+                                onUploadSuccess={(url) => {
+                                  setNewAssets(prev => ({ ...prev, custom_logo: url, logo_light: url, logo_type: 'custom' }))
+                                  setNewLightImage(url)
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Custom Logo (Modo Oscuro) */}
+                        <div className="bg-neutral-900/90 dark:bg-neutral-950 p-3 rounded-lg border border-neutral-700/80 flex flex-col gap-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold text-neutral-100">
+                              {t('products.customLogoDark', 'Logo Personalizado (Modo Oscuro)')}
+                            </span>
+                            <span className="text-[10px] bg-neutral-800 text-neutral-300 px-2 py-0.5 rounded font-mono">
+                              Dark
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-neutral-400">
+                            {t('products.customLogoDarkDesc', 'Versión contrastada para fondos oscuros (SVG, PNG, WebP)')}
+                          </p>
+                          {newAssets.custom_logo_dark || newAssets.logo_dark ? (
+                            <div className="flex items-center justify-between gap-3 bg-[#0F172A] p-2 rounded-lg border border-neutral-700">
+                              <div className="flex items-center gap-3">
+                                <img src={newAssets.custom_logo_dark || newAssets.logo_dark} alt="Custom Logo Dark" className="w-10 h-10 object-contain bg-neutral-950 rounded p-1 border border-neutral-700" />
+                                <span className="text-xs font-medium text-neutral-200 truncate max-w-[180px]">Logo Oscuro Cargado</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => setNewAssets(prev => ({ ...prev, custom_logo_dark: '', logo_dark: '' }))}
+                                className="text-xs text-red-400 hover:text-red-300 font-medium px-2 py-1 rounded bg-neutral-800"
+                              >
+                                {t('products.removeAsset', 'Quitar')}
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="py-2 flex flex-col items-center justify-center">
+                              <FileUploader
+                                onUploadSuccess={(url) => {
+                                  setNewAssets(prev => ({ ...prev, custom_logo_dark: url, logo_dark: url, logo_type: 'custom' }))
+                                  setNewDarkImage(url)
+                                }}
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
+              </div>
 
-                {/* Logo Dark */}
-                <div>
-                  <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">{t('products.fullLogoDark', 'Logo Completo (Oscuro)')}</label>
-                  <div className="h-40 rounded-lg bg-[#EAEFF4] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center overflow-hidden relative">
-                    {newAssets?.logo_dark ? (
-                      <>
-                        <img src={newAssets.logo_dark} alt="Logo Oscuro" className="w-full h-full object-contain p-2 bg-neutral-900" />
-                        <button type="button" onClick={() => setNewAssets({...newAssets, logo_dark: ''})} className="absolute top-2 right-2 bg-white/80 p-1 rounded text-red-500 hover:bg-white">{t('products.remove', 'Quitar')}</button>
-                      </>
-                    ) : (
-                      <div className="flex items-center flex-col opacity-70 hover:opacity-100 transition-opacity">
-                        <FileUploader onUploadSuccess={(url) => setNewAssets({...newAssets, logo_dark: url})} />
-                      </div>
-                    )}
-                  </div>
+              {/* 2. Tema Base */}
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <h4 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">2</span>
+                    {t('products.themeBaseSection', '2. Tema Base')}
+                  </h4>
+                  <p className="text-xs text-neutral-800">
+                    {t('products.themeBaseDesc', 'Selecciona el sistema de diseño base sobre el que se estructuran los estilos del producto.')}
+                  </p>
                 </div>
 
-                {/* Icon Dark */}
-                <div>
-                  <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">{t('products.iconDark', 'Icono (Oscuro)')}</label>
-                  <div className="h-40 rounded-lg bg-[#EAEFF4] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center overflow-hidden relative">
-                    {newAssets?.icon_dark ? (
-                      <>
-                        <img src={newAssets.icon_dark} alt="Icono Oscuro" className="w-full h-full object-contain p-2 bg-neutral-900" />
-                        <button type="button" onClick={() => setNewAssets({...newAssets, icon_dark: ''})} className="absolute top-2 right-2 bg-white/80 p-1 rounded text-red-500 hover:bg-white">{t('products.remove', 'Quitar')}</button>
-                      </>
-                    ) : (
-                      <div className="flex items-center flex-col opacity-70 hover:opacity-100 transition-opacity">
-                        <FileUploader onUploadSuccess={(url) => setNewAssets({...newAssets, icon_dark: url})} />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Caral Design System */}
+                  <div
+                    onClick={() => setNewAssets(prev => ({ ...prev, theme_base: 'caral' }))}
+                    className={`cursor-pointer rounded-xl p-4 border transition-all flex flex-col justify-between gap-3 ${(newAssets.theme_base ?? 'caral') === 'caral'
+                      ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 shadow-sm'
+                      : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-container'
+                      }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold text-xs">
+                          CR
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-neutral-900 dark:text-white">
+                              {t('products.themeBaseCaral', 'Caral Design System')}
+                            </span>
+                            <span className="text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-1.5 py-0.5 rounded font-bold uppercase">
+                              Oficial
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-neutral-800 block mt-0.5">
+                            {t('products.themeBaseCaralDesc', 'Tema oficial de Caral con tokens y jerarquía corporativa')}
+                          </span>
+                        </div>
                       </div>
-                    )}
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${(newAssets.theme_base ?? 'caral') === 'caral' ? 'border-blue-600 bg-blue-600' : 'border-neutral-400'
+                        }`}>
+                        {(newAssets.theme_base ?? 'caral') === 'caral' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
+                    </div>
                   </div>
-                </div>
 
-                {/* Cover Images */}
-                <div>
-                  <label className="block text-sm font-bold text-[#869AB5] dark:text-neutral-400 mb-2">{t('products.coverImages', 'Portadas (Battlecards / Docs)')}</label>
-                  <div className="rounded-lg bg-[#EAEFF4] dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 p-4 flex flex-wrap gap-4 items-center min-h-[160px]">
-                    {(newAssets?.cover_images || []).map((coverUrl, idx) => (
-                      <div key={idx} className="w-24 h-24 relative rounded overflow-hidden border border-neutral-300 dark:border-neutral-600 shrink-0">
-                        <img src={coverUrl} alt={`Portada ${idx + 1}`} className="w-full h-full object-cover" />
-                        <button 
-                          type="button" 
-                          onClick={() => {
-                            const updatedCovers = (newAssets.cover_images || []).filter((_, i) => i !== idx);
-                            setNewAssets({...newAssets, cover_images: updatedCovers});
-                          }} 
-                          className="absolute top-1 right-1 bg-white/80 p-0.5 rounded text-red-500 hover:bg-white text-[10px]"
-                        >
-                          X
-                        </button>
+                  {/* Custom Theme */}
+                  <div
+                    onClick={() => setNewAssets(prev => ({ ...prev, theme_base: 'custom' }))}
+                    className={`cursor-pointer rounded-xl p-4 border transition-all flex flex-col justify-between gap-3 ${newAssets.theme_base === 'custom'
+                      ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-950/20 shadow-sm'
+                      : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-container'
+                      }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center">
+                          <CaralIcon name="settings" size={18} />
+                        </div>
+                        <div>
+                          <span className="text-sm font-semibold text-neutral-900 dark:text-white block">
+                            {t('products.themeBaseCustom', 'Custom (Personalizado)')}
+                          </span>
+                          <span className="text-[11px] text-neutral-800 block mt-0.5">
+                            {t('products.themeBaseCustomDesc', 'Esquema de diseño completamente libre y personalizado')}
+                          </span>
+                        </div>
                       </div>
-                    ))}
-                    
-                    <div className="w-24 h-24 flex items-center justify-center border border-dashed border-neutral-400 dark:border-neutral-600 rounded shrink-0 opacity-70 hover:opacity-100 transition-opacity">
-                      <FileUploader 
-                        onUploadSuccess={(url) => {
-                          const updatedCovers = [...(newAssets.cover_images || []), url];
-                          setNewAssets({...newAssets, cover_images: updatedCovers});
-                        }} 
-                      />
+                      <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${newAssets.theme_base === 'custom' ? 'border-blue-600 bg-blue-600' : 'border-neutral-400'
+                        }`}>
+                        {newAssets.theme_base === 'custom' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="pt-4 flex justify-end">
-                <Button type="button" onClick={() => handleFormSubmit()} className="min-w-[120px]">{editingId ? t('products.saveChanges', 'Guardar Cambios') : t('products.createProduct', 'Crear Producto')}</Button>
+              {/* 3. Paleta de Colores de Marca */}
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <h4 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">3</span>
+                    {t('products.colorPaletteSection', '3. Paleta de Colores de Marca')}
+                  </h4>
+                  <p className="text-xs text-neutral-800">
+                    {t('products.colorPaletteDesc', 'Establece los colores cromáticos principales para la interfaz y componentes del producto.')}
+                  </p>
+                </div>
+
+                {(newAssets.theme_base ?? 'caral') === 'caral' ? (
+                  activeColorSlot === null ? (
+                    /* View 1: 5 Column Palette Bar (Image 1) */
+                    <div className="flex flex-col gap-2">
+                      <div className="grid grid-cols-5 gap-0 rounded-2xl overflow-hidden border border-neutral-200 dark:border-neutral-800 shadow-sm bg-container divide-y md:divide-y-0 md:divide-x divide-neutral-200 dark:divide-neutral-800">
+                        {CARAL_COLOR_SLOTS.map((slot) => {
+                          const hex = (newAssets.colors as any)?.[slot.key] || slot.defaultHex
+                          const tokenName = newAssets.color_tokens?.[slot.key] || (CARAL_COLOR_LIBRARY.find(c => c.hex.toLowerCase() === hex.toLowerCase())?.name || slot.defaultName)
+
+                          return (
+                            <button
+                              key={slot.key}
+                              type="button"
+                              onClick={() => setActiveColorSlot(slot.key)}
+                              className="group flex flex-col text-left transition-all hover:opacity-95 focus:outline-none cursor-pointer"
+                            >
+                              {/* Header Label (Primary, Secondary, Assent, Text, Background) */}
+                              <div className="px-4 py-3 text-xs font-semibold text-neutral-800 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors bg-container">
+                                {slot.label}
+                              </div>
+
+                              {/* Color Block */}
+                              <div
+                                className="w-full h-44 sm:h-52 relative transition-transform duration-200 group-hover:scale-[0.99]"
+                                style={{ backgroundColor: hex }}
+                              >
+                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                  <span className="opacity-0 group-hover:opacity-100 bg-black/60 text-neutral-800 text-[11px] font-semibold px-2.5 py-1 rounded-md backdrop-blur-xs transition-opacity shadow-sm">
+                                    {t('products.selectColor', 'Cambiar color')}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Token Name & HEX info */}
+                              <div className="p-4 flex flex-col gap-1 bg-container border-t border-neutral-100 dark:border-neutral-800">
+                                <span className="text-sm font-bold text-neutral-900 truncate">
+                                  {tokenName}
+                                </span>
+                                <span className="text-xs font-mono text-neutral-800 uppercase">
+                                  {hex}
+                                </span>
+                              </div>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    /* View 2: Color Library Selector (Image 2) */
+                    <div className="flex flex-col gap-4 p-5 rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-container shadow-sm">
+                      {/* Header with Slot Tabs & Back Button */}
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-neutral-100 dark:border-neutral-800">
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setActiveColorSlot(null)}
+                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-700 text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition-colors cursor-pointer"
+                          >
+                            <CaralIcon name="chevronLeft" size={14} />
+                            {t('products.backToPalette', 'Volver a la paleta')}
+                          </button>
+                          <span className="text-sm font-bold text-neutral-900 dark:text-white">
+                            {CARAL_COLOR_SLOTS.find(s => s.key === activeColorSlot)?.label}
+                          </span>
+                        </div>
+
+                        {/* Slot Switcher Tabs */}
+                        <div className="flex flex-wrap items-center gap-1 bg-neutral-100 dark:bg-neutral-800 p-1 rounded-lg">
+                          {CARAL_COLOR_SLOTS.map((slot) => {
+                            const isActive = activeColorSlot === slot.key
+                            const hex = (newAssets.colors as any)?.[slot.key] || slot.defaultHex
+                            return (
+                              <button
+                                key={slot.key}
+                                type="button"
+                                onClick={() => setActiveColorSlot(slot.key)}
+                                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all cursor-pointer ${isActive
+                                  ? 'bg-white dark:bg-neutral-700 text-neutral-900 dark:text-white shadow-2xs font-semibold'
+                                  : 'text-neutral-800 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
+                                  }`}
+                              >
+                                <span className="w-2.5 h-2.5 rounded-full border border-black/10 shrink-0" style={{ backgroundColor: hex }} />
+                                {slot.label}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Color Grid matching Image 2 */}
+                      <div className="grid grid-cols-3 gap-4 max-h-[440px] overflow-y-auto pr-1">
+                        {CARAL_COLOR_LIBRARY.map((color) => {
+                          const currentSlotHex = (newAssets.colors as any)?.[activeColorSlot]
+                          const isSelected = currentSlotHex?.toLowerCase() === color.hex.toLowerCase()
+
+                          return (
+                            <button
+                              key={`${color.group}-${color.name}`}
+                              type="button"
+                              onClick={() => {
+                                setNewAssets(prev => ({
+                                  ...prev,
+                                  colors: {
+                                    ...prev.colors,
+                                    [activeColorSlot]: color.hex,
+                                    ...(activeColorSlot === 'bg_light' && color.hex === '#18181B' ? { bg_dark: '#0B1329' } : {})
+                                  },
+                                  color_tokens: {
+                                    ...prev.color_tokens,
+                                    [activeColorSlot]: color.name
+                                  }
+                                }))
+                              }}
+                              className={`group flex flex-col gap-2 text-left p-1 rounded-2xl transition-all cursor-pointer ${isSelected
+                                ? 'ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-neutral-900'
+                                : 'hover:opacity-90'
+                                }`}
+                            >
+                              {/* Swatch rounded box */}
+                              <div
+                                className="w-full h-20 rounded-xl shadow-2xs border border-neutral-200/80 dark:border-neutral-700/60 relative overflow-hidden transition-transform duration-200 group-hover:scale-[0.98]"
+                                style={{ backgroundColor: color.hex }}
+                              >
+                                {isSelected && (
+                                  <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-white text-blue-600 shadow-md flex items-center justify-center">
+                                    <CaralIcon name="check" size={12} />
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Color Token Label */}
+                              <span className={`text-xs font-semibold px-0.5 truncate ${isSelected
+                                ? 'text-blue-600 dark:text-blue-400 font-bold'
+                                : 'text-neutral-800 dark:text-neutral-200 group-hover:text-neutral-900'
+                                }`}>
+                                {color.name}
+                              </span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                ) : (
+                  /* Custom Theme Mode: Presets + Custom Color Pickers */
+                  <div className="flex flex-col gap-4">
+                    {/* Presets Sugeridos */}
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400">
+                        {t('products.palettePresets', 'Presets Sugeridos')}:
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {COLOR_PRESETS.map((preset) => (
+                          <button
+                            key={preset.name}
+                            type="button"
+                            onClick={() => {
+                              setNewAssets(prev => ({
+                                ...prev,
+                                colors: {
+                                  ...prev.colors,
+                                  primary: preset.primary,
+                                  secondary: preset.secondary,
+                                  accent: preset.accent,
+                                  bg_light: preset.bg_light,
+                                  bg_dark: preset.bg_dark,
+                                  text_main: preset.text_main
+                                }
+                              }))
+                            }}
+                            className="group flex items-center gap-2 px-3 py-1.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-container hover:border-blue-500 dark:hover:border-blue-500 transition-all text-xs font-medium cursor-pointer shadow-2xs"
+                          >
+                            <div className="flex items-center -space-x-1">
+                              <span className="w-3.5 h-3.5 rounded-full border border-white dark:border-neutral-900" style={{ backgroundColor: preset.primary }} />
+                              <span className="w-3.5 h-3.5 rounded-full border border-white dark:border-neutral-900" style={{ backgroundColor: preset.secondary }} />
+                              <span className="w-3.5 h-3.5 rounded-full border border-white dark:border-neutral-900" style={{ backgroundColor: preset.accent }} />
+                            </div>
+                            <span className="text-neutral-700 dark:text-neutral-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                              {t(`products.${preset.key}`, preset.name)}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Pickers Grid */}
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+                      {[
+                        { key: 'primary', label: t('products.colorPrimary', 'Color Principal'), defaultVal: '#002B49' },
+                        { key: 'secondary', label: t('products.colorSecondary', 'Color Secundario'), defaultVal: '#0072CE' },
+                        { key: 'accent', label: t('products.colorAccent', 'Color de Acento'), defaultVal: '#00E19B' },
+                        { key: 'bg_light', label: t('products.colorBgLight', 'Fondo Claro'), defaultVal: '#F8FAFC' },
+                        { key: 'bg_dark', label: t('products.colorBgDark', 'Fondo Oscuro'), defaultVal: '#0F172A' },
+                        { key: 'text_main', label: t('products.colorText', 'Color de Texto'), defaultVal: '#1E293B' },
+                      ].map(({ key, label, defaultVal }) => {
+                        const currentColor = (newAssets.colors as any)?.[key] || defaultVal
+                        return (
+                          <div key={key} className="flex flex-col gap-1.5 p-3 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-container">
+                            <label className="text-[11px] font-semibold text-neutral-600 dark:text-neutral-400 truncate" title={label}>
+                              {label}
+                            </label>
+                            <div className="flex items-center gap-2">
+                              <div className="relative w-8 h-8 rounded-lg overflow-hidden shrink-0 border border-neutral-300 dark:border-neutral-700 shadow-2xs cursor-pointer">
+                                <div className="w-full h-full" style={{ backgroundColor: currentColor }} />
+                                <input
+                                  type="color"
+                                  value={currentColor.startsWith('#') && currentColor.length === 7 ? currentColor : '#0072CE'}
+                                  onChange={(e) => {
+                                    const val = e.target.value
+                                    setNewAssets(prev => ({
+                                      ...prev,
+                                      colors: { ...prev.colors, [key]: val }
+                                    }))
+                                  }}
+                                  className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                                />
+                              </div>
+                              <input
+                                type="text"
+                                value={currentColor}
+                                onChange={(e) => {
+                                  const val = e.target.value
+                                  setNewAssets(prev => ({
+                                    ...prev,
+                                    colors: { ...prev.colors, [key]: val }
+                                  }))
+                                }}
+                                className="w-full text-xs font-mono px-2 py-1 bg-neutral-50 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 rounded focus:outline-none focus:border-blue-500 uppercase"
+                                placeholder="#000000"
+                              />
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Live Mockup Preview */}
+                <div className="rounded-xl border border-neutral-200 dark:border-neutral-800 p-4 bg-neutral-50/70 dark:bg-neutral-900/50 flex flex-col gap-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5">
+                      <CaralIcon name="eye" size={14} className="text-blue-500" />
+                      <span className="text-xs font-bold text-neutral-700">
+                        {t('products.previewLiveTitle', 'Vista Previa de Marca')}
+                      </span>
+                    </div>
+
+                    {/* Selector Modo Claro / Oscuro para la previsualización */}
+                    <div className="flex items-center gap-1 bg-neutral-200/70 dark:bg-neutral-800 p-0.5 rounded-lg">
+                      <button
+                        type="button"
+                        onClick={() => setPreviewMode('light')}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all ${previewMode === 'light'
+                          ? 'bg-white text-neutral-900 shadow-2xs'
+                          : 'text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200'
+                          }`}
+                      >
+                        ☀️ Modo Claro
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPreviewMode('dark')}
+                        className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all ${previewMode === 'dark'
+                          ? 'bg-neutral-900 text-white shadow-2xs'
+                          : 'text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200'
+                          }`}
+                      >
+                        🌙 Modo Oscuro
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Simulated Product Card */}
+                  <div
+                    className="w-full max-w-md mx-auto rounded-xl p-5 shadow-lg border transition-all duration-300"
+                    style={{
+                      backgroundColor: previewMode === 'dark' ? (newAssets.colors?.bg_dark || '#0B1329') : (newAssets.colors?.bg_light || '#FFFFFF'),
+                      borderColor: (newAssets.colors?.secondary || '#0072CE') + (previewMode === 'dark' ? '60' : '40'),
+                      color: previewMode === 'dark' ? '#F8FAFC' : (newAssets.colors?.text_main || '#1E293B')
+                    }}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-12 h-12 rounded-xl flex items-center justify-center shadow-sm shrink-0 overflow-hidden"
+                          style={{
+                            backgroundColor: previewMode === 'dark' ? 'rgba(255,255,255,0.08)' : (newAssets.colors?.primary || '#002B49') + '15',
+                            border: `1px solid ${previewMode === 'dark' ? 'rgba(255,255,255,0.15)' : (newAssets.colors?.primary || '#002B49') + '30'}`
+                          }}
+                        >
+                          {previewMode === 'dark' && newAssets.logo_type === 'brand' && newAssets.icon_dark ? (
+                            <img src={newAssets.icon_dark} alt="Logo Dark" className="w-8 h-8 object-contain p-0.5" />
+                          ) : previewMode === 'dark' && newAssets.logo_type === 'custom' && (newAssets.custom_logo_dark || newAssets.logo_dark) ? (
+                            <img src={newAssets.custom_logo_dark || newAssets.logo_dark} alt="Logo Dark" className="w-8 h-8 object-contain p-0.5" />
+                          ) : newAssets.logo_type === 'custom' && (newAssets.custom_logo || newAssets.logo_light) ? (
+                            <img src={newAssets.custom_logo || newAssets.logo_light} alt="Logo" className="w-8 h-8 object-contain p-0.5" />
+                          ) : (newAssets.brand_icon || newIconName) ? (
+                            (newAssets.brand_is_color ?? newUseBrand) ? (
+                              <Brand name={(newAssets.brand_icon || newIconName) as any} size={28} />
+                            ) : (
+                              <span style={{ color: previewMode === 'dark' ? '#FFFFFF' : (newAssets.colors?.primary || '#002B49') }}>
+                                <CaralIcon name={(newAssets.brand_icon || newIconName) as any} size={28} />
+                              </span>
+                            )
+                          ) : (
+                            <span className="font-bold text-sm" style={{ color: previewMode === 'dark' ? '#FFFFFF' : (newAssets.colors?.primary || '#002B49') }}>
+                              {newTitle ? newTitle.slice(0, 2).toUpperCase() : 'PR'}
+                            </span>
+                          )}
+                        </div>
+
+                        <div>
+                          <h5
+                            className="font-bold text-base leading-tight"
+                            style={{
+                              color: previewMode === 'dark' ? '#FFFFFF' : (newAssets.colors?.primary || '#002B49')
+                            }}
+                          >
+                            {newTitle || 'Nombre del Producto'}
+                          </h5>
+                          <span
+                            className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase"
+                            style={{
+                              backgroundColor: (newAssets.colors?.accent || '#00E19B') + '25',
+                              color: newAssets.colors?.accent || '#00E19B'
+                            }}
+                          >
+                            {newCategory === 'own_tech' ? 'Own Tech' : 'Active Product'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className="text-xs font-semibold px-3 py-1.5 rounded-lg text-white shadow-xs transition-opacity hover:opacity-90"
+                        style={{
+                          backgroundColor: newAssets.colors?.secondary || '#0072CE'
+                        }}
+                      >
+                        Demo
+                      </button>
+                    </div>
+
+                    <p
+                      className="text-xs mt-3 line-clamp-2"
+                      style={{
+                        color: previewMode === 'dark' ? 'rgba(248, 250, 252, 0.8)' : (newAssets.colors?.text_main || '#1E293B'),
+                        opacity: 0.85
+                      }}
+                    >
+                      {newDesc || 'Descripción general del producto y capacidades del ecosistema corporativo.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Isologos y Variantes de Marca */}
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <h4 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">4</span>
+                    {t('products.isologosSection', '4. Isologos y Variantes de Marca')}
+                  </h4>
+                  <p className="text-xs text-neutral-800">
+                    {t('products.isologosDesc', 'Carga las diferentes versiones del logotipo para su correcta aplicación en distintos fondos.')}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Logo Completo (Claro) */}
+                  <div className="flex flex-col gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-container">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                        {t('products.fullLogoLight', 'Logo Completo (Fondo Claro)')}
+                      </span>
+                      <span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 text-neutral-500 px-2 py-0.5 rounded font-mono">
+                        Light Mode
+                      </span>
+                    </div>
+                    <div className="h-36 rounded-lg bg-neutral-50 border border-neutral-200 flex flex-col items-center justify-center overflow-hidden relative">
+                      {newAssets?.logo_light ? (
+                        <>
+                          <img src={newAssets.logo_light} alt="Logo Claro" className="w-full h-full object-contain p-3" />
+                          <button
+                            type="button"
+                            onClick={() => setNewAssets({ ...newAssets, logo_light: '' })}
+                            className="absolute top-2 right-2 bg-white/90 hover:bg-white text-red-500 text-xs font-bold px-2 py-1 rounded shadow-xs transition-colors"
+                          >
+                            {t('products.removeAsset', 'Quitar')}
+                          </button>
+                        </>
+                      ) : (
+                        <div className="flex items-center flex-col opacity-80 hover:opacity-100 transition-opacity">
+                          <FileUploader onUploadSuccess={(url) => setNewAssets({ ...newAssets, logo_light: url })} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Logo Completo (Oscuro) */}
+                  <div className="flex flex-col gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-container">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200">
+                        {t('products.fullLogoDark', 'Logo Completo (Fondo Oscuro)')}
+                      </span>
+                      <span className="text-[10px] bg-neutral-900 text-neutral-300 px-2 py-0.5 rounded font-mono">
+                        Dark Mode
+                      </span>
+                    </div>
+                    <div className="h-36 rounded-lg bg-[#0F172A] border border-neutral-700 flex flex-col items-center justify-center overflow-hidden relative">
+                      {newAssets?.logo_dark ? (
+                        <>
+                          <img src={newAssets.logo_dark} alt="Logo Oscuro" className="w-full h-full object-contain p-3" />
+                          <button
+                            type="button"
+                            onClick={() => setNewAssets({ ...newAssets, logo_dark: '' })}
+                            className="absolute top-2 right-2 bg-neutral-800/90 hover:bg-neutral-800 text-red-400 text-xs font-bold px-2 py-1 rounded shadow-xs transition-colors"
+                          >
+                            {t('products.removeAsset', 'Quitar')}
+                          </button>
+                        </>
+                      ) : (
+                        <div className="flex items-center flex-col opacity-80 hover:opacity-100 transition-opacity">
+                          <FileUploader onUploadSuccess={(url) => setNewAssets({ ...newAssets, logo_dark: url })} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Blanco y Negro (Positivo) */}
+                  <div className="flex flex-col gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-container">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block">
+                          {t('products.isologoPositiveBw', 'Blanco y Negro (Positivo)')}
+                        </span>
+                        <span className="text-[10px] text-neutral-500">
+                          {t('products.isologoPositiveBwHint', 'Para fondos claros / impresión en negro')}
+                        </span>
+                      </div>
+                      <span className="text-[10px] bg-neutral-200 text-neutral-800 px-2 py-0.5 rounded font-mono font-bold">
+                        B&W (+)
+                      </span>
+                    </div>
+                    <div className="h-36 rounded-lg bg-white border border-neutral-300 flex flex-col items-center justify-center overflow-hidden relative">
+                      {newAssets?.logo_positive_bw ? (
+                        <>
+                          <img src={newAssets.logo_positive_bw} alt="B&W Positivo" className="w-full h-full object-contain p-3" />
+                          <button
+                            type="button"
+                            onClick={() => setNewAssets({ ...newAssets, logo_positive_bw: '' })}
+                            className="absolute top-2 right-2 bg-white/90 hover:bg-white text-red-500 text-xs font-bold px-2 py-1 rounded shadow-xs transition-colors"
+                          >
+                            {t('products.removeAsset', 'Quitar')}
+                          </button>
+                        </>
+                      ) : (
+                        <div className="flex items-center flex-col opacity-80 hover:opacity-100 transition-opacity">
+                          <FileUploader onUploadSuccess={(url) => setNewAssets({ ...newAssets, logo_positive_bw: url })} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Blanco y Negro (Negativo) */}
+                  <div className="flex flex-col gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-container">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block">
+                          {t('products.isologoNegativeBw', 'Blanco y Negro (Negativo)')}
+                        </span>
+                        <span className="text-[10px] text-neutral-500">
+                          {t('products.isologoNegativeBwHint', 'Para fondos oscuros / monocromático en blanco')}
+                        </span>
+                      </div>
+                      <span className="text-[10px] bg-neutral-950 text-white px-2 py-0.5 rounded font-mono font-bold border border-neutral-800">
+                        B&W (-)
+                      </span>
+                    </div>
+                    <div className="h-36 rounded-lg bg-neutral-950 border border-neutral-800 flex flex-col items-center justify-center overflow-hidden relative">
+                      {newAssets?.logo_negative_bw ? (
+                        <>
+                          <img src={newAssets.logo_negative_bw} alt="B&W Negativo" className="w-full h-full object-contain p-3" />
+                          <button
+                            type="button"
+                            onClick={() => setNewAssets({ ...newAssets, logo_negative_bw: '' })}
+                            className="absolute top-2 right-2 bg-neutral-900/90 hover:bg-neutral-900 text-red-400 text-xs font-bold px-2 py-1 rounded shadow-xs transition-colors"
+                          >
+                            {t('products.removeAsset', 'Quitar')}
+                          </button>
+                        </>
+                      ) : (
+                        <div className="flex items-center flex-col opacity-80 hover:opacity-100 transition-opacity">
+                          <FileUploader onUploadSuccess={(url) => setNewAssets({ ...newAssets, logo_negative_bw: url })} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. Zona de Seguridad */}
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <h4 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">5</span>
+                    {t('products.safetyZoneSection', '5. Zona de Seguridad y Proporciones')}
+                  </h4>
+                  <p className="text-xs text-neutral-800">
+                    {t('products.safetyZoneDesc', 'Carga una imagen con el diagrama de márgenes mínimos y zona de protección del logotipo.')}
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-container flex flex-col gap-3">
+                  <div className="h-44 rounded-lg bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] dark:bg-[radial-gradient(#334155_1px,transparent_1px)] bg-[size:16px_16px] bg-neutral-50 dark:bg-neutral-950/80 border border-neutral-200 dark:border-neutral-800 flex flex-col items-center justify-center overflow-hidden relative">
+                    {newAssets?.safety_zone_image ? (
+                      <>
+                        <img src={newAssets.safety_zone_image} alt="Zona de Seguridad" className="w-full h-full object-contain p-4" />
+                        <button
+                          type="button"
+                          onClick={() => setNewAssets({ ...newAssets, safety_zone_image: '' })}
+                          className="absolute top-2 right-2 bg-white/90 dark:bg-neutral-900/90 hover:bg-white text-red-500 text-xs font-bold px-2 py-1 rounded shadow-xs transition-colors"
+                        >
+                          {t('products.removeAsset', 'Quitar')}
+                        </button>
+                      </>
+                    ) : (
+                      <div className="flex items-center flex-col gap-2 p-4 text-center">
+                        <CaralIcon name="grid" size={28} className="text-neutral-400" />
+                        <span className="text-xs text-neutral-800 font-medium">
+                          {t('products.safetyZoneUpload', 'Diagrama de Zona de Seguridad')}
+                        </span>
+                        <FileUploader onUploadSuccess={(url) => setNewAssets({ ...newAssets, safety_zone_image: url })} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* 6. Portadas de Documentación / Battlecards */}
+              <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <h4 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                    <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">6</span>
+                    {t('products.coverImagesSection', '6. Portadas y Recursos de Documentación')}
+                  </h4>
+                  <p className="text-xs text-neutral-800">
+                    {t('products.coverImagesDesc', 'Portadas utilizadas para Battlecards, Documentación y Recursos compartidos.')}
+                  </p>
+                </div>
+
+                <div className="rounded-xl bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 p-4 flex flex-wrap gap-4 items-center min-h-[140px]">
+                  {(newAssets?.cover_images || []).map((coverUrl, idx) => (
+                    <div key={idx} className="w-28 h-28 relative rounded-lg overflow-hidden border border-neutral-300 dark:border-neutral-700 shrink-0 shadow-2xs group">
+                      <img src={coverUrl} alt={`Portada ${idx + 1}`} className="w-full h-full object-cover" />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updatedCovers = (newAssets.cover_images || []).filter((_, i) => i !== idx);
+                          setNewAssets({ ...newAssets, cover_images: updatedCovers });
+                        }}
+                        className="absolute top-1.5 right-1.5 bg-black/70 hover:bg-black text-white p-1 rounded-full text-[10px] opacity-80 group-hover:opacity-100 transition-opacity"
+                      >
+                        <CaralIcon name="x" size={12} />
+                      </button>
+                    </div>
+                  ))}
+
+                  <div className="w-28 h-28 flex flex-col items-center justify-center border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-lg shrink-0 opacity-70 hover:opacity-100 transition-opacity bg-white dark:bg-neutral-800/50">
+                    <FileUploader
+                      onUploadSuccess={(url) => {
+                        const updatedCovers = [...(newAssets.cover_images || []), url];
+                        setNewAssets({ ...newAssets, cover_images: updatedCovers });
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 7. Módulo Gráfico */}
+              <div className="flex flex-col gap-4">
+                <div className="p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-container flex items-center justify-between gap-4 shadow-2xs">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-sm font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">7</span>
+                      {t('products.graphicModuleTitle', 'Habilitar Módulo Gráfico')}
+                    </span>
+                    <p className="text-xs text-neutral-800 dark:text-neutral-400">
+                      {t('products.graphicModuleDesc', 'Activa la identidad visual, colores y recursos gráficos del producto en la plataforma.')}
+                    </p>
+                  </div>
+                  <Toggle
+                    checked={newAssets.enable_graphic_module ?? true}
+                    onChange={(checked) => setNewAssets(prev => ({ ...prev, enable_graphic_module: checked }))}
+                  />
+                </div>
+              </div>
+
+              {/* 8. Rack de Archivos Descargables */}
+              {(newAssets.enable_graphic_module ?? true) && (
+                <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex flex-col gap-1">
+                    <h4 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">8</span>
+                      {t('products.downloadableAssetsSection', '8. Assets y Recursos Descargables')}
+                    </h4>
+                    <p className="text-xs text-neutral-800 dark:text-neutral-400">
+                      {t('products.downloadableAssetsDesc', 'Carga y gestiona el rack de archivos descargables (PNG, JPG, SVG) para este producto.')}
+                    </p>
+                  </div>
+
+                  <div className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-container flex flex-col gap-4 shadow-2xs">
+                    {/* Multi-file Dropzone */}
+                    <div className="relative">
+                      <div
+                        onDragOver={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          setIsDraggingRack(true)
+                        }}
+                        onDragEnter={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          setIsDraggingRack(true)
+                        }}
+                        onDragLeave={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          setIsDraggingRack(false)
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault()
+                          e.stopPropagation()
+                          setIsDraggingRack(false)
+                          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                            handleUploadDownloadableAssets(e.dataTransfer.files)
+                          }
+                        }}
+                        onClick={() => {
+                          if (!isUploadingAssets) {
+                            document.getElementById('downloadable-rack-input')?.click()
+                          }
+                        }}
+                        className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
+                          isDraggingRack
+                            ? 'border-blue-600 bg-blue-50/60 dark:bg-blue-950/40 ring-2 ring-blue-500/20'
+                            : isUploadingAssets
+                            ? 'opacity-60 cursor-not-allowed bg-neutral-100 dark:bg-neutral-800/60 border-blue-400'
+                            : 'border-neutral-300 dark:border-neutral-700 hover:border-blue-500 dark:hover:border-blue-500 hover:bg-neutral-50/70 dark:hover:bg-neutral-800/40'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-2 pointer-events-none">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 font-mono">PNG</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 font-mono">JPG</span>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 font-mono">SVG</span>
+                        </div>
+
+                        <div className="flex items-center gap-2 text-xs font-medium text-neutral-700 dark:text-neutral-300 pointer-events-none text-center">
+                          <CaralIcon name="file" size={16} className="text-blue-500" />
+                          <span>
+                            {isUploadingAssets
+                              ? t('products.uploadingFiles', 'Subiendo archivos al rack...')
+                              : isDraggingRack
+                              ? 'Suelta los archivos aquí para subirlos al rack'
+                              : t('products.dropFilesHere', 'Arrastra archivos PNG, JPG o SVG aquí o')}
+                          </span>
+                          {!isUploadingAssets && !isDraggingRack && (
+                            <span className="text-blue-600 dark:text-blue-400 font-semibold underline underline-offset-2">
+                              {t('products.browseFiles', 'explora en tu equipo')}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[11px] text-neutral-500 mt-1 pointer-events-none">
+                          Soporta selección múltiple de archivos simultáneamente
+                        </span>
+
+                        <input
+                          id="downloadable-rack-input"
+                          type="file"
+                          multiple
+                          accept=".png,.jpg,.jpeg,.svg,image/png,image/jpeg,image/svg+xml"
+                          disabled={isUploadingAssets}
+                          className="hidden"
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files.length > 0) {
+                              handleUploadDownloadableAssets(e.target.files)
+                              e.target.value = ''
+                            }
+                          }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Files Rack Grid */}
+                    <div className="flex flex-col gap-2 pt-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                          <CaralIcon name="file" size={14} className="text-neutral-500" />
+                          {t('products.filesInRack', 'Archivos en el Rack')} ({newAssets.downloadable_assets?.length || 0})
+                        </span>
+                      </div>
+
+                      {(!newAssets.downloadable_assets || newAssets.downloadable_assets.length === 0) ? (
+                        <div className="p-6 rounded-lg border border-dashed border-neutral-200 dark:border-neutral-800 text-center flex flex-col items-center justify-center gap-1.5 bg-neutral-50/40 dark:bg-neutral-900/30">
+                          <CaralIcon name="file" size={24} className="text-neutral-400" />
+                          <span className="text-xs text-neutral-500">
+                            {t('products.emptyRack', 'No hay archivos en el rack aún. Sube recursos gráficos para habilitar su descarga.')}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                          {newAssets.downloadable_assets.map((asset, idx) => {
+                            const isSvg = asset.format?.toUpperCase() === 'SVG' || asset.name.toLowerCase().endsWith('.svg')
+                            const isJpg = asset.format?.toUpperCase() === 'JPG' || asset.name.toLowerCase().endsWith('.jpg') || asset.name.toLowerCase().endsWith('.jpeg')
+                            const badgeColor = isSvg
+                              ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400'
+                              : isJpg
+                              ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
+                              : 'bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400'
+
+                            return (
+                              <div
+                                key={asset.id || idx}
+                                className="group p-3 rounded-xl border border-neutral-200 dark:border-neutral-700/80 bg-neutral-50/80 dark:bg-neutral-800/40 hover:border-blue-400 dark:hover:border-blue-500 transition-all flex items-center justify-between gap-3 shadow-2xs"
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  {/* Thumbnail Preview */}
+                                  <div className="w-12 h-12 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center overflow-hidden shrink-0 shadow-2xs">
+                                    <img
+                                      src={asset.url}
+                                      alt={asset.name}
+                                      className="w-full h-full object-contain p-1"
+                                      onError={(e) => {
+                                        (e.target as HTMLElement).style.display = 'none'
+                                      }}
+                                    />
+                                  </div>
+
+                                  {/* File details */}
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="text-xs font-semibold text-neutral-900 dark:text-white truncate" title={asset.name}>
+                                      {asset.name}
+                                    </span>
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                      <span className={`text-[9px] font-bold px-1.5 py-0.2 rounded font-mono ${badgeColor}`}>
+                                        {asset.format || 'IMG'}
+                                      </span>
+                                      {asset.size && (
+                                        <span className="text-[10px] text-neutral-500 font-mono">
+                                          {asset.size}
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Actions */}
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <a
+                                    href={asset.url}
+                                    download={asset.name}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="p-1.5 rounded-lg hover:bg-white dark:hover:bg-neutral-700 text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400 transition-colors"
+                                    title={t('products.downloadAsset', 'Descargar')}
+                                  >
+                                    <CaralIcon name="arrowDownToLine" size={14} />
+                                  </a>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updated = (newAssets.downloadable_assets || []).filter((_, i) => i !== idx)
+                                      setNewAssets(prev => ({ ...prev, downloadable_assets: updated }))
+                                    }}
+                                    className="p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30 text-neutral-400 hover:text-red-500 transition-colors cursor-pointer"
+                                    title={t('products.deleteAsset', 'Eliminar')}
+                                  >
+                                    <CaralIcon name="trash" size={14} />
+                                  </button>
+                                </div>
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* 9. Información y Manual de Marca */}
+              {(newAssets.enable_graphic_module ?? true) && (
+                <div className="flex flex-col gap-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex flex-col gap-1">
+                    <h4 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 text-xs font-bold flex items-center justify-center">9</span>
+                      {t('products.brandGuidelinesSection', '9. Información y Manual de Marca')}
+                    </h4>
+                    <p className="text-xs text-neutral-800 dark:text-neutral-400">
+                      {t('products.brandGuidelinesDesc', 'Documenta las directrices, reglas de aplicación y lineamientos de la identidad visual del producto.')}
+                    </p>
+                  </div>
+
+                  <div className="p-5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-container flex flex-col gap-5 shadow-2xs">
+                    {/* 1. Información General de la Marca */}
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                        <CaralIcon name="file" size={14} className="text-blue-500" />
+                        {t('products.brandInfoLabel', 'Información General de la Marca')}
+                      </label>
+                      <p className="text-[11px] text-neutral-500">
+                        {t('products.brandInfoDesc', 'Historia, valores, tono de comunicación y narrativa de la marca.')}
+                      </p>
+                      <textarea
+                        value={newAssets.brand_info || ''}
+                        onChange={(e) => setNewAssets(prev => ({ ...prev, brand_info: e.target.value }))}
+                        className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 px-3 py-2.5 bg-container text-xs text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all resize-y min-h-[85px]"
+                        placeholder={t('products.brandInfoPlaceholder', 'Describe los principios, tono de voz o narrativa general de la marca del producto...')}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* 2. Información del Isologo / Isotipo */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                          <CaralIcon name="image" size={14} className="text-indigo-500" />
+                          {t('products.isotypeInfoLabel', 'Información del Isologo / Isotipo')}
+                        </label>
+                        <p className="text-[11px] text-neutral-500">
+                          {t('products.isotypeInfoDesc', 'Construcción, reglas de uso y variantes del símbolo gráfico.')}
+                        </p>
+                        <textarea
+                          value={newAssets.isotype_info || ''}
+                          onChange={(e) => setNewAssets(prev => ({ ...prev, isotype_info: e.target.value }))}
+                          className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 px-3 py-2.5 bg-container text-xs text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all resize-y min-h-[80px]"
+                          placeholder={t('products.isotypeInfoPlaceholder', 'Especificaciones sobre el uso del símbolo o isotipo, aplicaciones correctas e incorrectas...')}
+                        />
+                      </div>
+
+                      {/* 3. Información de la Zona de Seguridad */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                          <CaralIcon name="grid" size={14} className="text-emerald-500" />
+                          {t('products.safetyZoneInfoLabel', 'Información de la Zona de Seguridad')}
+                        </label>
+                        <p className="text-[11px] text-neutral-500">
+                          {t('products.safetyZoneInfoDesc', 'Márgenes de resguardo, espaciados mínimos y área de protección.')}
+                        </p>
+                        <textarea
+                          value={newAssets.safety_zone_info || ''}
+                          onChange={(e) => setNewAssets(prev => ({ ...prev, safety_zone_info: e.target.value }))}
+                          className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 px-3 py-2.5 bg-container text-xs text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all resize-y min-h-[80px]"
+                          placeholder={t('products.safetyZoneInfoPlaceholder', "Define los márgenes de respeto mínimos (ej. 'x = altura del símbolo') y distancias con otros elementos...")}
+                        />
+                      </div>
+
+                      {/* 4. Información de Positivo / Negativo */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                          <CaralIcon name="eye" size={14} className="text-amber-500" />
+                          {t('products.positiveNegativeInfoLabel', 'Información de Positivo / Negativo')}
+                        </label>
+                        <p className="text-[11px] text-neutral-500">
+                          {t('products.positiveNegativeInfoDesc', 'Uso sobre fondos oscuros, claros, monocromáticos o fotografías.')}
+                        </p>
+                        <textarea
+                          value={newAssets.positive_negative_info || ''}
+                          onChange={(e) => setNewAssets(prev => ({ ...prev, positive_negative_info: e.target.value }))}
+                          className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 px-3 py-2.5 bg-container text-xs text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all resize-y min-h-[80px]"
+                          placeholder={t('products.positiveNegativeInfoPlaceholder', 'Pautas para la aplicación del logotipo en fondos claros (positivo), fondos oscuros (negativo) o monocromo...')}
+                        />
+                      </div>
+
+                      {/* 5. Información de la Paleta de Color */}
+                      <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                          <CaralIcon name="settings" size={14} className="text-rose-500" />
+                          {t('products.colorPaletteInfoLabel', 'Información de la Paleta de Color')}
+                        </label>
+                        <p className="text-[11px] text-neutral-500">
+                          {t('products.colorPaletteInfoDesc', 'Jerarquías cromáticas, combinaciones recomendadas y reglas de contraste.')}
+                        </p>
+                        <textarea
+                          value={newAssets.color_palette_info || ''}
+                          onChange={(e) => setNewAssets(prev => ({ ...prev, color_palette_info: e.target.value }))}
+                          className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 px-3 py-2.5 bg-container text-xs text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all resize-y min-h-[80px]"
+                          placeholder={t('products.colorPaletteInfoPlaceholder', 'Explicación sobre la jerarquía de colores, combinaciones permitidas, proporciones (60-30-10)...')}
+                        />
+                      </div>
+                    </div>
+
+                    {/* 6. Información de la Tipografía */}
+                    <div className="flex flex-col gap-1.5 pt-2 border-t border-neutral-100 dark:border-neutral-800">
+                      <label className="text-xs font-bold text-neutral-700 dark:text-neutral-300 flex items-center gap-1.5">
+                        <CaralIcon name="file" size={14} className="text-purple-500" />
+                        {t('products.typographyInfoLabel', 'Información de la Tipografía')}
+                      </label>
+                      <p className="text-[11px] text-neutral-500">
+                        {t('products.typographyInfoDesc', 'Familias tipográficas oficiales, pesos, interlineados y jerarquías.')}
+                      </p>
+                      <textarea
+                        value={newAssets.typography_info || ''}
+                        onChange={(e) => setNewAssets(prev => ({ ...prev, typography_info: e.target.value }))}
+                        className="w-full rounded-lg border border-neutral-300 dark:border-neutral-700 px-3 py-2.5 bg-container text-xs text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-all resize-y min-h-[85px]"
+                        placeholder={t('products.typographyInfoPlaceholder', 'Fuentes tipográficas oficiales (ej. Inter, Poppins), pesos recomendados (Regular, Bold), jerarquías de texto...')}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Botón de Guardar */}
+              <div className="pt-6 border-t border-neutral-200 dark:border-neutral-800 flex justify-end">
+                <Button type="button" onClick={() => handleFormSubmit()} className="min-w-[140px]">
+                  {editingId ? t('products.saveChanges', 'Guardar Cambios') : t('products.createProduct', 'Crear Producto')}
+                </Button>
               </div>
             </div>
           )}
 
         </div>
       </Drawer>
-      <IconPickerModal 
-        isOpen={isIconPickerOpen} 
-        onClose={() => setIsIconPickerOpen(false)} 
-        onSelect={(iconName, isBrand) => { 
+      <IconPickerModal
+        isOpen={isIconPickerOpen}
+        onClose={() => setIsIconPickerOpen(false)}
+        initialIconName={newAssets.brand_icon || newIconName}
+        initialIsBrand={newAssets.brand_is_color ?? newUseBrand}
+        onSelect={(iconName, isBrand) => {
           setNewIconName(iconName)
           setNewUseBrand(isBrand)
+          setNewAssets(prev => ({
+            ...prev,
+            brand_icon: iconName,
+            brand_is_color: isBrand,
+            logo_type: 'brand'
+          }))
           setIsIconPickerOpen(false)
-        }} 
+        }}
       />
     </div>
   )

@@ -10,7 +10,7 @@ export default function ProfileForm({ user }: { user: any }) {
   const { t } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
-  
+
   // Extract metadata directly from Supabase Auth user
   const meta = user.user_metadata || {};
   const [formData, setFormData] = useState({
@@ -40,7 +40,7 @@ export default function ProfileForm({ user }: { user: any }) {
 
       if (error) throw error;
       setSuccessMsg(t('profile.success', '¡Perfil actualizado con éxito!'));
-      
+
       // Clear success message after 3 seconds
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (error: any) {
@@ -51,10 +51,10 @@ export default function ProfileForm({ user }: { user: any }) {
   };
 
   return (
-    <div className="flex flex-col gap-6 max-w-2xl">
+    <div className="flex gap-6 max-w-2xl">
       <div className="bg-container rounded-2xl border border-neutral-200 dark:border-neutral-800 shadow-sm overflow-hidden p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
-          
+
           {/* Email is readonly since it's the primary identity */}
           <div>
             <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">

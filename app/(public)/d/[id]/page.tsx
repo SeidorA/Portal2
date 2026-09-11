@@ -9,6 +9,7 @@ import { Button } from 'caralstable';
 import { toPng } from 'html-to-image';
 import { jsPDF } from 'jspdf';
 import { useRouter } from 'next/navigation';
+import BookmarkButton from '@/app/components/BookmarkButton';
 import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function PublicDocumentView({ params }: { params: Promise<{ id: string }> }) {
@@ -373,9 +374,18 @@ export default function PublicDocumentView({ params }: { params: Promise<{ id: s
                 <h3 className="font-poppins font-bold text-neutral-900 dark:text-neutral-100">{t('documents.infoTitle', 'Información')}</h3>
               )}
             </div>
-            <button onClick={() => updatePreference({ isSidebarOpen: false })} className="text-neutral-700 hover:text-neutral-800 dark:hover:text-neutral-200 mt-1">
-              <CaralIcon name="closeSidebarLeft" size={20} />
-            </button>
+            <div className="flex items-center gap-1 mt-1">
+              <BookmarkButton
+                url={`/d/${docId}`}
+                title={doc.title}
+                category="Documentos A4"
+                size={18}
+                className="p-1 rounded-lg text-neutral-700 hover:text-neutral-800 dark:hover:text-neutral-200"
+              />
+              <button onClick={() => updatePreference({ isSidebarOpen: false })} className="text-neutral-700 hover:text-neutral-800 dark:hover:text-neutral-200 p-1 cursor-pointer">
+                <CaralIcon name="closeSidebarLeft" size={20} />
+              </button>
+            </div>
           </div>
 
           <div className="space-y-6 pb-4 border-b border-neutral-900 w-full'">
@@ -462,8 +472,15 @@ export default function PublicDocumentView({ params }: { params: Promise<{ id: s
               style={{ transform: 'translateX(-50%)' }}
             >
               {!isSidebarOpen && (
-                <div className="border-r border-neutral-200 dark:border-neutral-700 pr-2 mr-2">
+                <div className="border-r border-neutral-200 dark:border-neutral-700 pr-2 mr-2 flex items-center gap-1">
                   <Button onClick={() => updatePreference({ isSidebarOpen: true })} iconName="circleInfo" isIconButton variant='light' className='rounded-lg border border-neutral-300 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300' />
+                  <BookmarkButton
+                    url={`/d/${docId}`}
+                    title={doc.title}
+                    category="Documentos A4"
+                    size={16}
+                    className="p-2 border border-neutral-300 dark:border-neutral-700 rounded-lg text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800"
+                  />
                 </div>
               )}
               <div className="flex gap-3 items-center px-4 border-r border-neutral-200 dark:border-neutral-700 text-sm mr-2">

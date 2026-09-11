@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-const publicScreens = ["/dashboard", "/perfil"];
+const publicScreens = ["/dashboard", "/perfil", "/docs", "/documentacion", "/sugerencias", "/mi-portal"];
 
 export function RouteGuard({ children, allowedPaths, isAdmin = false }: { children: React.ReactNode, allowedPaths: string[], isAdmin?: boolean }) {
   const pathname = usePathname();

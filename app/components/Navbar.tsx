@@ -11,6 +11,7 @@ import { createClient } from "../../utils/supabase/client";
 import { searchGlobal, SearchResult } from "@/app/actions/searchAction";
 import { logSearchEvent } from "@/app/actions/logSearchClickAction";
 import { useTranslation } from "../context/LanguageContext";
+import PortalNews from "./PortalNews";
 
 type NavChildMock = {
   id: string;
@@ -93,6 +94,13 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
   }, [searchQuery]);
   const [user, setUser] = useState<any>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
+  const [isPortalNewsOpen, setIsPortalNewsOpen] = useState(false);
+
+  useEffect(() => {
+    const handleOpenNews = () => setIsPortalNewsOpen(true);
+    window.addEventListener('open_portal_news', handleOpenNews);
+    return () => window.removeEventListener('open_portal_news', handleOpenNews);
+  }, []);
 
   // Dynamic Config State
   const [leftItems, setLeftItems] = useState<NavItemMock[]>([
@@ -412,6 +420,16 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                 className="h-7 sm:h-8 w-auto object-contain"
               />
             </a>
+            {/*
+            <button
+              type="button"
+              onClick={() => setIsPortalNewsOpen(true)}
+              title={t('portalNews.modalTitle', 'Novedades')}
+              className="hidden lg:flex items-center gap-1.5 text-[11px] font-mono font-medium px-2.5 py-0.5 rounded-full bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-500/20 transition-all cursor-pointer hover:scale-105"
+            >
+              <span>v2.0</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+            </button>*/}
             <div className="hidden md:!flex items-center gap-2">
               {leftItems.map(item => renderNavItem(item))}
             </div>
@@ -549,34 +567,34 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                   </div>
 
                   <div className="p-4 flex flex-col gap-2 border-b border-neutral-200 dark:border-neutral-800">
-                    <Button 
-                      iconName="user" 
-                      onClick={() => { setIsProfileMenuOpen(false); router.push('/perfil'); }} 
-                      className="justify-start!" 
+                    <Button
+                      iconName="user"
+                      onClick={() => { setIsProfileMenuOpen(false); router.push('/perfil'); }}
+                      className="justify-start!"
                       variant="ghost"
                     >
                       {t('nav.profile', 'Perfil')}
                     </Button>
-                    <Button 
-                      iconName="city" 
-                      onClick={() => { setIsProfileMenuOpen(false); router.push('/dashboard'); }} 
-                      className="justify-start!" 
+                    <Button
+                      iconName="city"
+                      onClick={() => { setIsProfileMenuOpen(false); router.push('/dashboard'); }}
+                      className="justify-start!"
                       variant="ghost"
                     >
                       {t('nav.dashboard', 'Dashboard')}
                     </Button>
-                    <Button 
-                      iconName="wrench" 
-                      onClick={() => { setIsProfileMenuOpen(false); router.push('/configuracion'); }} 
-                      className="justify-start!" 
+                    <Button
+                      iconName="wrench"
+                      onClick={() => { setIsProfileMenuOpen(false); router.push('/configuracion'); }}
+                      className="justify-start!"
                       variant="ghost"
                     >
                       {t('nav.settings', 'Configuración')}
                     </Button>
-                    <Button 
-                      iconName="globe" 
-                      onClick={() => setLanguage(language === 'es' ? 'en' : 'es')} 
-                      className="justify-start!" 
+                    <Button
+                      iconName="globe"
+                      onClick={() => setLanguage(language === 'es' ? 'en' : 'es')}
+                      className="justify-start!"
                       variant="ghost"
                     >
                       <div className="w-full text-start flex items-center justify-between">
@@ -585,8 +603,21 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                       </div>
                       <CaralIcon name="chevronRigth" size="m" />
                     </Button>
-                    <Button iconName="command" className="justify-start!" variant="ghost">
-                      {t('nav.version', 'Versión')} 1.0.0
+                    <Button
+                      iconName="command"
+                      className="justify-start! hover:text-blue-600 transition-colors cursor-pointer"
+                      variant="ghost"
+                      onClick={() => {
+                        setIsProfileMenuOpen(false);
+                        setIsPortalNewsOpen(true);
+                      }}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <span>{t('nav.version', 'Versión')} 2.0.0</span>
+                        <span className="text-[10px] bg-blue-500/10 text-blue-600 dark:text-blue-400 font-semibold px-1.5 py-0.5 rounded-md border border-blue-500/20">
+                          {t('portalNews.modalTitle', 'Novedades')}
+                        </span>
+                      </div>
                     </Button>
                   </div>
 
@@ -893,6 +924,9 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
           </div>
         </div>
       )}
+
+      {/* Portal News (Release Notes) Modal */}
+      <PortalNews isOpen={isPortalNewsOpen} onClose={() => setIsPortalNewsOpen(false)} />
     </>
   );
 }

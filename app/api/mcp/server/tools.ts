@@ -1,38 +1,38 @@
 import { createAdminClient } from '@/utils/supabase/admin';
 
 export const MCP_TOOL_DEFINITIONS = [
-  // 1. search_docs
+  // 1. search_knowledge_base
   {
-    name: 'search_docs',
-    description: 'Busca en la documentación y artículos del portal usando palabras clave',
+    name: 'search_knowledge_base',
+    description: 'Busca artículos y guías en la Base de Conocimientos técnica y funcional del portal usando palabras clave.',
     inputSchema: {
       type: 'object',
       properties: {
-        query: { type: 'string', description: 'Término a buscar' },
+        query: { type: 'string', description: 'Término o tema a buscar en la Base de Conocimientos' },
       },
       required: ['query'],
     },
   },
-  // 2. get_doc_content
+  // 2. get_knowledge_base_article
   {
-    name: 'get_doc_content',
-    description: 'Obtiene el contenido completo (Markdown) de un artículo de la documentación dado su ID',
+    name: 'get_knowledge_base_article',
+    description: 'Obtiene el contenido completo (Markdown) de un artículo de la Base de Conocimientos dado su ID.',
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'string', description: 'ID del documento (UUID)' },
+        id: { type: 'string', description: 'ID del artículo de la Base de Conocimientos (UUID)' },
       },
       required: ['id'],
     },
   },
-  // 3. edit_doc
+  // 3. edit_knowledge_base_article
   {
-    name: 'edit_doc',
-    description: 'Edita el contenido (Markdown) de un artículo de la documentación. REQUIERE ROL ADMIN.',
+    name: 'edit_knowledge_base_article',
+    description: 'Edita el contenido (Markdown) de un artículo existente en la Base de Conocimientos del portal. REQUIERE ROL ADMIN.',
     inputSchema: {
       type: 'object',
       properties: {
-        id: { type: 'string', description: 'ID del documento a editar' },
+        id: { type: 'string', description: 'ID del artículo a editar' },
         content: { type: 'string', description: 'Nuevo contenido en formato Markdown' },
       },
       required: ['id', 'content'],
@@ -41,7 +41,7 @@ export const MCP_TOOL_DEFINITIONS = [
   // 4. list_a4_documents
   {
     name: 'list_a4_documents',
-    description: 'Lista los documentos tipo A4 disponibles en el portal con búsqueda opcional por título y paginación.',
+    description: 'Lista los documentos imprimibles tipo A4 y reportes multipágina disponibles en el portal con búsqueda opcional por título y paginación.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -54,7 +54,7 @@ export const MCP_TOOL_DEFINITIONS = [
   // 5. get_a4_document
   {
     name: 'get_a4_document',
-    description: 'Obtiene los detalles completos de un documento tipo A4 (título, páginas Markdown, configuración visual/portada, metadatos y productos relacionados).',
+    description: 'Obtiene los detalles completos de un documento imprimible tipo A4 (título, páginas Markdown, configuración visual/portada, metadatos y productos relacionados).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -66,7 +66,7 @@ export const MCP_TOOL_DEFINITIONS = [
   // 6. create_a4_document
   {
     name: 'create_a4_document',
-    description: 'Crea un nuevo documento tipo A4 multipágina en el portal.',
+    description: 'Generador de contenido / Creador de nuevos documentos imprimibles tipo A4 multipágina en el portal (con portada personalizable, páginas Markdown y exportación a PDF).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -96,7 +96,7 @@ export const MCP_TOOL_DEFINITIONS = [
   // 7. edit_a4_document
   {
     name: 'edit_a4_document',
-    description: 'Edita un documento tipo A4 existente. Permite actualizar su título, contenido de páginas, configuración de portada, metadatos o productos asociados.',
+    description: 'Edita un documento imprimible tipo A4 existente (permite actualizar su título, contenido de páginas Markdown, configuración de portada, metadatos o productos asociados).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -131,7 +131,7 @@ export const MCP_TOOL_DEFINITIONS = [
   // 8. duplicate_a4_document
   {
     name: 'duplicate_a4_document',
-    description: 'Duplica o clona un documento tipo A4 existente generando una copia idéntica con un nuevo ID y título opcional.',
+    description: 'Duplica o clona un documento imprimible tipo A4 existente generando una copia idéntica con un nuevo ID y título opcional.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -165,6 +165,7 @@ export async function executeMcpTool(
   };
 
   switch (toolName) {
+    case 'search_knowledge_base':
     case 'search_docs': {
       const { query } = args;
       if (!query || typeof query !== 'string') {
@@ -191,6 +192,7 @@ export async function executeMcpTool(
       return { results, total: results.length };
     }
 
+    case 'get_knowledge_base_article':
     case 'get_doc_content': {
       const { id } = args;
       if (!id) throw new Error('El parámetro id es requerido');
@@ -205,6 +207,7 @@ export async function executeMcpTool(
       return { document: doc };
     }
 
+    case 'edit_knowledge_base_article':
     case 'edit_doc': {
       if (!auth.isAdmin) {
         throw new Error('Acceso denegado: Se requiere rol de Admin para editar documentación vía MCP');

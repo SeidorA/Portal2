@@ -7,6 +7,7 @@ import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { MilkdownEditorWrapper as MilkdownEditor } from '@/app/components/Editor/MilkdownEditor';
 import DocumentCover from '@/app/components/DocumentCover';
+import BookmarkButton from '@/app/components/BookmarkButton';
 import { useTranslation } from '@/app/context/LanguageContext';
 
 export default function DocumentEditorPage({ params }: { params: Promise<{ id: string }> }) {
@@ -206,7 +207,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
     <div className="flex flex-col h-full bg-neutral-50 dark:bg-neutral-950/50">
       {/* Topbar */}
       <div className="flex items-center justify-between p-4 bg-container border-b border-neutral-200 dark:border-neutral-800">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
           <Button variant="ghost" onClick={() => router.push('/documentos')} className="px-2">
             <CaralIcon name="chevronLeft" size={20} />
           </Button>
@@ -215,6 +216,12 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
             value={titleDraft}
             onChange={(e) => setTitleDraft(e.target.value)}
             className="text-lg font-bold font-poppins bg-transparent border-none focus:outline-none focus:ring-2 focus:ring-blue-500 rounded px-2"
+          />
+          <BookmarkButton
+            url={`/documentos/edit/${unwrappedParams.id}`}
+            title={titleDraft || 'Documento A4'}
+            category="Documentos A4"
+            size={18}
           />
         </div>
         <div className="flex items-center gap-2">

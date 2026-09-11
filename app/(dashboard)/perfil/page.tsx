@@ -1,7 +1,6 @@
 import { createClient } from '@/utils/supabase/server';
 import { redirect } from 'next/navigation';
-import ProfileForm from './ProfileForm';
-import ProfileHeader from './ProfileHeader';
+import UnifiedProfileClient from './UnifiedProfileClient';
 
 export default async function PerfilPage() {
   const supabase = await createClient();
@@ -11,10 +10,58 @@ export default async function PerfilPage() {
     redirect('/login');
   }
 
-  return (
-    <div className="max-w-7xl mx-auto w-full p-8 pt-12 animate-fade-in pb-20">
-      <ProfileHeader />
-      <ProfileForm user={user} />
-    </div>
-  );
+  // Obtenemos el rol para saber qué pantallas puede elegir como default
+  let roleName = null;
+  let isAdmin = false;
+  let allowedScreens: { id: string; title: string }[] = [
+    { id: 'dashboard', title: 'Inicio (Por defecto)' },
+  ];
+
+  const { data: userRoleData } = await supabase
+    .from('user_roles')
+    .select('role_id, roles(name)')
+    .eq('user_id', user.id)
+    .single();
+
+  if (userRoleData && userRoleData.roles) {
+    roleName = (userRoleData.roles as any)?.name || (Array.isArray(userRoleData.roles) ? (userRoleData.roles[0] as any)?.name : null);
+    if (roleName && (roleName.toLowerCase() === 'admin' || roleName.toLowerCase() === 'administrador')) {
+      isAdmin = true;
+    }
+  }
+
+  const allScreens = [
+    { id: 'oportunidades', title: 'Oportunidades' },
+    { id: 'usuarios', title: 'Usuarios' },
+    { id: 'roles', title: 'Roles' },
+    { id: 'contenido', title: 'Contenido' },
+    { id: 'productos', title: 'Productos' },
+    { id: 'documentos', title: 'Documentos' },
+    { id: 'perfil', title: 'Perfil' },
+    { id: 'tickets', title: 'Tickets' },
+    { id: 'docs', title: 'Documentación' },
+    { id: 'sugerencias', title: 'Sugerencias' },
+    { id: 'mi-portal', title: 'Mi Portal' },
+  ];
+
+  if (isAdmin) {
+    allowedScreens = [...allowedScreens, ...allScreens];
+  } else if (roleName) {
+    const { data: policies } = await supabase
+      .from('role_policies')
+      .select('resource_id, access_level')
+      .eq('role_name', roleName)
+      .eq('resource_type', 'screen');
+
+    if (policies) {
+      const allowedIds = policies
+        .filter((p) => p.access_level !== 'Sin acceso')
+        .map((p) => p.resource_id);
+
+      const filteredScreens = allScreens.filter((s) => allowedIds.includes(s.id));
+      allowedScreens = [...allowedScreens, ...filteredScreens];
+    }
+  }
+
+  return <UnifiedProfileClient user={user} isAdmin={isAdmin} allowedScreens={allowedScreens} />;
 }

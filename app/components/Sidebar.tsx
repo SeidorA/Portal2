@@ -15,6 +15,8 @@ export type { SidebarItem, SidebarSection };
 const sectionKeyMap: Record<string, string> = {
   "Gestión": "sidebar.management",
   "Management": "sidebar.management",
+  "Contenido": "sidebar.content",
+  "Content": "sidebar.content",
   "Preferencias": "sidebar.preferences",
   "Preferences": "sidebar.preferences",
   "Ayuda": "sidebar.help",
@@ -25,19 +27,22 @@ const sectionKeyMap: Record<string, string> = {
 const itemKeyMap: Record<string, string> = {
   "Inicio": "sidebar.home",
   "Home": "sidebar.home",
+  "Perfil": "sidebar.profile",
+  "Profile": "sidebar.profile",
   "Oportunidades": "sidebar.opportunities",
   "Opportunities": "sidebar.opportunities",
   "Usuarios": "sidebar.users",
   "Users": "sidebar.users",
   "Roles": "sidebar.roles",
+  "Productos": "sidebar.products",
+  "Products": "sidebar.products",
+  "Base de conocimiento": "sidebar.knowledgeBase",
+  "Base de conocimientos": "sidebar.knowledgeBase",
+  "Knowledge Base": "sidebar.knowledgeBase",
   "Contenido": "sidebar.content",
   "Content": "sidebar.content",
-  "Products": "sidebar.products",
-  "Productos": "sidebar.products",
   "Documentos": "sidebar.documents",
   "Documents": "sidebar.documents",
-  "Perfil": "sidebar.profile",
-  "Profile": "sidebar.profile",
   "Configuración": "sidebar.settings",
   "Settings": "sidebar.settings",
   "Developer Settings": "sidebar.developerSettings",
@@ -52,6 +57,7 @@ const itemKeyMap: Record<string, string> = {
   "Novedades": "sidebar.news",
   "News": "sidebar.news",
   "Busqueda": "sidebar.search",
+  "Búsqueda": "sidebar.search",
   "Search": "sidebar.search",
   "Recursos": "sidebar.resources",
   "Resources": "sidebar.resources",
@@ -160,7 +166,7 @@ export default function Sidebar({
   const supabase = createClient();
 
   // Filtramos las secciones y elementos en base a allowedPaths
-  const publicScreens = ["/dashboard", "/perfil"];
+  const publicScreens = ["/dashboard", "/perfil", "/docs", "/documentacion", "/sugerencias", "/mi-portal"];
 
   const filteredSections = React.useMemo(() => {
     return sections
@@ -207,15 +213,17 @@ export default function Sidebar({
         maxWidth: isSidebarOpen ? 250 : 0,
       }}
       className={`hidden md:!block transition-all duration-300 ease-in-out border-neutral-400 shrink-0 bg-container overflow-y-auto overflow-x-hidden ${className || "h-full"} ${isSidebarOpen
-          ? "p-4 border-r opacity-100"
-          : "!p-0 !border-0 opacity-0 invisible pointer-events-none"
+        ? "p-4 border-r opacity-100"
+        : "!p-0 !border-0 opacity-0 invisible pointer-events-none"
         }`}
     >
       <div className="flex flex-col gap-4">
-        {/* Desplegable de Idioma en la parte superior antes de Inicio */}
-        <div className="pb-1">
+        {/* Desplegable de Idioma en la parte superior antes de Inicio 
+         <div className="pb-1">
           <LanguageDropdown />
         </div>
+
+        */}
 
         {filteredSections.map((section, sectionIndex) => {
           const translatedSectionTitle = section.title
@@ -246,8 +254,8 @@ export default function Sidebar({
       {showLogout && (
         <div className="mt-8 pt-4 border-t border-neutral-200 dark:border-neutral-700">
           <Button variant="danger" className="w-full justify-center" onClick={handleLogout}>
-            <CaralIcon name="logout" size={18} className="mr-2" />
-            {t('sidebar.logout', 'Cerrar Sesión')}
+            <CaralIcon name={"logout" as any} size={18} />
+            <span className="ml-2">{t('sidebar.logout', 'Cerrar Sesión')}</span>
           </Button>
         </div>
       )}

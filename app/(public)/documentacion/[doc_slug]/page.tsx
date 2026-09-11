@@ -9,6 +9,7 @@ import Sidebar, { SidebarSection } from '@/app/components/Sidebar';
 import Link from 'next/link';
 import { Button } from 'caralstable';
 import TableOfContents from '@/app/components/TableOfContents';
+import BookmarkButton from '@/app/components/BookmarkButton';
 import { Metadata } from 'next';
 import { CaralIcon, Brand } from 'iconcaral2';
 
@@ -256,16 +257,26 @@ export default async function PortalDocumentViewerPage({
                   )}
                 </div>
 
-                {user && (
-                  <Link href={`/contenido/edit/${currentDoc.id}`} className="hidden md:!block shrink-0">
-                    <Button
-                      variant="ghost"
-                      iconName='edit'
-                      className="flex items-center gap-2 border border-neutral-200 dark:border-neutral-700">
-                      Editar entrada
-                    </Button>
-                  </Link>
-                )}
+                <div className="flex items-center gap-2 shrink-0">
+                  <BookmarkButton
+                    url={`/documentacion/${currentDoc.slug}`}
+                    title={currentDoc.title}
+                    category="Base de Conocimientos"
+                    showText={true}
+                    className="border border-neutral-200 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 shadow-2xs"
+                  />
+
+                  {user && (
+                    <Link href={`/contenido/edit/${currentDoc.id}`} className="hidden md:!block">
+                      <Button
+                        variant="ghost"
+                        iconName='edit'
+                        className="flex items-center gap-2 border border-neutral-200 dark:border-neutral-700">
+                        Editar entrada
+                      </Button>
+                    </Link>
+                  )}
+                </div>
               </div>
 
               {currentDoc.type === 'release_note' ? (

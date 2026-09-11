@@ -5,10 +5,10 @@ export default async function ProductDocsRedirect({ params }: { params: Promise<
   const supabase = await createClient();
   const { product_slug } = await params;
 
-  // 1. Get the product id from the slug
+  // 1. Get the product id and assets from the slug
   const { data: product, error: prodError } = await supabase
     .from('products')
-    .select('id')
+    .select('id, assets')
     .eq('slug', product_slug)
     .single();
 
@@ -21,16 +21,18 @@ export default async function ProductDocsRedirect({ params }: { params: Promise<
     .from('documentation')
     .select('slug')
     .eq('product_id', product.id)
-    .order('ancestor', { ascending: false }) // Recursos might come first depending on sort, but let's just order by order_index
     .order('order_index', { ascending: true })
     .limit(1)
-    .single();
+    .maybeSingle();
 
-  if (docError || !doc) {
-    // If product exists but has no docs, we could just show a placeholder, but let's 404 for now
-    notFound();
+  if (doc?.slug) {
+    redirect(`/docs/${product_slug}/${doc.slug}`);
   }
 
-  // 3. Redirect to the actual document
-  redirect(`/docs/${product_slug}/${doc.slug}`);
+  // If no regular docs exist, but graphic module is enabled, redirect to brandbook
+  if (product.assets?.enable_graphic_module) {
+    redirect(`/docs/${product_slug}/recursos-graficos-logo`);
+  }
+
+  notFound();
 }

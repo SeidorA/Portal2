@@ -4,6 +4,8 @@ import Actin from '../../components/home/Actin';
 import { createClient } from '@/utils/supabase/server';
 import { getBentoConfig } from '../../actions/bentoConfig';
 import DashboardGreeting from './DashboardGreeting';
+import RecentlyViewed from '../../components/home/RecentlyViewed';
+import FavoritesList from '../../components/home/FavoritesList';
 
 export default async function Dashboard() {
   const supabase = await createClient();
@@ -24,6 +26,10 @@ export default async function Dashboard() {
   return (
     <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto py-8 px-4">
       <DashboardGreeting userName={userName} />
+
+      <FavoritesList />
+
+      <RecentlyViewed />
 
       <div className="flex flex-col gap-12">
         <Products products={ownTechProducts} cols={bentoConfig.ownTechCols} />
