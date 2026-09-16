@@ -9,6 +9,8 @@ import { MilkdownEditorWrapper as MilkdownEditor } from '@/app/components/Editor
 import DocumentCover from '@/app/components/DocumentCover';
 import BookmarkButton from '@/app/components/BookmarkButton';
 import { useTranslation } from '@/app/context/LanguageContext';
+import PresentationEditor from '@/app/components/presentations/PresentationEditor';
+import { useSidebar } from '@/app/components/SidebarProvider';
 
 export default function DocumentEditorPage({ params }: { params: Promise<{ id: string }> }) {
   const { t } = useTranslation();
@@ -44,9 +46,16 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [sidebarTab, setSidebarTab] = useState<'attributes' | 'general' | 'cover'>('attributes');
 
+  const { setIsSidebarOpen } = useSidebar();
   const supabase = createClient();
   const router = useRouter();
   const docId = unwrappedParams.id;
+
+  useEffect(() => {
+    if (doc?.type === 'presentation') {
+      setIsSidebarOpen(false);
+    }
+  }, [doc?.type, setIsSidebarOpen]);
 
   useEffect(() => {
     async function fetchDoc() {
@@ -204,7 +213,7 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
   });
 
   return (
-    <div className="flex flex-col h-full bg-neutral-50 dark:bg-neutral-950/50">
+    <div className={`flex flex-col h-full ${doc.type === 'presentation' ? '-m-4 h-[calc(100%+2rem)] w-[calc(100%+2rem)] overflow-hidden' : 'bg-neutral-50 dark:bg-neutral-950/50'}`}>
       {/* Topbar */}
       <div className="flex items-center justify-between p-4 bg-container border-b border-neutral-200 dark:border-neutral-800">
         <div className="flex items-center gap-2">
@@ -226,20 +235,22 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-1 border-r border-neutral-200 dark:border-neutral-800 pr-2 mr-2">
-            <Button
-              variant={isSettingsOpen && sidebarTab === 'cover' ? 'info' : 'ghost'}
-              onClick={() => {
-                if (!isSettingsOpen || sidebarTab !== 'cover') {
-                  setSidebarTab('cover');
-                  setIsSettingsOpen(true);
-                } else {
-                  setIsSettingsOpen(false);
-                }
-              }}
-              title={t('documents.coverSettingsTitle', 'Configuración de Portada')}
-            >
-              <CaralIcon name="image" size={18} />
-            </Button>
+            {doc.type === 'document' && (
+              <Button
+                variant={isSettingsOpen && sidebarTab === 'cover' ? 'info' : 'ghost'}
+                onClick={() => {
+                  if (!isSettingsOpen || sidebarTab !== 'cover') {
+                    setSidebarTab('cover');
+                    setIsSettingsOpen(true);
+                  } else {
+                    setIsSettingsOpen(false);
+                  }
+                }}
+                title={t('documents.coverSettingsTitle', 'Configuración de Portada')}
+              >
+                <CaralIcon name="image" size={18} />
+              </Button>
+            )}
             <Button
               variant={isSettingsOpen && sidebarTab !== 'cover' ? 'info' : 'ghost'}
               onClick={() => {
@@ -347,8 +358,14 @@ export default function DocumentEditorPage({ params }: { params: Promise<{ id: s
               </div>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col p-4 overflow-y-auto bg-white dark:bg-neutral-950">
-              {/* Aquí iría el PresentationBuilder */}
+            <div className="flex-1 flex flex-col h-full overflow-hidden bg-white dark:bg-neutral-950">
+              <PresentationEditor
+                content={contentDraft}
+                title={titleDraft}
+                onContentChange={(newContent) => setContentDraft(newContent)}
+                onTitleChange={(newTitle) => setTitleDraft(newTitle)}
+                isSaving={isSaving}
+              />
             </div>
           )}
         </div>

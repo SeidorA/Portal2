@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Brand, CaralIcon } from 'iconcaral2';
-import { Button } from 'caralstable';
+import { Button, Drawer } from 'caralstable';
+import Input from '@/app/components/Input';
+import Select from '@/app/components/Select';
 import fallbackData from '../connections.json';
 
 interface ConnectionItem {
@@ -126,15 +128,90 @@ function CrestoneCard({ theme }: { theme: 'light' | 'dark' }) {
   );
 }
 
-export default function DeploymentOptionsTool() {
+const translations = {
+  es: {
+    title: 'Opciones de Despliegue',
+    subtitle: 'Diagrama interactivo de arquitecturas de despliegue Crestone.',
+    settings: 'Configuración de Despliegue',
+    fullscreen: 'Pantalla Completa',
+    exitFullscreen: 'Salir de Pantalla Completa',
+    zoomIn: 'Zoom In',
+    zoomOut: 'Zoom Out',
+    resetZoom: 'Ajustar Vista',
+    downloadDiagram: 'Descargar Diapositiva (PNG 16:9)',
+    language: 'Idioma',
+    canvasTheme: 'Fondo del Lienzo',
+    light: 'Claro',
+    dark: 'Oscuro',
+    originSource: 'Origen / Source',
+    destination: 'Destino',
+    originLabel: 'Etiqueta de Origen',
+    originLabelPlaceholder: 'ej. SAP ERP 6.0',
+    analyticsLayer: 'Capa de Analítica',
+    none: 'Ninguna',
+    deploymentMode: 'Modo de Despliegue',
+    both: 'Ambas',
+    cloud: 'Cloud',
+    selfHosted: 'Self Hosted',
+    showTitles: 'Mostrar Títulos',
+    downloading: 'Descargando...',
+    generatingPng: 'Generando PNG...',
+    loadingData: 'Cargando datos de despliegue...',
+  },
+  en: {
+    title: 'Deployment Options',
+    subtitle: 'Interactive diagram of Crestone deployment architectures.',
+    settings: 'Deployment Settings',
+    fullscreen: 'Fullscreen',
+    exitFullscreen: 'Exit Fullscreen',
+    zoomIn: 'Zoom In',
+    zoomOut: 'Zoom Out',
+    resetZoom: 'Reset Fit',
+    downloadDiagram: 'Download Slide (PNG 16:9)',
+    language: 'Language',
+    canvasTheme: 'Canvas Background',
+    light: 'Light',
+    dark: 'Dark',
+    originSource: 'Origin / Source',
+    destination: 'Destination',
+    originLabel: 'Origin Label',
+    originLabelPlaceholder: 'e.g. SAP ERP 6.0',
+    analyticsLayer: 'Analytics Layer',
+    none: 'None',
+    deploymentMode: 'Deployment Mode',
+    both: 'Both',
+    cloud: 'Cloud',
+    selfHosted: 'Self Hosted',
+    showTitles: 'Show Titles',
+    downloading: 'Downloading...',
+    generatingPng: 'Generating PNG...',
+    loadingData: 'Loading deployment data...',
+  }
+};
+
+export interface DeploymentOptionsToolProps {
+  isEmbedded?: boolean;
+  theme?: 'light' | 'dark';
+  isDrawerOpen?: boolean;
+  onDrawerOpenChange?: (open: boolean) => void;
+}
+
+export default function DeploymentOptionsTool({
+  isEmbedded = false,
+  theme: propTheme,
+  isDrawerOpen: propIsDrawerOpen,
+  onDrawerOpenChange,
+}: DeploymentOptionsToolProps = {}) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
 
   const bgLight = '/img/crestone/ppt/bgdespliegue.png';
   const bgDark = '/img/crestone/ppt/bgdesplieguedark.png';
 
   const [data, setData] = useState<ConnectionsData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>(propTheme || 'light');
   const [selectedOriginId, setSelectedOriginId] = useState<string>('');
   const [selectedDestinationId, setSelectedDestinationId] = useState<string>('');
   const [isDownloading, setIsDownloading] = useState<boolean>(false);
@@ -143,7 +220,44 @@ export default function DeploymentOptionsTool() {
   const [originLabel, setOriginLabel] = useState<string>('');
   const [analyticsDestinationId, setAnalyticsDestinationId] = useState<string>('none');
   const [lang, setLang] = useState<'es' | 'en'>('es');
+  const t = translations[lang];
 
+  useEffect(() => {
+    if (propTheme !== undefined) setTheme(propTheme);
+  }, [propTheme]);
+
+  // Drawer and presentation states
+  const [internalDrawerOpen, setInternalDrawerOpen] = useState(false);
+  const isDrawerOpen = propIsDrawerOpen !== undefined ? propIsDrawerOpen : internalDrawerOpen;
+  const setIsDrawerOpen = (val: boolean) => {
+    setInternalDrawerOpen(val);
+    onDrawerOpenChange?.(val);
+  };
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // 16:9 Canvas Dimensions
+  const canvasWidth = 1280;
+  const canvasHeight = 720;
+
+  // Zoom & Pan states
+  const [zoom, setZoom] = useState(1);
+  const [zoomScale, setZoomScale] = useState({ x: 1, y: 1 });
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const panStartRef = useRef({ x: 0, y: 0 });
+
+  // Calculate Auto-Fit Zoom based on Container Dimensions (16:9)
+  const calculateFitZoom = useCallback(() => {
+    if (!viewportRef.current) return { x: 1, y: 1, min: 1 };
+    const { clientWidth, clientHeight } = viewportRef.current;
+    if (clientWidth === 0 || clientHeight === 0) return { x: 1, y: 1, min: 1 };
+    const scaleX = clientWidth / canvasWidth;
+    const scaleY = clientHeight / canvasHeight;
+    return { x: scaleX, y: scaleY, min: Math.min(scaleX, scaleY) };
+  }, [canvasWidth, canvasHeight]);
+
+  // Load Data
   useEffect(() => {
     let active = true;
     fetch('https://raw.githubusercontent.com/SeidorA/DocuCrestone/refs/heads/main/static/api/connections.json')
@@ -175,12 +289,135 @@ export default function DeploymentOptionsTool() {
     };
   }, []);
 
+  // Update zoom when container size changes
+  useEffect(() => {
+    if (loading) return;
+
+    const updateZoom = () => {
+      const fit = calculateFitZoom();
+      setZoom(fit.min);
+      setZoomScale({ x: fit.x, y: fit.y });
+      setPan({ x: 0, y: 0 });
+    };
+
+    updateZoom();
+
+    const currentViewport = viewportRef.current;
+    const observer = new ResizeObserver(() => {
+      updateZoom();
+    });
+
+    if (currentViewport) {
+      observer.observe(currentViewport);
+    }
+
+    return () => {
+      if (currentViewport) {
+        observer.unobserve(currentViewport);
+      }
+      observer.disconnect();
+    };
+  }, [loading, calculateFitZoom]);
+
+  // Handle Fullscreen toggle
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().catch(() => {
+        setIsFullscreen(!isFullscreen);
+      });
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen().catch(() => {
+        setIsFullscreen(false);
+      });
+      setIsFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      setTimeout(() => {
+        const fit = calculateFitZoom();
+        setZoom(fit.min);
+        setZoomScale({ x: fit.x, y: fit.y });
+        setPan({ x: 0, y: 0 });
+      }, 100);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, [calculateFitZoom]);
+
+  // Mouse Pan Handlers
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    setIsDragging(true);
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+    panStartRef.current = { x: pan.x, y: pan.y };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+    setPan({
+      x: panStartRef.current.x + dx,
+      y: panStartRef.current.y + dy,
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+    setZoom((prev) => Math.min(Math.max(prev * zoomFactor, 0.25), 3));
+  };
+
+  const downloadPng = async () => {
+    if (typeof window === 'undefined' || !canvasRef.current) return;
+
+    try {
+      setIsDownloading(true);
+      const { toPng } = await import('html-to-image');
+
+      const dataUrl = await toPng(canvasRef.current, {
+        pixelRatio: 2,
+        width: 1920,
+        height: 1080,
+        style: {
+          transform: 'none',
+          transformOrigin: '0 0',
+          position: 'static',
+          left: '0px',
+          top: '0px',
+          margin: '0px',
+          width: '1920px',
+          height: '1080px',
+        }
+      });
+
+      const link = document.createElement('a');
+      link.download = `crestone-deployment-options-16x9-${theme}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (error) {
+      console.error('Error generating PNG image:', error);
+      alert(lang === 'en' ? 'Failed to generate image.' : 'Error al generar la imagen.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   if (loading || !data) {
     return (
       <div className="flex flex-col items-center justify-center p-16 rounded-2xl bg-container border border-neutral-200 dark:border-neutral-800 my-6">
         <div className="w-10 h-10 border-4 border-blue-500/20 border-t-info-main rounded-full animate-spin mb-4" />
         <p className="text-neutral-600 dark:text-neutral-400 font-medium">
-          {lang === 'en' ? 'Loading deployment data...' : 'Cargando datos de despliegue...'}
+          {t.loadingData}
         </p>
       </div>
     );
@@ -231,411 +468,446 @@ export default function DeploymentOptionsTool() {
   const flow2BoxWidth = (col2X - col1X) + 260 + 50;
   const flow2OriginX = col1X + 30;
 
-  const downloadPng = async () => {
-    if (typeof window === 'undefined' || !canvasRef.current) return;
-
-    try {
-      setIsDownloading(true);
-      const { toPng } = await import('html-to-image');
-
-      const dataUrl = await toPng(canvasRef.current, {
-        pixelRatio: 2.5,
-        style: {
-          transform: 'scale(1)',
-        }
-      });
-
-      const link = document.createElement('a');
-      link.download = `crestone-opciones-despliegue-${theme}.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (error) {
-      console.error('Error generating PNG image:', error);
-      alert(lang === 'en' ? 'Failed to generate image.' : 'Error al generar la imagen.');
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
   return (
-    <div className="w-full flex flex-col gap-8">
-      {/* Intro Header */}
-      <div className="bg-container border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h2 className="text-2xl font-bold font-poppins text-neutral-900 dark:text-white mb-2">
-              {lang === 'en' ? 'Deployment Options Generator' : 'Generador de Opciones de Despliegue'}
-            </h2>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-3xl leading-relaxed">
-              {lang === 'en'
-                ? 'Customize the deployment architectures diagram by choosing source and target destinations. Export it as a high-resolution slide.'
-                : 'Personaliza el diagrama de arquitecturas de despliegue seleccionando el origen y destino en la nube. Descarga la diapositiva en alta resolución para presentaciones.'}
-            </p>
+    <div
+      ref={containerRef}
+      className={`w-full flex flex-col items-center justify-center font-poppins select-none ${
+        isEmbedded
+          ? 'w-full h-full relative overflow-hidden bg-transparent'
+          : isFullscreen
+            ? 'fixed inset-0 z-50 bg-neutral-900 p-3 overflow-hidden justify-between'
+            : 'relative my-auto gap-2'
+      }`}
+    >
+      {/* 1. Top Bar Controls */}
+      {!isEmbedded && (
+        <div className="w-full flex items-center justify-between z-10 shrink-0 px-1">
+          {/* Settings Button (Left) */}
+          <Button
+            variant="light"
+            onClick={() => setIsDrawerOpen(true)}
+            title={t.settings}
+            iconName="gear"
+            isIconButton
+          >
+            {t.settings}
+          </Button>
+
+          {/* Presentation / Fullscreen Button (Right) */}
+          <Button
+            variant={isFullscreen ? 'info' : 'light'}
+            onClick={toggleFullscreen}
+            title={isFullscreen ? t.exitFullscreen : t.fullscreen}
+            iconName="screenView"
+            isIconButton
+          >
+            {isFullscreen ? t.exitFullscreen : t.fullscreen}
+          </Button>
+        </div>
+      )}
+
+      {/* 2. Central 16:9 Viewport Canvas Container: Fitted Perfectly by Height */}
+      <div
+        ref={viewportRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onWheel={handleWheel}
+        className={`relative overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing transition-colors ${
+          isEmbedded
+            ? 'w-full h-full bg-transparent border-none rounded-none shadow-none'
+            : `aspect-[16/9] max-w-full w-auto mx-auto rounded-[12px] border border-neutral-200 dark:border-neutral-800 shadow-[0px_0px_8px_0px_rgba(0,0,0,0.25)] bg-white dark:bg-[#07153a]/90 ${
+                isFullscreen
+                  ? 'h-[calc(100vh-125px)]'
+                  : 'h-[calc(100vh-270px)] min-h-[440px] max-h-[820px]'
+              }`
+        }`}
+      >
+        {/* Transform Scale Wrapper */}
+        <div
+          ref={canvasRef}
+          style={{
+            width: `${canvasWidth}px`,
+            height: `${canvasHeight}px`,
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: 'center center',
+            transition: isDragging ? 'none' : 'transform 0.15s ease-out',
+            position: 'relative',
+            backgroundImage: `url(${activeBg})`,
+            backgroundSize: '100% 100%',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            overflow: 'hidden',
+            flexShrink: 0,
+            userSelect: 'none'
+          }}
+        >
+          {/* SVG Connections & Arrowheads Layer */}
+          <svg
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              zIndex: 2,
+              pointerEvents: 'none'
+            }}
+          >
+            <defs>
+              <marker
+                id="arrowheadDeployment"
+                viewBox="0 0 10 10"
+                refX="6"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto-start-reverse"
+              >
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill={arrowColor} />
+              </marker>
+            </defs>
+
+            {(deploymentMode === 'ambas' || deploymentMode === 'cloud') && (
+              <>
+                <g>
+                  <circle cx={col1X + 260} cy={245 + cloudOffset} r="5" fill={arrowColor} />
+                  <line x1={col1X + 260} y1={245 + cloudOffset} x2={col2X - 6} y2={245 + cloudOffset} stroke={arrowColor} strokeWidth="2.5" markerEnd="url(#arrowheadDeployment)" />
+                </g>
+                <g>
+                  <circle cx={col2X + 260} cy={245 + cloudOffset} r="5" fill={arrowColor} />
+                  <line x1={col2X + 260} y1={245 + cloudOffset} x2={col3X - 6} y2={245 + cloudOffset} stroke={arrowColor} strokeWidth="2.5" markerEnd="url(#arrowheadDeployment)" />
+                </g>
+                {hasAnalytics && (
+                  <g>
+                    <circle cx={col3X + 260} cy={245 + cloudOffset} r="5" fill={arrowColor} />
+                    <line x1={col3X + 260} y1={245 + cloudOffset} x2={col4X - 6} y2={245 + cloudOffset} stroke={arrowColor} strokeWidth="2.5" markerEnd="url(#arrowheadDeployment)" />
+                  </g>
+                )}
+              </>
+            )}
+
+            {(deploymentMode === 'ambas' || deploymentMode === 'self-hosted') && (
+              <>
+                <g>
+                  <circle cx={flow2OriginX + 260} cy={510 + selfHostedOffset} r="5" fill={arrowColor} />
+                  <line x1={flow2OriginX + 260} y1={510 + selfHostedOffset} x2={col2X - 6} y2={510 + selfHostedOffset} stroke={arrowColor} strokeWidth="2.5" markerEnd="url(#arrowheadDeployment)" />
+                </g>
+                <g>
+                  <circle cx={col2X + 260} cy={510 + selfHostedOffset} r="5" fill={arrowColor} />
+                  <line x1={col2X + 260} y1={510 + selfHostedOffset} x2={col3X - 6} y2={510 + selfHostedOffset} stroke={arrowColor} strokeWidth="2.5" markerEnd="url(#arrowheadDeployment)" />
+                </g>
+                {hasAnalytics && (
+                  <g>
+                    <circle cx={col3X + 260} cy={510 + selfHostedOffset} r="5" fill={arrowColor} />
+                    <line x1={col3X + 260} y1={510 + selfHostedOffset} x2={col4X - 6} y2={510 + selfHostedOffset} stroke={arrowColor} strokeWidth="2.5" markerEnd="url(#arrowheadDeployment)" />
+                  </g>
+                )}
+              </>
+            )}
+          </svg>
+
+          {/* Main Slide Title */}
+          {showTitles && (
+            <div style={{
+              position: 'absolute',
+              top: '60px',
+              left: '80px',
+              zIndex: 2
+            }}>
+              <h1 style={{
+                margin: 0,
+                fontFamily: "'Poppins', 'Outfit', 'Inter', sans-serif",
+                fontSize: '40px',
+                fontWeight: 800,
+                color: textColorMain,
+                letterSpacing: '-0.5px'
+              }}>
+                {t.title}
+              </h1>
+            </div>
+          )}
+
+          {/* FLOW 1: Despliegue Cloud */}
+          {(deploymentMode === 'ambas' || deploymentMode === 'cloud') && (
+            <>
+              {showTitles && (
+                <div style={{
+                  position: 'absolute',
+                  top: `${135 + cloudOffset}px`,
+                  left: '80px',
+                  zIndex: 2
+                }}>
+                  <h2 style={{
+                    margin: 0,
+                    fontFamily: "'Poppins', 'Outfit', 'Inter', sans-serif",
+                    fontSize: '24px',
+                    fontWeight: 700,
+                    color: textColorSub,
+                    letterSpacing: '-0.2px'
+                  }}>
+                    {lang === 'en' ? 'Cloud Deployment' : 'Despliegue Cloud'}
+                  </h2>
+                </div>
+              )}
+
+              <div style={{ position: 'absolute', top: `${185 + cloudOffset}px`, left: `${col1X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
+                Customer Network
+              </div>
+              <div style={{ position: 'absolute', top: `${185 + cloudOffset}px`, left: `${col2X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
+                Crestone Network
+              </div>
+              <div style={{ position: 'absolute', top: `${185 + cloudOffset}px`, left: `${col3X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
+                Destination Network
+              </div>
+              {hasAnalytics && (
+                <div style={{ position: 'absolute', top: `${185 + cloudOffset}px`, left: `${col4X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
+                  Analytics Layer
+                </div>
+              )}
+
+              <div style={{ position: 'absolute', top: `${220 + cloudOffset}px`, left: `${col1X}px`, zIndex: 3 }}>
+                <ConnectionCard title={selectedOrigin.title} icon={selectedOrigin.iconName || 'file'} brand={selectedOrigin.useBrand} theme={theme} />
+              </div>
+              {originLabel && (
+                <div style={{ position: 'absolute', top: `${280 + cloudOffset}px`, left: `${col1X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '14px', fontWeight: 700, color: textColorMain, zIndex: 3 }}>
+                  {originLabel}
+                </div>
+              )}
+
+              <div style={{ position: 'absolute', top: `${175 + cloudOffset}px`, left: `${flow1BoxLeft}px`, width: `${flow1BoxWidth}px`, height: '140px', borderRadius: '12px', pointerEvents: 'none', zIndex: 1, ...glassStyle }} />
+              <div style={{ position: 'absolute', top: `${220 + cloudOffset}px`, left: `${col2X}px`, zIndex: 3 }}>
+                <CrestoneCard theme={theme} />
+              </div>
+              <div style={{ position: 'absolute', top: `${220 + cloudOffset}px`, left: `${col3X}px`, zIndex: 3 }}>
+                <ConnectionCard title={selectedDestination.title} icon={selectedDestination.iconName || 'file'} brand={selectedDestination.useBrand} theme={theme} />
+              </div>
+              {hasAnalytics && analyticsDestination && (
+                <div style={{ position: 'absolute', top: `${220 + cloudOffset}px`, left: `${col4X}px`, zIndex: 3 }}>
+                  <ConnectionCard title={analyticsDestination.title} icon={analyticsDestination.iconName || 'file'} brand={analyticsDestination.useBrand} theme={theme} />
+                </div>
+              )}
+            </>
+          )}
+
+          {/* FLOW 2: Despliegue Self Hosted */}
+          {(deploymentMode === 'ambas' || deploymentMode === 'self-hosted') && (
+            <>
+              {showTitles && (
+                <div style={{
+                  position: 'absolute',
+                  top: `${380 + selfHostedOffset}px`,
+                  left: '80px',
+                  zIndex: 2
+                }}>
+                  <h2 style={{
+                    margin: 0,
+                    fontFamily: "'Poppins', 'Outfit', 'Inter', sans-serif",
+                    fontSize: '24px',
+                    fontWeight: 700,
+                    color: textColorSub,
+                    letterSpacing: '-0.2px'
+                  }}>
+                    {lang === 'en' ? 'Self Hosted Deployment' : 'Despliegue Self Hosted'}
+                  </h2>
+                </div>
+              )}
+
+              <div style={{ position: 'absolute', top: `${430 + selfHostedOffset}px`, left: `${col1X}px`, width: `${flow2BoxWidth}px`, textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
+                Customer Network
+              </div>
+              <div style={{ position: 'absolute', top: `${430 + selfHostedOffset}px`, left: `${col3X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
+                Destination Network
+              </div>
+              {hasAnalytics && (
+                <div style={{ position: 'absolute', top: `${430 + selfHostedOffset}px`, left: `${col4X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
+                  Analytics Layer
+                </div>
+              )}
+
+              <div style={{ position: 'absolute', top: `${450 + selfHostedOffset}px`, left: `${flow2BoxLeft}px`, width: `${flow2BoxWidth}px`, height: '120px', borderRadius: '12px', pointerEvents: 'none', zIndex: 1, ...glassStyle }} />
+              <div style={{ position: 'absolute', top: `${485 + selfHostedOffset}px`, left: `${flow2OriginX}px`, zIndex: 3 }}>
+                <ConnectionCard title={selectedOrigin.title} icon={selectedOrigin.iconName || 'file'} brand={selectedOrigin.useBrand} theme={theme} />
+              </div>
+              {originLabel && (
+                <div style={{ position: 'absolute', top: `${545 + selfHostedOffset}px`, left: `${flow2OriginX}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '14px', fontWeight: 700, color: textColorMain, zIndex: 3 }}>
+                  {originLabel}
+                </div>
+              )}
+
+              <div style={{ position: 'absolute', top: `${485 + selfHostedOffset}px`, left: `${col2X}px`, zIndex: 3 }}>
+                <CrestoneCard theme={theme} />
+              </div>
+              <div style={{ position: 'absolute', top: `${485 + selfHostedOffset}px`, left: `${col3X}px`, zIndex: 3 }}>
+                <ConnectionCard title={selectedDestination.title} icon={selectedDestination.iconName || 'file'} brand={selectedDestination.useBrand} theme={theme} />
+              </div>
+              {hasAnalytics && analyticsDestination && (
+                <div style={{ position: 'absolute', top: `${485 + selfHostedOffset}px`, left: `${col4X}px`, zIndex: 3 }}>
+                  <ConnectionCard title={analyticsDestination.title} icon={analyticsDestination.iconName || 'file'} brand={analyticsDestination.useBrand} theme={theme} />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* 3. Bottom Bar Floating Controls */}
+      {!isEmbedded && (
+        <div className="w-full flex items-center justify-between z-10 shrink-0 px-1">
+          {/* Left: Zoom Controls */}
+          <div className="flex items-center gap-1.5 bg-container/90 backdrop-blur-md border border-neutral-200 dark:border-neutral-800 rounded-xl p-1 shadow-sm">
+            <Button
+              variant="light"
+              onClick={() => setZoom((prev) => Math.min(prev + 0.1, 3))}
+              title={t.zoomIn}
+              iconName="zoomIn"
+              isIconButton
+            >
+              {t.zoomIn}
+            </Button>
+            <Button
+              variant="light"
+              onClick={() => setZoom((prev) => Math.max(prev - 0.1, 0.25))}
+              title={t.zoomOut}
+              iconName="zoomOut"
+              isIconButton
+            >
+              {t.zoomOut}
+            </Button>
+            <Button
+              variant="light"
+              onClick={() => {
+                const fit = calculateFitZoom();
+                setZoom(fit.min);
+                setZoomScale({ x: fit.x, y: fit.y });
+                setPan({ x: 0, y: 0 });
+              }}
+              title={t.resetZoom}
+              iconName="sync"
+              isIconButton
+            >
+              {t.resetZoom}
+            </Button>
           </div>
+
+          {/* Right: Download Action */}
           <Button
             variant="info"
             onClick={downloadPng}
             disabled={isDownloading}
-            className="shrink-0 flex items-center gap-2"
+            title={t.downloadDiagram}
+            iconName="arrowDownToLine"
           >
-            <CaralIcon name="arrowDownToLine" size={18} />
-            {isDownloading ? (lang === 'en' ? 'Downloading...' : 'Descargando...') : (lang === 'en' ? 'Download Slide (PNG)' : 'Descargar Diapositiva (PNG)')}
+            {isDownloading ? t.generatingPng : t.downloadDiagram}
           </Button>
         </div>
-      </div>
+      )}
 
-      {/* Main Layout Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-        {/* Controls Sidebar */}
-        <div className="xl:col-span-4 bg-container border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs flex flex-col gap-5 max-h-[85vh] overflow-y-auto">
-          {/* Theme */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-              {lang === 'en' ? 'Canvas Background' : 'Fondo del Lienzo'}
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              {(['light', 'dark'] as const).map((tVal) => (
-                <button
-                  key={tVal}
-                  onClick={() => setTheme(tVal)}
-                  className={`px-3 py-2 rounded-lg text-xs font-semibold capitalize border transition-all ${
-                    theme === tVal
-                      ? 'bg-info-main/10 border-info-main text-info-main'
-                      : 'bg-neutral-50 dark:bg-neutral-800/60 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
-                  }`}
-                >
-                  {tVal === 'light' ? (lang === 'en' ? 'Light' : 'Claro') : (lang === 'en' ? 'Dark' : 'Oscuro')}
-                </button>
-              ))}
-            </div>
-          </div>
+      {/* 4. Caralstable Drawer Component (All configuration in Gear) */}
+      <Drawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        title={t.settings}
+        size="md"
+      >
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* Idioma */}
+          <Select
+            label={t.language}
+            value={lang}
+            onChange={(e) => setLang(e.target.value as 'es' | 'en')}
+            options={[
+              { value: 'es', label: 'Español' },
+              { value: 'en', label: 'English' },
+            ]}
+          />
 
-          {/* Origin / Source */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
-              {lang === 'en' ? 'Origin / Source' : 'Origen / Source'}
-            </label>
-            <select
-              value={selectedOriginId}
-              onChange={(e) => setSelectedOriginId(e.target.value)}
-              className="w-full text-xs px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
-            >
-              {data.origins.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.title}
-                </option>
-              ))}
-            </select>
-          </div>
+          <div className="border-b border-neutral-200 dark:border-neutral-800 pt-1 pb-2" />
 
-          {/* Destination */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
-              {lang === 'en' ? 'Destination' : 'Destino'}
-            </label>
-            <select
-              value={selectedDestinationId}
-              onChange={(e) => setSelectedDestinationId(e.target.value)}
-              className="w-full text-xs px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
-            >
-              {data.destinations.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.title}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Fondo del Lienzo */}
+          <Select
+            label={t.canvasTheme}
+            value={theme}
+            onChange={(e) => setTheme(e.target.value as 'light' | 'dark')}
+            options={[
+              { value: 'light', label: t.light },
+              { value: 'dark', label: t.dark },
+            ]}
+          />
 
-          {/* Origin Custom Label */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
-              {lang === 'en' ? 'Origin Label' : 'Etiqueta de Origen'}
-            </label>
-            <input
-              type="text"
-              value={originLabel}
-              onChange={(e) => setOriginLabel(e.target.value)}
-              placeholder={lang === 'en' ? 'e.g. SAP ERP 6.0' : 'ej. SAP ERP 6.0'}
-              className="w-full text-xs px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
-            />
-          </div>
+          {/* Origen / Source */}
+          <Select
+            label={t.originSource}
+            value={selectedOriginId}
+            onChange={(e) => setSelectedOriginId(e.target.value)}
+            options={data.origins.map((o) => ({
+              value: o.id,
+              label: o.title,
+            }))}
+          />
 
-          {/* Analytics Layer */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
-              {lang === 'en' ? 'Analytics Layer' : 'Capa de Analítica'}
-            </label>
-            <select
-              value={analyticsDestinationId}
-              onChange={(e) => setAnalyticsDestinationId(e.target.value)}
-              className="w-full text-xs px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
-            >
-              <option value="none">{lang === 'en' ? 'None' : 'Ninguna'}</option>
-              {data.destinations.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.title}
-                </option>
-              ))}
-            </select>
-          </div>
+          {/* Etiqueta de Origen Personalizada */}
+          <Input
+            label={t.originLabel}
+            value={originLabel}
+            onChange={(e) => setOriginLabel(e.target.value)}
+            placeholder={t.originLabelPlaceholder}
+          />
 
-          {/* Deployment Mode */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
-              {lang === 'en' ? 'Deployment Mode' : 'Modo de Despliegue'}
-            </label>
-            <select
-              value={deploymentMode}
-              onChange={(e) => setDeploymentMode(e.target.value as 'ambas' | 'cloud' | 'self-hosted')}
-              className="w-full text-xs px-3 py-2.5 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
-            >
-              <option value="ambas">{lang === 'en' ? 'Both' : 'Ambas'}</option>
-              <option value="cloud">Cloud</option>
-              <option value="self-hosted">Self Hosted</option>
-            </select>
-          </div>
+          <div className="border-b border-neutral-200 dark:border-neutral-800 pt-1 pb-2" />
 
-          {/* Show Titles Toggle */}
-          <label className="flex items-center justify-between text-xs font-medium cursor-pointer pt-3 border-t border-neutral-200 dark:border-neutral-800">
-            <span>{lang === 'en' ? 'Show Titles' : 'Mostrar Títulos'}</span>
+          {/* Destino */}
+          <Select
+            label={t.destination}
+            value={selectedDestinationId}
+            onChange={(e) => setSelectedDestinationId(e.target.value)}
+            options={data.destinations.map((d) => ({
+              value: d.id,
+              label: d.title,
+            }))}
+          />
+
+          {/* Capa de Analítica */}
+          <Select
+            label={t.analyticsLayer}
+            value={analyticsDestinationId}
+            onChange={(e) => setAnalyticsDestinationId(e.target.value)}
+            options={[
+              { value: 'none', label: t.none },
+              ...data.destinations.map((d) => ({
+                value: d.id,
+                label: d.title,
+              })),
+            ]}
+          />
+
+          {/* Modo de Despliegue */}
+          <Select
+            label={t.deploymentMode}
+            value={deploymentMode}
+            onChange={(e) => setDeploymentMode(e.target.value as 'ambas' | 'cloud' | 'self-hosted')}
+            options={[
+              { value: 'ambas', label: t.both },
+              { value: 'cloud', label: 'Cloud' },
+              { value: 'self-hosted', label: 'Self Hosted' },
+            ]}
+          />
+
+          <div className="border-b border-neutral-200 dark:border-neutral-800 pt-1 pb-2" />
+
+          {/* Mostrar Títulos Toggle */}
+          <label className="flex items-center justify-between text-xs font-medium cursor-pointer text-neutral-700 dark:text-neutral-300 pt-2">
+            <span>{t.showTitles}</span>
             <input
               type="checkbox"
               checked={showTitles}
               onChange={(e) => setShowTitles(e.target.checked)}
-              className="rounded accent-info-main"
+              className="rounded accent-info-main w-4 h-4 cursor-pointer"
             />
           </label>
         </div>
-
-        {/* Canvas Preview Area */}
-        <div className="xl:col-span-8 flex flex-col gap-6">
-          <div className="w-full overflow-x-auto rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-950 p-6 flex justify-center shadow-inner">
-            <div
-              id="deployment-options-canvas"
-              ref={canvasRef}
-              style={{
-                width: '1280px',
-                height: '720px',
-                position: 'relative',
-                backgroundImage: `url(${activeBg})`,
-                backgroundSize: '100% 100%',
-                backgroundPosition: 'center',
-                backgroundRepeat: 'no-repeat',
-                overflow: 'hidden',
-                flexShrink: 0,
-                boxShadow: '0 12px 30px rgba(0,0,0,0.15)',
-                borderRadius: '8px',
-                userSelect: 'none'
-              }}
-            >
-              {/* SVG Connections & Arrowheads Layer */}
-              <svg style={{
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                zIndex: 2,
-                pointerEvents: 'none'
-              }}>
-                <defs>
-                  <marker
-                    id="arrowheadDeployment"
-                    viewBox="0 0 10 10"
-                    refX="6"
-                    refY="5"
-                    markerWidth="6"
-                    markerHeight="6"
-                    orient="auto-start-reverse"
-                  >
-                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill={arrowColor} />
-                  </marker>
-                </defs>
-
-                {(deploymentMode === 'ambas' || deploymentMode === 'cloud') && (
-                  <>
-                    <g>
-                      <circle cx={col1X + 260} cy={245 + cloudOffset} r="5" fill={arrowColor} />
-                      <line x1={col1X + 260} y1={245 + cloudOffset} x2={col2X - 6} y2={245 + cloudOffset} stroke={arrowColor} strokeWidth="2.5" markerEnd="url(#arrowheadDeployment)" />
-                    </g>
-                    <g>
-                      <circle cx={col2X + 260} cy={245 + cloudOffset} r="5" fill={arrowColor} />
-                      <line x1={col2X + 260} y1={245 + cloudOffset} x2={col3X - 6} y2={245 + cloudOffset} stroke={arrowColor} strokeWidth="2.5" markerEnd="url(#arrowheadDeployment)" />
-                    </g>
-                    {hasAnalytics && (
-                      <g>
-                        <circle cx={col3X + 260} cy={245 + cloudOffset} r="5" fill={arrowColor} />
-                        <line x1={col3X + 260} y1={245 + cloudOffset} x2={col4X - 6} y2={245 + cloudOffset} stroke={arrowColor} strokeWidth="2.5" markerEnd="url(#arrowheadDeployment)" />
-                      </g>
-                    )}
-                  </>
-                )}
-
-                {(deploymentMode === 'ambas' || deploymentMode === 'self-hosted') && (
-                  <>
-                    <g>
-                      <circle cx={flow2OriginX + 260} cy={510 + selfHostedOffset} r="5" fill={arrowColor} />
-                      <line x1={flow2OriginX + 260} y1={510 + selfHostedOffset} x2={col2X - 6} y2={510 + selfHostedOffset} stroke={arrowColor} strokeWidth="2.5" markerEnd="url(#arrowheadDeployment)" />
-                    </g>
-                    <g>
-                      <circle cx={col2X + 260} cy={510 + selfHostedOffset} r="5" fill={arrowColor} />
-                      <line x1={col2X + 260} y1={510 + selfHostedOffset} x2={col3X - 6} y2={510 + selfHostedOffset} stroke={arrowColor} strokeWidth="2.5" markerEnd="url(#arrowheadDeployment)" />
-                    </g>
-                    {hasAnalytics && (
-                      <g>
-                        <circle cx={col3X + 260} cy={510 + selfHostedOffset} r="5" fill={arrowColor} />
-                        <line x1={col3X + 260} y1={510 + selfHostedOffset} x2={col4X - 6} y2={510 + selfHostedOffset} stroke={arrowColor} strokeWidth="2.5" markerEnd="url(#arrowheadDeployment)" />
-                      </g>
-                    )}
-                  </>
-                )}
-              </svg>
-
-              {/* Main Slide Title */}
-              {showTitles && (
-                <div style={{
-                  position: 'absolute',
-                  top: '60px',
-                  left: '80px',
-                  zIndex: 2
-                }}>
-                  <h1 style={{
-                    margin: 0,
-                    fontFamily: "'Poppins', 'Outfit', 'Inter', sans-serif",
-                    fontSize: '40px',
-                    fontWeight: 800,
-                    color: textColorMain,
-                    letterSpacing: '-0.5px'
-                  }}>
-                    {lang === 'en' ? 'Deployment Options' : 'Opciones de Despliegue'}
-                  </h1>
-                </div>
-              )}
-
-              {/* FLOW 1: Despliegue Cloud */}
-              {(deploymentMode === 'ambas' || deploymentMode === 'cloud') && (
-                <>
-                  {showTitles && (
-                    <div style={{
-                      position: 'absolute',
-                      top: `${135 + cloudOffset}px`,
-                      left: '80px',
-                      zIndex: 2
-                    }}>
-                      <h2 style={{
-                        margin: 0,
-                        fontFamily: "'Poppins', 'Outfit', 'Inter', sans-serif",
-                        fontSize: '24px',
-                        fontWeight: 700,
-                        color: textColorSub,
-                        letterSpacing: '-0.2px'
-                      }}>
-                        {lang === 'en' ? 'Cloud Deployment' : 'Despliegue Cloud'}
-                      </h2>
-                    </div>
-                  )}
-
-                  <div style={{ position: 'absolute', top: `${185 + cloudOffset}px`, left: `${col1X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
-                    Customer Network
-                  </div>
-                  <div style={{ position: 'absolute', top: `${185 + cloudOffset}px`, left: `${col2X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
-                    Crestone Network
-                  </div>
-                  <div style={{ position: 'absolute', top: `${185 + cloudOffset}px`, left: `${col3X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
-                    Destination Network
-                  </div>
-                  {hasAnalytics && (
-                    <div style={{ position: 'absolute', top: `${185 + cloudOffset}px`, left: `${col4X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
-                      Analytics Layer
-                    </div>
-                  )}
-
-                  <div style={{ position: 'absolute', top: `${220 + cloudOffset}px`, left: `${col1X}px`, zIndex: 3 }}>
-                    <ConnectionCard title={selectedOrigin.title} icon={selectedOrigin.iconName || 'file'} brand={selectedOrigin.useBrand} theme={theme} />
-                  </div>
-                  {originLabel && (
-                    <div style={{ position: 'absolute', top: `${280 + cloudOffset}px`, left: `${col1X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '14px', fontWeight: 700, color: textColorMain, zIndex: 3 }}>
-                      {originLabel}
-                    </div>
-                  )}
-
-                  <div style={{ position: 'absolute', top: `${175 + cloudOffset}px`, left: `${flow1BoxLeft}px`, width: `${flow1BoxWidth}px`, height: '140px', borderRadius: '12px', pointerEvents: 'none', zIndex: 1, ...glassStyle }} />
-                  <div style={{ position: 'absolute', top: `${220 + cloudOffset}px`, left: `${col2X}px`, zIndex: 3 }}>
-                    <CrestoneCard theme={theme} />
-                  </div>
-                  <div style={{ position: 'absolute', top: `${220 + cloudOffset}px`, left: `${col3X}px`, zIndex: 3 }}>
-                    <ConnectionCard title={selectedDestination.title} icon={selectedDestination.iconName || 'file'} brand={selectedDestination.useBrand} theme={theme} />
-                  </div>
-                  {hasAnalytics && analyticsDestination && (
-                    <div style={{ position: 'absolute', top: `${220 + cloudOffset}px`, left: `${col4X}px`, zIndex: 3 }}>
-                      <ConnectionCard title={analyticsDestination.title} icon={analyticsDestination.iconName || 'file'} brand={analyticsDestination.useBrand} theme={theme} />
-                    </div>
-                  )}
-                </>
-              )}
-
-              {/* FLOW 2: Despliegue Self Hosted */}
-              {(deploymentMode === 'ambas' || deploymentMode === 'self-hosted') && (
-                <>
-                  {showTitles && (
-                    <div style={{
-                      position: 'absolute',
-                      top: `${380 + selfHostedOffset}px`,
-                      left: '80px',
-                      zIndex: 2
-                    }}>
-                      <h2 style={{
-                        margin: 0,
-                        fontFamily: "'Poppins', 'Outfit', 'Inter', sans-serif",
-                        fontSize: '24px',
-                        fontWeight: 700,
-                        color: textColorSub,
-                        letterSpacing: '-0.2px'
-                      }}>
-                        {lang === 'en' ? 'Self Hosted Deployment' : 'Despliegue Self Hosted'}
-                      </h2>
-                    </div>
-                  )}
-
-                  <div style={{ position: 'absolute', top: `${430 + selfHostedOffset}px`, left: `${col1X}px`, width: `${flow2BoxWidth}px`, textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
-                    Customer Network
-                  </div>
-                  <div style={{ position: 'absolute', top: `${430 + selfHostedOffset}px`, left: `${col3X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
-                    Destination Network
-                  </div>
-                  {hasAnalytics && (
-                    <div style={{ position: 'absolute', top: `${430 + selfHostedOffset}px`, left: `${col4X}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '13px', fontWeight: 600, color: networkLabelColor, zIndex: 2 }}>
-                      Analytics Layer
-                    </div>
-                  )}
-
-                  <div style={{ position: 'absolute', top: `${450 + selfHostedOffset}px`, left: `${flow2BoxLeft}px`, width: `${flow2BoxWidth}px`, height: '120px', borderRadius: '12px', pointerEvents: 'none', zIndex: 1, ...glassStyle }} />
-                  <div style={{ position: 'absolute', top: `${485 + selfHostedOffset}px`, left: `${flow2OriginX}px`, zIndex: 3 }}>
-                    <ConnectionCard title={selectedOrigin.title} icon={selectedOrigin.iconName || 'file'} brand={selectedOrigin.useBrand} theme={theme} />
-                  </div>
-                  {originLabel && (
-                    <div style={{ position: 'absolute', top: `${545 + selfHostedOffset}px`, left: `${flow2OriginX}px`, width: '260px', textAlign: 'center', fontFamily: "'Poppins', 'Inter', sans-serif", fontSize: '14px', fontWeight: 700, color: textColorMain, zIndex: 3 }}>
-                      {originLabel}
-                    </div>
-                  )}
-
-                  <div style={{ position: 'absolute', top: `${485 + selfHostedOffset}px`, left: `${col2X}px`, zIndex: 3 }}>
-                    <CrestoneCard theme={theme} />
-                  </div>
-                  <div style={{ position: 'absolute', top: `${485 + selfHostedOffset}px`, left: `${col3X}px`, zIndex: 3 }}>
-                    <ConnectionCard title={selectedDestination.title} icon={selectedDestination.iconName || 'file'} brand={selectedDestination.useBrand} theme={theme} />
-                  </div>
-                  {hasAnalytics && analyticsDestination && (
-                    <div style={{ position: 'absolute', top: `${485 + selfHostedOffset}px`, left: `${col4X}px`, zIndex: 3 }}>
-                      <ConnectionCard title={analyticsDestination.title} icon={analyticsDestination.iconName || 'file'} brand={analyticsDestination.useBrand} theme={theme} />
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
+      </Drawer>
     </div>
   );
 }

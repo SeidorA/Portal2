@@ -11,6 +11,7 @@ import { jsPDF } from 'jspdf';
 import { useRouter } from 'next/navigation';
 import BookmarkButton from '@/app/components/BookmarkButton';
 import { useTranslation } from '@/app/context/LanguageContext';
+import PresentationViewer from '@/app/components/presentations/PresentationViewer';
 
 export default function PublicDocumentView({ params }: { params: Promise<{ id: string }> }) {
   const unwrappedParams = React.use(params);
@@ -581,14 +582,10 @@ export default function PublicDocumentView({ params }: { params: Promise<{ id: s
               })}
             </>
           ) : (
-            <div className="flex flex-col items-center justify-center flex-1 py-20 bg-white dark:bg-neutral-950 rounded-lg shadow-sm">
-              <h1 className="text-3xl font-bold font-poppins text-neutral-900 dark:text-neutral-100 mb-4 text-center">
-                {doc.title}
-              </h1>
-              <p className="text-neutral-500 text-center">
-                {t('documents.presentationsNotSupported', 'Las presentaciones interactivas aún no están soportadas en esta vista pública.')}
-              </p>
-            </div>
+            <PresentationViewer
+              content={doc.content}
+              title={doc.title}
+            />
           )}
         </div>
       </div>

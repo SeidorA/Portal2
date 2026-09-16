@@ -8,6 +8,7 @@ import ConnectionsDiagramTool from './crestone/ConnectionsDiagramTool';
 import DeploymentOptionsTool from './crestone/DeploymentOptionsTool';
 import CoverGeneratorTool from './crestone/CoverGeneratorTool';
 import DeckGeneratorTool from './crestone/DeckGeneratorTool';
+import OriginsDestinationsTool from './crestone/OriginsDestinationsTool';
 
 export type BrandbookPageType =
   | 'logo'
@@ -20,7 +21,10 @@ export type BrandbookPageType =
   | 'connections-diagram'
   | 'deployment-options'
   | 'generate-cover'
-  | 'generate-deck';
+  | 'generate-deck'
+  | 'origins-destinations'
+  | 'compatibility-list'
+  | 'origenes-destinos';
 
 interface BrandbookViewerProps {
   pageType: BrandbookPageType;
@@ -50,6 +54,9 @@ export default function BrandbookViewer({ pageType, product }: BrandbookViewerPr
   }
   if (pageType === 'generate-deck') {
     return <DeckGeneratorTool />;
+  }
+  if (pageType === 'origins-destinations' || pageType === 'compatibility-list' || pageType === 'origenes-destinos') {
+    return <OriginsDestinationsTool />;
   }
   const assets = product.assets || {};
   const [copiedHex, setCopiedHex] = useState<string | null>(null);

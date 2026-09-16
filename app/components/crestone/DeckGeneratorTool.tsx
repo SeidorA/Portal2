@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Brand, CaralIcon } from 'iconcaral2';
-import { Button } from 'caralstable';
+import { Button, Drawer } from 'caralstable';
+import Input from '@/app/components/Input';
+import Select from '@/app/components/Select';
 import fallbackData from '../connections.json';
 import { PDFDocument } from 'pdf-lib';
 
@@ -170,21 +172,22 @@ interface ConnectionCardProps {
   icon: string;
   brand: boolean;
   theme: 'light' | 'dark';
+  width?: string;
 }
 
-function ConnectionCard({ title, icon, brand, theme }: ConnectionCardProps) {
+function ConnectionCard({ title, icon, brand, theme, width = '260px' }: ConnectionCardProps) {
   const isDark = theme === 'dark';
   return (
     <div style={{
       backgroundColor: isDark ? '#1e293b' : '#ffffff',
-      border: isDark ? '2px solid #334155' : '2px solid #cbd5e1',
+      border: isDark ? '1.5px solid #334155' : '1.5px solid #cbd5e1',
       borderRadius: '8px',
       display: 'flex',
       alignItems: 'center',
       gap: '8px',
-      padding: '10px 14px',
-      width: '260px',
-      height: '50px',
+      padding: '7px 12px',
+      width: width,
+      height: '46px',
       boxSizing: 'border-box',
       overflow: 'hidden',
       position: 'relative',
@@ -194,22 +197,22 @@ function ConnectionCard({ title, icon, brand, theme }: ConnectionCardProps) {
         : '0 1px 3px rgba(0,0,0,0.05)',
     }}>
       <div style={{
-        width: '30px',
-        height: '30px',
+        width: '26px',
+        height: '26px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         flexShrink: 0
       }}>
         {brand ? (
-          <Brand name={icon as any} size={30} />
+          <Brand name={icon as any} size={24} />
         ) : (
-          <CaralIcon name={icon as any} size={30} color={isDark ? '#f1f5f9' : '#0c1d4a'} />
+          <CaralIcon name={icon as any} size={24} color={isDark ? '#f1f5f9' : '#0c1d4a'} />
         )}
       </div>
       <span style={{
         fontFamily: "'Poppins', 'Outfit', 'Inter', sans-serif",
-        fontSize: '13px',
+        fontSize: '12px',
         fontWeight: 500,
         color: isDark ? '#f1f5f9' : '#0c1d4a',
         whiteSpace: 'nowrap',
@@ -390,12 +393,99 @@ const getCoverLogosAndPositions = (bgId: string, selO: string[], selD: string[])
   return matchedItems;
 };
 
-export default function DeckGeneratorTool() {
-  const [activeTab, setActiveTab] = useState<'cover' | 'fullMatrix' | 'clientMatrix' | 'compatibility' | 'deployment'>('cover');
+const translations = {
+  es: {
+    title: 'Generador de Presentaciones',
+    settings: 'Configuración del Deck',
+    fullscreen: 'Pantalla Completa',
+    exitFullscreen: 'Salir de Pantalla Completa',
+    zoomIn: 'Zoom In',
+    zoomOut: 'Zoom Out',
+    resetZoom: 'Ajustar Vista',
+    generateDeck: 'Descargar Presentación (PDF)',
+    generatingPdf: 'Compilando PDF...',
+    loadingDeck: 'Cargando generador de presentaciones...',
+    clientProposal: 'Cliente / Propuesta Para',
+    clientPlaceholder: 'ej. Acme Corp / Banco',
+    environment: 'Entorno / URL',
+    deckTheme: 'Tema del Deck',
+    language: 'Idioma',
+    light: 'Claro (Light)',
+    dark: 'Oscuro (Dark)',
+    origins: 'Orígenes',
+    destinations: 'Destinos',
+    deploymentFocus: 'Foco Slide Despliegue',
+    tabCover: '1. Portada',
+    tabFullMatrix: '2. Matriz Completa',
+    tabClientMatrix: '3. Matriz Cliente',
+    tabCompatibility: '4. Compatibilidad',
+    tabDeployment: '5. Despliegue',
+    moreInfo: 'Más Información',
+    envLabel: 'Entorno',
+  },
+  en: {
+    title: 'Presentation Deck Generator',
+    settings: 'Deck Settings',
+    fullscreen: 'Fullscreen',
+    exitFullscreen: 'Exit Fullscreen',
+    zoomIn: 'Zoom In',
+    zoomOut: 'Zoom Out',
+    resetZoom: 'Reset Fit',
+    generateDeck: 'Download Deck (PDF)',
+    generatingPdf: 'Compiling PDF...',
+    loadingDeck: 'Loading deck generator...',
+    clientProposal: 'Client / Proposal For',
+    clientPlaceholder: 'e.g. Acme Corp',
+    environment: 'Environment / URL',
+    deckTheme: 'Deck Theme',
+    language: 'Language',
+    light: 'Light',
+    dark: 'Dark',
+    origins: 'Origins',
+    destinations: 'Destinations',
+    deploymentFocus: 'Deployment Slide Focus',
+    tabCover: '1. Cover',
+    tabFullMatrix: '2. Complete Matrix',
+    tabClientMatrix: '3. Client Matrix',
+    tabCompatibility: '4. Compatibility',
+    tabDeployment: '5. Deployment',
+    moreInfo: 'More Information',
+    envLabel: 'Environment',
+  }
+};
+
+export interface DeckGeneratorToolProps {
+  isEmbedded?: boolean;
+  activeTab?: 'cover' | 'fullMatrix' | 'clientMatrix' | 'compatibility' | 'deployment';
+  onActiveTabChange?: (tab: 'cover' | 'fullMatrix' | 'clientMatrix' | 'compatibility' | 'deployment') => void;
+  theme?: 'light' | 'dark';
+  isDrawerOpen?: boolean;
+  onDrawerOpenChange?: (open: boolean) => void;
+}
+
+export default function DeckGeneratorTool({
+  isEmbedded = false,
+  activeTab: propActiveTab,
+  onActiveTabChange,
+  theme: propTheme,
+  isDrawerOpen: propIsDrawerOpen,
+  onDrawerOpenChange,
+}: DeckGeneratorToolProps = {}) {
+  const [internalActiveTab, setInternalActiveTab] = useState<'cover' | 'fullMatrix' | 'clientMatrix' | 'compatibility' | 'deployment'>('cover');
+  const activeTab = propActiveTab !== undefined ? propActiveTab : internalActiveTab;
+  const setActiveTab = (tab: 'cover' | 'fullMatrix' | 'clientMatrix' | 'compatibility' | 'deployment') => {
+    setInternalActiveTab(tab);
+    onActiveTabChange?.(tab);
+  };
   const [customerName, setCustomerName] = useState('');
   const [environment, setEnvironment] = useState('crestone.seidoranalytics.com/');
-  const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState<'light' | 'dark'>(propTheme || 'light');
   const [lang, setLang] = useState<'es' | 'en'>('es');
+  const t = translations[lang];
+
+  useEffect(() => {
+    if (propTheme !== undefined) setTheme(propTheme);
+  }, [propTheme]);
 
   const [selectedOrigins, setSelectedOrigins] = useState<string[]>(['sap', 'sapo']);
   const [selectedDestinations, setSelectedDestinations] = useState<string[]>(['snowflake', 'fabric', 'azure', 'aws', 'bigquery', 'databricks']);
@@ -406,11 +496,32 @@ export default function DeckGeneratorTool() {
   const [loading, setLoading] = useState<boolean>(true);
   const [isGenerating, setIsGenerating] = useState(false);
 
-  // Scaler
-  const [scale, setScale] = useState(0.4);
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Drawer and Fullscreen
+  const [internalDrawerOpen, setInternalDrawerOpen] = useState(false);
+  const isDrawerOpen = propIsDrawerOpen !== undefined ? propIsDrawerOpen : internalDrawerOpen;
+  const setIsDrawerOpen = (val: boolean) => {
+    setInternalDrawerOpen(val);
+    onDrawerOpenChange?.(val);
+  };
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Slide element references for capturing
+  // 16:9 Canvas Dimensions
+  const canvasWidth = 1920;
+  const canvasHeight = 1080;
+
+  // Zoom & Pan states
+  const [zoom, setZoom] = useState(0.4);
+  const [zoomScale, setZoomScale] = useState({ x: 0.4, y: 0.4 });
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef({ x: 0, y: 0 });
+  const panStartRef = useRef({ x: 0, y: 0 });
+
+  const containerRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  // Slide element references for capturing PDF
   const coverRef = useRef<HTMLDivElement>(null);
   const fullMatrixRef = useRef<HTMLDivElement>(null);
   const clientMatrixRef = useRef<HTMLDivElement>(null);
@@ -422,6 +533,16 @@ export default function DeckGeneratorTool() {
   const bgSlideLight = '/img/crestone/ppt/bg.png';
   const bgDespliegueDark = '/img/crestone/ppt/bgdesplieguedark.png';
   const bgDespliegueLight = '/img/crestone/ppt/bgdespliegue.png';
+
+  // Calculate Auto-Fit Zoom based on Container Dimensions (16:9)
+  const calculateFitZoom = useCallback(() => {
+    if (!viewportRef.current) return { x: 0.5, y: 0.5, min: 0.5 };
+    const { clientWidth, clientHeight } = viewportRef.current;
+    if (clientWidth === 0 || clientHeight === 0) return { x: 0.5, y: 0.5, min: 0.5 };
+    const scaleX = clientWidth / canvasWidth;
+    const scaleY = clientHeight / canvasHeight;
+    return { x: scaleX, y: scaleY, min: Math.min(scaleX, scaleY) };
+  }, [canvasWidth, canvasHeight]);
 
   useEffect(() => {
     let active = true;
@@ -447,28 +568,103 @@ export default function DeckGeneratorTool() {
     };
   }, []);
 
+  // Resize observer to update zoom on mount and window change
   useEffect(() => {
     const handleResize = () => {
-      if (containerRef.current) {
-        const width = containerRef.current.clientWidth;
-        setScale(Math.min(width / 1920, 0.95));
-      }
+      const fit = calculateFitZoom();
+      setZoom(fit.min);
+      setZoomScale({ x: fit.x, y: fit.y });
+      setPan({ x: 0, y: 0 });
     };
-    handleResize();
-    const timer = setTimeout(handleResize, 150);
+
+    const timer = setTimeout(handleResize, 100);
     window.addEventListener('resize', handleResize);
+
+    const resizeObserver = new ResizeObserver(() => {
+      const fit = calculateFitZoom();
+      setZoom(fit.min);
+      setZoomScale({ x: fit.x, y: fit.y });
+    });
+
+    if (viewportRef.current) {
+      resizeObserver.observe(viewportRef.current);
+    }
+
     return () => {
       clearTimeout(timer);
       window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
     };
-  }, []);
+  }, [calculateFitZoom, loading]);
+
+  // Fullscreen change listener
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      setTimeout(() => {
+        const fit = calculateFitZoom();
+        setZoom(fit.min);
+        setZoomScale({ x: fit.x, y: fit.y });
+        setPan({ x: 0, y: 0 });
+      }, 150);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, [calculateFitZoom]);
+
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen?.().catch((err) => console.error(err));
+    } else {
+      document.exitFullscreen?.().catch((err) => console.error(err));
+    }
+  };
+
+  // Zoom controls
+  const handleZoomIn = () => setZoom((prev) => Math.min(prev + 0.08, 2.5));
+  const handleZoomOut = () => setZoom((prev) => Math.max(prev - 0.08, 0.2));
+
+  // Wheel zoom handling
+  const handleWheel = (e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+      e.preventDefault();
+      const delta = e.deltaY > 0 ? -0.05 : 0.05;
+      setZoom((prev) => Math.min(Math.max(prev + delta, 0.2), 2.5));
+    }
+  };
+
+  // Mouse pan handling
+  const handleMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    setIsDragging(true);
+    dragStartRef.current = { x: e.clientX, y: e.clientY };
+    panStartRef.current = { ...pan };
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return;
+    const dx = e.clientX - dragStartRef.current.x;
+    const dy = e.clientY - dragStartRef.current.y;
+    setPan({
+      x: panStartRef.current.x + dx,
+      y: panStartRef.current.y + dy
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
 
   if (loading || !data) {
     return (
-      <div className="flex flex-col items-center justify-center p-16 rounded-2xl bg-container border border-neutral-200 dark:border-neutral-800 my-6">
+      <div className="flex flex-col items-center justify-center p-16 rounded-2xl bg-container border border-neutral-200 dark:border-neutral-800 my-6 font-poppins">
         <div className="w-10 h-10 border-4 border-blue-500/20 border-t-info-main rounded-full animate-spin mb-4" />
         <p className="text-neutral-600 dark:text-neutral-400 font-medium">
-          {lang === 'en' ? 'Loading deck generator...' : 'Cargando generador de presentaciones...'}
+          {t.loadingDeck}
         </p>
       </div>
     );
@@ -625,380 +821,379 @@ export default function DeckGeneratorTool() {
   const renderPptColumnGrid = (listType: 'origins' | 'destinations') => {
     const list = listType === 'origins' ? data.origins : data.destinations;
     const isOrigins = listType === 'origins';
-    const numCols = isOrigins ? 1 : 2;
+    const selectedIds = isOrigins ? selectedOrigins : selectedDestinations;
+
+    const selectedItems = list.filter(item => selectedIds.includes(item.id));
+    const unselectedItems = list.filter(item => !selectedIds.includes(item.id));
+
+    const selectedCols = isOrigins ? 1 : 2;
+    const unselectedCols = isOrigins ? 2 : 3;
 
     return (
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: `repeat(${numCols}, 1fr)`,
-        gap: '20px 24px',
-        width: '100%',
-        alignContent: 'start',
-      }}>
-        {list.map((item) => {
-          const isSelected = isOrigins ? selectedOrigins.includes(item.id) : selectedDestinations.includes(item.id);
-          return (
-            <div
-              key={item.id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                padding: '10px 14px',
-                borderRadius: '16px',
-                backgroundColor: isSelected
-                  ? (isDark ? 'rgba(59, 130, 246, 0.25)' : 'rgba(59, 130, 246, 0.12)')
-                  : (isDark ? 'rgba(30, 41, 59, 0.45)' : 'rgba(255, 255, 255, 0.65)'),
-                border: isSelected
-                  ? '2px solid #3b82f6'
-                  : (isDark ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid rgba(0, 0, 0, 0.06)'),
-                opacity: isSelected ? 1 : 0.6,
-                transform: isSelected ? 'scale(1.02)' : 'none',
-              }}
-            >
-              <div style={{
-                width: '54px',
-                height: '54px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '12px',
-                backgroundColor: isDark ? 'rgba(15, 23, 42, 0.6)' : '#ffffff',
-                boxShadow: isDark ? '0 4px 12px rgba(0,0,0,0.3)' : '0 4px 10px rgba(0,0,0,0.05)'
-              }}>
-                {renderIconPpt(item, 38)}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', width: '100%' }}>
+        {/* 1. Selected Items (First positions: Icon + Bold Text + Highlight) */}
+        {selectedItems.length > 0 && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${selectedCols}, 1fr)`,
+            gap: '12px 16px',
+            width: '100%',
+          }}>
+            {selectedItems.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '14px',
+                  padding: '10px 16px',
+                  borderRadius: '14px',
+                  backgroundColor: isDark ? 'rgba(59, 130, 246, 0.22)' : 'rgba(59, 130, 246, 0.12)',
+                  border: '2px solid #3b82f6',
+                  boxShadow: isDark ? '0 4px 14px rgba(59, 130, 246, 0.25)' : '0 2px 8px rgba(59, 130, 246, 0.12)',
+                  height: '56px',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <div style={{
+                  width: '38px',
+                  height: '38px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '10px',
+                  backgroundColor: isDark ? 'rgba(15, 23, 42, 0.7)' : '#ffffff',
+                  boxShadow: isDark ? '0 2px 8px rgba(0,0,0,0.3)' : '0 2px 6px rgba(0,0,0,0.06)',
+                  flexShrink: 0
+                }}>
+                  {renderIconPpt(item, 28)}
+                </div>
+                <span style={{
+                  fontSize: '18px',
+                  fontWeight: 700,
+                  color: isDark ? '#ffffff' : '#0f172a',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}>
+                  {item.title}
+                </span>
               </div>
-              <span style={{
-                fontSize: '22px',
-                fontWeight: isSelected ? 700 : 500,
-                color: isDark ? '#ffffff' : '#1e293b',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
-              }}>
-                {item.title}
-              </span>
-            </div>
-          );
-        })}
+            ))}
+          </div>
+        )}
+
+        {/* Subtle separator if both exist */}
+        {selectedItems.length > 0 && unselectedItems.length > 0 && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            margin: '2px 0',
+            opacity: 0.7
+          }}>
+            <div style={{ flex: 1, height: '1px', backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.1)' }} />
+            <span style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              textTransform: 'uppercase',
+              letterSpacing: '1.2px',
+              color: isDark ? '#94a3b8' : '#64748b'
+            }}>
+              {lang === 'es' ? 'Otros Soportados' : 'Other Supported'}
+            </span>
+            <div style={{ flex: 1, height: '1px', backgroundColor: isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.1)' }} />
+          </div>
+        )}
+
+        {/* 2. Unselected Items (Text-only with improved, clean gap) */}
+        {unselectedItems.length > 0 && (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${unselectedCols}, 1fr)`,
+            gap: '8px 12px',
+            width: '100%',
+          }}>
+            {unselectedItems.map((item) => (
+              <div
+                key={item.id}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '8px 12px',
+                  borderRadius: '10px',
+                  backgroundColor: isDark ? 'rgba(30, 41, 59, 0.35)' : 'rgba(255, 255, 255, 0.5)',
+                  border: isDark ? '1px solid rgba(255, 255, 255, 0.07)' : '1px solid rgba(0, 0, 0, 0.06)',
+                  height: '38px',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <div style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  backgroundColor: isDark ? '#64748b' : '#94a3b8',
+                  flexShrink: 0
+                }} />
+                <span style={{
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  color: isDark ? '#cbd5e1' : '#475569',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}>
+                  {item.title}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   };
 
+  const slideTabs: { id: 'cover' | 'fullMatrix' | 'clientMatrix' | 'compatibility' | 'deployment'; label: string }[] = [
+    { id: 'cover', label: t.tabCover },
+    { id: 'fullMatrix', label: t.tabFullMatrix },
+    { id: 'clientMatrix', label: t.tabClientMatrix },
+    { id: 'compatibility', label: t.tabCompatibility },
+    { id: 'deployment', label: t.tabDeployment },
+  ];
+
   return (
-    <div className="w-full flex flex-col gap-8">
-      {/* Intro Header */}
-      <div className="bg-container border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h2 className="text-2xl font-bold font-poppins text-neutral-900 dark:text-white mb-2">
-              {lang === 'en' ? 'Presentation Deck Generator' : 'Generador de Presentaciones (Deck)'}
-            </h2>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-3xl leading-relaxed">
-              {lang === 'en'
-                ? 'Compile a client presentation PDF with customized cover, architecture diagrams, connections and deployment options integrated directly into the official Crestone deck template.'
-                : 'Compila un PDF de presentación para clientes con todos los diagramas integrados, portada personalizada y opciones de despliegue dentro del deck oficial de Crestone.'}
-            </p>
-          </div>
-          <Button
-            variant="info"
-            onClick={compilePresentationPDF}
-            disabled={isGenerating}
-            className="shrink-0 flex items-center gap-2"
-          >
-            <CaralIcon name="file" size={18} />
-            {isGenerating ? (lang === 'en' ? 'Compiling PDF...' : 'Compilando PDF...') : (lang === 'en' ? 'Generate Deck (PDF)' : 'Generar Presentación (PDF)')}
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-        {/* Controls Sidebar */}
-        <div className="xl:col-span-4 bg-container border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs flex flex-col gap-5 max-h-[85vh] overflow-y-auto">
-          {/* Customer Name */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
-              {lang === 'en' ? 'Client / Proposal For' : 'Cliente / Propuesta Para'}
-            </label>
-            <input
-              type="text"
-              placeholder={lang === 'en' ? 'e.g. Acme Corp' : 'ej. CMPC / Banco'}
-              value={customerName}
-              onChange={(e) => setCustomerName(e.target.value)}
-              className="w-full text-xs px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
-            />
-          </div>
-
-          {/* Environment */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
-              {lang === 'en' ? 'Environment / URL' : 'Entorno / URL'}
-            </label>
-            <input
-              type="text"
-              value={environment}
-              onChange={(e) => setEnvironment(e.target.value)}
-              className="w-full text-xs px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
-            />
-          </div>
-
-          {/* Theme */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
-              {lang === 'en' ? 'Deck Theme' : 'Tema de Presentación'}
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setTheme('light')}
-                className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all ${
-                  theme === 'light'
-                    ? 'bg-info-main/10 border-info-main text-info-main'
-                    : 'bg-neutral-50 dark:bg-neutral-800/60 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
-                }`}
-              >
-                ☀️ Claro (Light)
-              </button>
-              <button
-                type="button"
-                onClick={() => setTheme('dark')}
-                className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all ${
-                  theme === 'dark'
-                    ? 'bg-info-main/10 border-info-main text-info-main'
-                    : 'bg-neutral-50 dark:bg-neutral-800/60 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
-                }`}
-              >
-                🌙 Oscuro (Dark)
-              </button>
-            </div>
-          </div>
-
-          {/* Origins Checkboxes */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-              {lang === 'en' ? 'Origins' : 'Orígenes'} ({selectedOrigins.length})
-            </label>
-            <div className="grid grid-cols-1 gap-1 max-h-36 overflow-y-auto pr-1">
-              {data.origins.map(o => (
-                <label key={o.id} className="flex items-center gap-2 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 p-1 rounded cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedOrigins.includes(o.id)}
-                    onChange={() => handleToggleOrigin(o.id)}
-                    className="rounded accent-info-main"
-                  />
-                  <span>{o.title}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Destinations Checkboxes */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-              {lang === 'en' ? 'Destinations' : 'Destinos'} ({selectedDestinations.length})
-            </label>
-            <div className="grid grid-cols-1 gap-1 max-h-44 overflow-y-auto pr-1">
-              {data.destinations.map(d => (
-                <label key={d.id} className="flex items-center gap-2 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 p-1 rounded cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={selectedDestinations.includes(d.id)}
-                    onChange={() => handleToggleDestination(d.id)}
-                    className="rounded accent-info-main"
-                  />
-                  <span>{d.title}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          {/* Single Deployment Selectors */}
-          <div className="pt-3 border-t border-neutral-200 dark:border-neutral-800">
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-              {lang === 'en' ? 'Deployment Slide Focus' : 'Foco Slide Despliegue'}
-            </label>
-            <div className="space-y-2">
-              <select
-                value={deployOriginId}
-                onChange={(e) => setDeployOriginId(e.target.value)}
-                className="w-full text-xs px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
-              >
-                {data.origins.map(o => (
-                  <option key={o.id} value={o.id}>{o.title}</option>
-                ))}
-              </select>
-              <select
-                value={deployDestinationId}
-                onChange={(e) => setDeployDestinationId(e.target.value)}
-                className="w-full text-xs px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800"
-              >
-                {data.destinations.map(d => (
-                  <option key={d.id} value={d.id}>{d.title}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Preview Slides */}
-        <div className="xl:col-span-8 flex flex-col gap-4">
-          {/* Slide Navigation Tabs */}
-          <div className="flex gap-2 overflow-x-auto pb-1">
-            {[
-              { id: 'cover', label: '1. Portada' },
-              { id: 'fullMatrix', label: '2. Matriz Completa' },
-              { id: 'clientMatrix', label: '3. Matriz Cliente' },
-              { id: 'compatibility', label: '4. Compatibilidad' },
-              { id: 'deployment', label: '5. Despliegue' },
-            ].map(tab => (
-              <button
+    <div
+      ref={containerRef}
+      className={`w-full flex flex-col items-center justify-center font-poppins select-none ${
+        isEmbedded
+          ? 'w-full h-full relative overflow-hidden bg-transparent'
+          : isFullscreen
+            ? 'fixed inset-0 z-50 bg-neutral-900 p-3 overflow-hidden justify-between'
+            : 'relative my-auto gap-2'
+      }`}
+    >
+      {/* 1. Top Bar: Left = Editable Slide Tabs, Right = Gear (Settings) + Fullscreen */}
+      {!isEmbedded && (
+        <div className="w-full flex items-center justify-between z-10 shrink-0 px-1">
+          {/* Top Left: Slide Tabs Navigation */}
+          <div className="flex items-center gap-1.5 overflow-x-auto py-1 max-w-[70%]">
+            {slideTabs.map((tab) => (
+              <Button
                 key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all border ${
-                  activeTab === tab.id
-                    ? 'bg-info-main border-info-main text-white shadow-xs'
-                    : 'bg-container border-neutral-200 dark:border-neutral-700 text-neutral-600 dark:text-neutral-300 hover:border-info-main/40'
-                }`}
+                variant={activeTab === tab.id ? 'info' : 'light'}
+                onClick={() => setActiveTab(tab.id)}
+                className="text-xs shrink-0"
               >
                 {tab.label}
-              </button>
+              </Button>
             ))}
           </div>
 
-          {/* Slide Canvas Wrapper */}
-          <div
-            ref={containerRef}
-            className="w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-900 relative shadow-inner"
-            style={{ height: `${1080 * scale}px` }}
-          >
-            <div
-              className="absolute left-1/2 top-0 origin-top"
-              style={{
-                width: '1920px',
-                height: '1080px',
-                transform: `translateX(-50%) scale(${scale})`,
-              }}
+          {/* Top Right: Settings Button + Fullscreen Button */}
+          <div className="flex items-center gap-2">
+            {/* Settings Button (Opens Drawer) */}
+            <Button
+              variant="light"
+              onClick={() => setIsDrawerOpen(true)}
+              title={t.settings}
+              iconName="gear"
+              isIconButton
             >
-              {/* 1. Slide Portada */}
+              {t.settings}
+            </Button>
+
+            {/* Fullscreen / Pagina Entera Button */}
+            <Button
+              variant={isFullscreen ? 'info' : 'light'}
+              onClick={toggleFullscreen}
+              title={isFullscreen ? t.exitFullscreen : t.fullscreen}
+              iconName="screenView"
+              isIconButton
+            >
+              {isFullscreen ? t.exitFullscreen : t.fullscreen}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* 2. Central 16:9 Viewport Canvas: Fitted Perfectly by Height */}
+      <div
+        ref={viewportRef}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onWheel={handleWheel}
+        className={`relative overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing transition-colors ${
+          isEmbedded
+            ? 'w-full h-full bg-transparent border-none rounded-none shadow-none'
+            : `aspect-[16/9] max-w-full w-auto mx-auto rounded-[12px] border border-neutral-200 dark:border-neutral-800 shadow-[0px_0px_8px_0px_rgba(0,0,0,0.25)] bg-white dark:bg-[#07153a]/90 ${
+                isFullscreen
+                  ? 'h-[calc(100vh-125px)]'
+                  : 'h-[calc(100vh-270px)] min-h-[440px] max-h-[820px]'
+              }`
+        }`}
+      >
+        {/* Transform Scale Wrapper */}
+        <div
+          ref={canvasRef}
+          style={{
+            width: `${canvasWidth}px`,
+            height: `${canvasHeight}px`,
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: 'center center',
+            transition: isDragging ? 'none' : 'transform 0.15s ease-out',
+            position: 'relative',
+            overflow: 'hidden',
+            flexShrink: 0,
+            userSelect: 'none'
+          }}
+        >
+          {/* 1. Slide Portada */}
+          <div
+            ref={coverRef}
+            style={{
+              ...slideWrapperStyle,
+              position: activeTab === 'cover' ? 'relative' : 'absolute',
+              left: 0,
+              top: 0,
+              opacity: activeTab === 'cover' ? 1 : 0,
+              pointerEvents: activeTab === 'cover' ? 'auto' : 'none',
+              zIndex: activeTab === 'cover' ? 10 : 1,
+              backgroundImage: `url(${bgSlideUrl})`
+            }}
+          >
+            <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundImage: 'radial-gradient(rgba(99,102,241,0.1) 1px, transparent 1px)', backgroundSize: '24px 24px', pointerEvents: 'none' }} />
+            <img
+              src={`${bgPortadaPath}${selectedBg.file}`}
+              alt="Diagram"
+              style={{
+                position: 'absolute',
+                left: `${selectedBg.left}px`,
+                top: `${selectedBg.top}px`,
+                width: `${selectedBg.width}px`,
+                height: `${selectedBg.height}px`,
+                pointerEvents: 'none'
+              }}
+            />
+            <div style={{
+              position: 'absolute',
+              left: '152px',
+              top: '410px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              maxWidth: '800px',
+              pointerEvents: 'none'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+                <CrestoneLogo color1={isDark ? '#66B6FF' : '#0191FF'} color2={isDark ? '#ffffff' : '#1b2c6d'} size={70} />
+                <h1 style={{
+                  margin: 0,
+                  fontSize: '80px',
+                  fontWeight: 800,
+                  lineHeight: 1.07,
+                  letterSpacing: '-1.5px',
+                  background: 'linear-gradient(90deg, #0191FF, #66B6FF)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}>
+                  CRESTONE
+                </h1>
+              </div>
+              <p style={{
+                margin: 0,
+                fontSize: '32px',
+                fontWeight: 400,
+                color: isDark ? '#e2e8f0' : '#1e293b',
+                opacity: 0.9,
+                textShadow: isDark ? '0 2px 6px rgba(0, 0, 0, 0.3)' : '0 1px 4px rgba(255, 255, 255, 0.60)'
+              }}>
+                {customerName ? `${lang === 'en' ? 'Proposal for' : 'Propuesta para'} ${customerName}` : (lang === 'en' ? 'Integration Matrix & Supported Targets' : 'Matriz de Integración y Destinos Soportados')}
+              </p>
+            </div>
+
+            <div style={{
+              position: 'absolute',
+              bottom: '60px',
+              left: '100px',
+              right: '100px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              borderTop: isDark ? '1.5px solid rgba(255, 255, 255, 0.12)' : '1.5px solid rgba(15, 23, 42, 0.15)',
+              paddingTop: '20px',
+              pointerEvents: 'none'
+            }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: isDark ? '#94a3b8' : '#475569', letterSpacing: '1.5px' }}>
+                  {t.moreInfo}
+                </span>
+                <span style={{ fontSize: '16px', fontWeight: 700, color: isDark ? '#ffffff' : '#0f172a' }}>
+                  crestone.io
+                </span>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: isDark ? '#94a3b8' : '#475569', letterSpacing: '1.5px' }}>
+                  {t.envLabel}
+                </span>
+                <span style={{ fontSize: '16px', fontWeight: 700, color: '#10b981' }}>
+                  ● {environment.trim() || 'crestone.seidoranalytics.com/'}
+                </span>
+              </div>
+            </div>
+
+            {coverLogos.map((item) => (
               <div
-                ref={coverRef}
+                key={item.id}
                 style={{
-                  ...slideWrapperStyle,
-                  position: activeTab === 'cover' ? 'relative' : 'absolute',
-                  left: 0,
-                  top: 0,
-                  opacity: activeTab === 'cover' ? 1 : 0,
-                  pointerEvents: activeTab === 'cover' ? 'auto' : 'none',
-                  zIndex: activeTab === 'cover' ? 10 : 1,
-                  backgroundImage: `url(${bgSlideUrl})`
+                  position: 'absolute',
+                  left: `${item.left}px`,
+                  top: `${item.top}px`,
+                  width: '139px',
+                  height: '98px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               >
-                <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', backgroundImage: 'radial-gradient(rgba(99,102,241,0.1) 1px, transparent 1px)', backgroundSize: '24px 24px', pointerEvents: 'none' }} />
                 <img
-                  src={`${bgPortadaPath}${selectedBg.file}`}
-                  alt="Diagram"
-                  style={{
-                    position: 'absolute',
-                    left: `${selectedBg.left}px`,
-                    top: `${selectedBg.top}px`,
-                    width: `${selectedBg.width}px`,
-                    height: `${selectedBg.height}px`,
-                    pointerEvents: 'none'
-                  }}
+                  src={`${bgPortadaPath}${item.coverLogoId}.png`}
+                  alt="Logo"
+                  style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
                 />
-                <div style={{
-                  position: 'absolute',
-                  left: '152px',
-                  top: '410px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px',
-                  maxWidth: '800px',
-                  pointerEvents: 'none'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-                    <CrestoneLogo color1={isDark ? '#66B6FF' : '#0191FF'} color2={isDark ? '#ffffff' : '#1b2c6d'} size={70} />
-                    <h1 style={{
-                      margin: 0,
-                      fontSize: '80px',
-                      fontWeight: 800,
-                      lineHeight: 1.07,
-                      letterSpacing: '-1.5px',
-                      background: 'linear-gradient(90deg, #0191FF, #66B6FF)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent'
-                    }}>
-                      CRESTONE
-                    </h1>
-                  </div>
-                  <p style={{
-                    margin: 0,
-                    fontSize: '32px',
-                    fontWeight: 400,
-                    color: isDark ? '#e2e8f0' : '#1e293b',
-                    opacity: 0.9,
-                    textShadow: isDark ? '0 2px 6px rgba(0, 0, 0, 0.3)' : '0 1px 4px rgba(255, 255, 255, 0.60)'
-                  }}>
-                    {customerName ? `${lang === 'en' ? 'Proposal for' : 'Propuesta para'} ${customerName}` : (lang === 'en' ? 'Integration Matrix & Supported Targets' : 'Matriz de Integración y Destinos Soportados')}
-                  </p>
-                </div>
-
-                <div style={{
-                  position: 'absolute',
-                  bottom: '60px',
-                  left: '100px',
-                  right: '100px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-end',
-                  borderTop: isDark ? '1.5px solid rgba(255, 255, 255, 0.12)' : '1.5px solid rgba(15, 23, 42, 0.15)',
-                  paddingTop: '20px',
-                  pointerEvents: 'none'
-                }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: isDark ? '#94a3b8' : '#475569', letterSpacing: '1.5px' }}>
-                      {lang === 'es' ? 'Más Información' : 'More Information'}
-                    </span>
-                    <span style={{ fontSize: '16px', fontWeight: 700, color: isDark ? '#ffffff' : '#0f172a' }}>
-                      crestone.io
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: isDark ? '#94a3b8' : '#475569', letterSpacing: '1.5px' }}>
-                      {lang === 'es' ? 'Entorno' : 'Environment'}
-                    </span>
-                    <span style={{ fontSize: '16px', fontWeight: 700, color: '#10b981' }}>
-                      ● {environment.trim() || 'crestone.seidoranalytics.com/'}
-                    </span>
-                  </div>
-                </div>
-
-                {coverLogos.map((item) => (
-                  <div
-                    key={item.id}
-                    style={{
-                      position: 'absolute',
-                      left: `${item.left}px`,
-                      top: `${item.top}px`,
-                      width: '139px',
-                      height: '98px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <img
-                      src={`${bgPortadaPath}${item.coverLogoId}.png`}
-                      alt="Logo"
-                      style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
-                    />
-                  </div>
-                ))}
               </div>
+            ))}
+          </div>
 
-              {/* 2. Slide Matriz Completa */}
+          {/* 2. Slide Matriz Completa */}
+          {(() => {
+            const origMid = Math.ceil(data.origins.length / 2);
+            const origCol1 = data.origins.slice(0, origMid);
+            const origCol2 = data.origins.slice(origMid);
+
+            const destMid = Math.ceil(data.destinations.length / 2);
+            const destCol1 = data.destinations.slice(0, destMid);
+            const destCol2 = data.destinations.slice(destMid);
+
+            const itemRowHeight = 52;
+            const cardWidth = 260;
+            const origCol1X = 60;
+            const origCol2X = 350;
+            const destCol1X = 1310;
+            const destCol2X = 1600;
+
+            const origCol1Top = Math.max(140, (1080 - origCol1.length * itemRowHeight) / 2 + 30);
+            const origCol2Top = Math.max(140, (1080 - origCol2.length * itemRowHeight) / 2 + 30);
+            const destCol1Top = Math.max(140, (1080 - destCol1.length * itemRowHeight) / 2 + 30);
+            const destCol2Top = Math.max(140, (1080 - destCol2.length * itemRowHeight) / 2 + 30);
+
+            const hubCenterY = 540;
+            const hubInputX = 860;
+            const hubOutputX = 1060;
+
+            return (
               <div
                 ref={fullMatrixRef}
                 style={{
@@ -1012,57 +1207,274 @@ export default function DeckGeneratorTool() {
                   backgroundImage: `url(${bgSlideUrl})`
                 }}
               >
-                <div style={{ position: 'absolute', top: '70px', left: '100px', zIndex: 3 }}>
+                {/* Slide Header */}
+                <div style={{ position: 'absolute', top: '50px', left: '60px', zIndex: 3 }}>
                   <h1 style={{ margin: 0, fontSize: '42px', fontWeight: 800, color: textColorMain, letterSpacing: '-0.5px' }}>
                     {lang === 'en' ? 'Complete Integration Matrix' : 'Matriz de Integración Completa'}
                   </h1>
                 </div>
-                <div style={{ position: 'absolute', left: '360px', top: '50px', transform: 'scale(0.8)', transformOrigin: 'top left' }}>
-                  {/* Reuse matrix render */}
-                  <div style={{ width: '1200px', height: '1150px', position: 'relative' }}>
-                    {/* SVG lines */}
-                    <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-                      {data.origins.map((_, i) => {
-                        const cardY = 85 + (980 - (data.origins.length * 50 + (data.origins.length - 1) * 12)) / 2 + i * 62 + 25;
-                        const d = `M 320 ${cardY} C 410 ${cardY}, 440 575, 525 575`;
-                        return (
-                          <g key={`f-o-${i}`}>
-                            <path d={d} fill="none" stroke={isDark ? '#3b82f6' : '#cbd5e1'} strokeWidth="2.5" />
-                            <circle cx="320" cy={cardY} r="5" fill={isDark ? '#3b82f6' : '#cbd5e1'} />
-                          </g>
-                        );
-                      })}
-                      {data.destinations.map((_, j) => {
-                        const cardY = 85 + (980 - (data.destinations.length * 50 + (data.destinations.length - 1) * 12)) / 2 + j * 62 + 25;
-                        const d = `M 675 575 C 760 575, 790 ${cardY}, 880 ${cardY}`;
-                        return (
-                          <g key={`f-d-${j}`}>
-                            <path d={d} fill="none" stroke={isDark ? '#3b82f6' : '#cbd5e1'} strokeWidth="2.5" />
-                            <circle cx="880" cy={cardY} r="5" fill={isDark ? '#3b82f6' : '#cbd5e1'} />
-                          </g>
-                        );
-                      })}
-                    </svg>
-                    <div style={{ position: 'absolute', left: '60px', top: `${85 + (980 - (data.origins.length * 50 + (data.origins.length - 1) * 12)) / 2}px`, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {data.origins.map(o => (
-                        <ConnectionCard key={o.id} title={o.title} icon={o.iconName || 'file'} brand={o.useBrand} theme={theme} />
-                      ))}
-                    </div>
-                    <div style={{ position: 'absolute', left: '420px', top: '440px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <div style={{ width: '140px', height: '140px', borderRadius: '50%', background: 'linear-gradient(135deg, #07153a 0%, #1e1b4b 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid rgba(99, 102, 241, 0.6)' }}>
-                        <CrestoneLogo size={54} color1="#66B6FF" color2="#ffffff" />
-                      </div>
-                    </div>
-                    <div style={{ position: 'absolute', left: '880px', top: `${85 + (980 - (data.destinations.length * 50 + (data.destinations.length - 1) * 12)) / 2}px`, display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      {data.destinations.map(d => (
-                        <ConnectionCard key={d.id} title={d.title} icon={d.iconName || 'file'} brand={d.useBrand} theme={theme} />
-                      ))}
+
+                {/* SVG Connecting Paths */}
+                <svg
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none',
+                    zIndex: 1,
+                  }}
+                >
+                  <defs>
+                    <linearGradient id="deckOrigGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#66B6FF" stopOpacity={0.6} />
+                      <stop offset="100%" stopColor="#0191FF" stopOpacity={0.9} />
+                    </linearGradient>
+                    <linearGradient id="deckDestGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#0191FF" stopOpacity={0.9} />
+                      <stop offset="100%" stopColor="#66B6FF" stopOpacity={0.6} />
+                    </linearGradient>
+                  </defs>
+
+                  {/* 1. Origins Column 1 (Outer Left) -> Hub */}
+                  {origCol1.map((_, i) => {
+                    const cardY = origCol1Top + i * itemRowHeight + 23;
+                    const startX = origCol1X + cardWidth;
+                    const d = `M ${startX} ${cardY} C ${startX + 220} ${cardY}, ${hubInputX - 200} ${hubCenterY}, ${hubInputX} ${hubCenterY}`;
+                    return (
+                      <g key={`deck-orig-c1-${i}`}>
+                        <path d={d} fill="none" stroke="url(#deckOrigGrad)" strokeWidth="2.2" />
+                        <circle cx={startX} cy={cardY} r="4" fill="#0191FF" />
+                      </g>
+                    );
+                  })}
+
+                  {/* 2. Origins Column 2 (Inner Left) -> Hub */}
+                  {origCol2.map((_, i) => {
+                    const cardY = origCol2Top + i * itemRowHeight + 23;
+                    const startX = origCol2X + cardWidth;
+                    const d = `M ${startX} ${cardY} C ${startX + 120} ${cardY}, ${hubInputX - 120} ${hubCenterY}, ${hubInputX} ${hubCenterY}`;
+                    return (
+                      <g key={`deck-orig-c2-${i}`}>
+                        <path d={d} fill="none" stroke="url(#deckOrigGrad)" strokeWidth="2.2" />
+                        <circle cx={startX} cy={cardY} r="4" fill="#0191FF" />
+                      </g>
+                    );
+                  })}
+
+                  {/* 3. Hub -> Destinations Column 1 (Inner Right) */}
+                  {destCol1.map((_, j) => {
+                    const cardY = destCol1Top + j * itemRowHeight + 23;
+                    const targetX = destCol1X;
+                    const d = `M ${hubOutputX} ${hubCenterY} C ${hubOutputX + 120} ${hubCenterY}, ${targetX - 120} ${cardY}, ${targetX} ${cardY}`;
+                    return (
+                      <g key={`deck-dest-c1-${j}`}>
+                        <path d={d} fill="none" stroke="url(#deckDestGrad)" strokeWidth="2.2" />
+                        <circle cx={targetX} cy={cardY} r="4" fill="#0191FF" />
+                      </g>
+                    );
+                  })}
+
+                  {/* 4. Hub -> Destinations Column 2 (Outer Right) */}
+                  {destCol2.map((_, j) => {
+                    const cardY = destCol2Top + j * itemRowHeight + 23;
+                    const targetX = destCol2X;
+                    const d = `M ${hubOutputX} ${hubCenterY} C ${hubOutputX + 220} ${hubCenterY}, ${targetX - 200} ${cardY}, ${targetX} ${cardY}`;
+                    return (
+                      <g key={`deck-dest-c2-${j}`}>
+                        <path d={d} fill="none" stroke="url(#deckDestGrad)" strokeWidth="2.2" />
+                        <circle cx={targetX} cy={cardY} r="4" fill="#0191FF" />
+                      </g>
+                    );
+                  })}
+
+                  {/* Hub Junction Pins */}
+                  <circle cx={hubInputX} cy={hubCenterY} r="5" fill="#0191FF" />
+                  <circle cx={hubOutputX} cy={hubCenterY} r="5" fill="#0191FF" />
+                </svg>
+
+                {/* Column 1: Origins Sub-col 1 (Outer Left) */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${origCol1X}px`,
+                    top: `${origCol1Top}px`,
+                    width: `${cardWidth}px`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    zIndex: 2,
+                  }}
+                >
+                  {origCol1.map((item) => (
+                    <ConnectionCard
+                      key={item.id}
+                      title={item.title}
+                      icon={item.iconName || 'file'}
+                      brand={item.useBrand}
+                      theme={theme}
+                      width={`${cardWidth}px`}
+                    />
+                  ))}
+                </div>
+
+                {/* Column 2: Origins Sub-col 2 (Inner Left) */}
+                {origCol2.length > 0 && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: `${origCol2X}px`,
+                      top: `${origCol2Top}px`,
+                      width: `${cardWidth}px`,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                      zIndex: 2,
+                    }}
+                  >
+                    {origCol2.map((item) => (
+                      <ConnectionCard
+                        key={item.id}
+                        title={item.title}
+                        icon={item.iconName || 'file'}
+                        brand={item.useBrand}
+                        theme={theme}
+                        width={`${cardWidth}px`}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Center: Crestone Core Hub */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: '860px',
+                    top: '440px',
+                    width: '200px',
+                    height: '200px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 2,
+                  }}
+                >
+                  {/* Outer Dashed Orbit */}
+                  <div
+                    style={{
+                      width: '180px',
+                      height: '180px',
+                      borderRadius: '50%',
+                      border: isDark ? '3px dashed rgba(1, 145, 255, 0.4)' : '3px dashed #cbd5e1',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      position: 'relative',
+                    }}
+                  >
+                    {/* Inner Dark Badge */}
+                    <div
+                      style={{
+                        width: '136px',
+                        height: '136px',
+                        borderRadius: '50%',
+                        background: 'linear-gradient(135deg, #07153a 0%, #1e1b4b 100%)',
+                        boxShadow: isDark ? '0 0 35px rgba(1, 145, 255, 0.5)' : '0 10px 25px rgba(1, 145, 255, 0.25)',
+                        border: '2px solid rgba(1, 145, 255, 0.7)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      <CrestoneLogo size={60} color1="#66B6FF" color2="#ffffff" />
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* 3. Slide Matriz Cliente */}
+                {/* Column 3: Destinations Sub-col 1 (Inner Right) */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${destCol1X}px`,
+                    top: `${destCol1Top}px`,
+                    width: `${cardWidth}px`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '6px',
+                    zIndex: 2,
+                  }}
+                >
+                  {destCol1.map((item) => (
+                    <ConnectionCard
+                      key={item.id}
+                      title={item.title}
+                      icon={item.iconName || 'file'}
+                      brand={item.useBrand}
+                      theme={theme}
+                      width={`${cardWidth}px`}
+                    />
+                  ))}
+                </div>
+
+                {/* Column 4: Destinations Sub-col 2 (Outer Right) */}
+                {destCol2.length > 0 && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      left: `${destCol2X}px`,
+                      top: `${destCol2Top}px`,
+                      width: `${cardWidth}px`,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '6px',
+                      zIndex: 2,
+                    }}
+                  >
+                    {destCol2.map((item) => (
+                      <ConnectionCard
+                        key={item.id}
+                        title={item.title}
+                        icon={item.iconName || 'file'}
+                        brand={item.useBrand}
+                        theme={theme}
+                        width={`${cardWidth}px`}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
+          {/* 3. Slide Matriz Cliente */}
+          {(() => {
+            const originsList = activeOrigins.slice(0, 4);
+            const destinationsList = activeDestinations.slice(0, 4);
+
+            const cardWidth = 440;
+            const cardHeight = 110;
+            const cardGap = 24;
+            const stepY = cardHeight + cardGap; // 134px
+
+            const origColX = 140;
+            const destColX = 1920 - 140 - cardWidth; // 1340px
+            const hubCenterX = 960;
+            const hubCenterY = 540;
+            const hubSize = 230;
+
+            const hubLeft = hubCenterX - hubSize / 2; // 845px
+            const hubTop = hubCenterY - hubSize / 2; // 425px
+            const hubInputX = hubLeft; // 845px
+            const hubOutputX = hubLeft + hubSize; // 1075px
+
+            const totalOriginsHeight = originsList.length * cardHeight + (originsList.length - 1) * cardGap;
+            const origTop = Math.max(160, hubCenterY - totalOriginsHeight / 2);
+
+            const totalDestHeight = destinationsList.length * cardHeight + (destinationsList.length - 1) * cardGap;
+            const destTop = Math.max(160, hubCenterY - totalDestHeight / 2);
+
+            return (
               <div
                 ref={clientMatrixRef}
                 style={{
@@ -1076,156 +1488,463 @@ export default function DeckGeneratorTool() {
                   backgroundImage: `url(${bgSlideUrl})`
                 }}
               >
-                <div style={{ position: 'absolute', top: '70px', left: '100px', zIndex: 3 }}>
+                {/* Header Title */}
+                <div style={{ position: 'absolute', top: '60px', left: '100px', zIndex: 3 }}>
                   <h1 style={{ margin: 0, fontSize: '42px', fontWeight: 800, color: textColorMain, letterSpacing: '-0.5px' }}>
-                    {customerName ? `${lang === 'en' ? 'Integration Matrix for' : 'Matriz de Integración para'} ${customerName}` : (lang === 'en' ? 'Selected Integration Matrix' : 'Matriz de Integración Seleccionada')}
+                    {customerName
+                      ? `${lang === 'en' ? 'Integration Matrix for' : 'Matriz de Integración para'} ${customerName}`
+                      : (lang === 'en' ? 'Selected Integration Matrix' : 'Matriz de Integración Seleccionada')}
                   </h1>
                 </div>
-                <div style={{ position: 'absolute', left: '160px', top: '160px' }}>
-                  <div style={{ width: '1600px', height: '800px', position: 'relative' }}>
-                    {/* SVG client curves */}
-                    <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
-                      {activeOrigins.map((_, i) => {
-                        const cardY = 80 + i * 160 + 55;
-                        const d = `M 440 ${cardY} C 530 ${cardY}, 560 400, 650 400`;
-                        return (
-                          <g key={`c-o-${i}`}>
-                            <path d={d} fill="none" stroke={isDark ? '#3b82f6' : '#cbd5e1'} strokeWidth="3.5" />
-                            <circle cx="440" cy={cardY} r="6" fill={isDark ? '#3b82f6' : '#cbd5e1'} />
-                          </g>
-                        );
-                      })}
-                      {activeDestinations.slice(0, 4).map((_, j) => {
-                        const cardY = 80 + j * 160 + 55;
-                        const d = `M 950 400 C 1040 400, 1070 ${cardY}, 1160 ${cardY}`;
-                        return (
-                          <g key={`c-d-${j}`}>
-                            <path d={d} fill="none" stroke={isDark ? '#3b82f6' : '#cbd5e1'} strokeWidth="3.5" />
-                            <circle cx="1160" cy={cardY} r="6" fill={isDark ? '#3b82f6' : '#cbd5e1'} />
-                          </g>
-                        );
-                      })}
-                    </svg>
-                    <div style={{ position: 'absolute', left: '0px', top: '80px', display: 'flex', flexDirection: 'column', gap: '50px' }}>
-                      {activeOrigins.map(o => (
-                        <ClientConnectionCard key={o.id} title={o.title} icon={o.iconName || 'file'} brand={o.useBrand} theme={theme} />
-                      ))}
-                    </div>
-                    <div style={{ position: 'absolute', left: '580px', top: '250px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                      <div style={{ width: '230px', height: '230px', borderRadius: '50%', background: 'linear-gradient(135deg, #07153a 0%, #1e1b4b 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '3px solid rgba(99, 102, 241, 0.6)' }}>
-                        <CrestoneLogo size={90} color1="#66B6FF" color2="#ffffff" />
-                      </div>
-                    </div>
-                    <div style={{ position: 'absolute', left: '1160px', top: '80px', display: 'flex', flexDirection: 'column', gap: '50px' }}>
-                      {activeDestinations.slice(0, 4).map(d => (
-                        <ClientConnectionCard key={d.id} title={d.title} icon={d.iconName || 'file'} brand={d.useBrand} theme={theme} />
-                      ))}
-                    </div>
+
+                {/* SVG Connecting Curves */}
+                <svg
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    pointerEvents: 'none',
+                    zIndex: 1,
+                  }}
+                >
+                  <defs>
+                    <linearGradient id="clientOrigGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#66B6FF" stopOpacity={0.6} />
+                      <stop offset="100%" stopColor="#0191FF" stopOpacity={0.9} />
+                    </linearGradient>
+                    <linearGradient id="clientDestGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                      <stop offset="0%" stopColor="#0191FF" stopOpacity={0.9} />
+                      <stop offset="100%" stopColor="#66B6FF" stopOpacity={0.6} />
+                    </linearGradient>
+                  </defs>
+
+                  {/* Left Curves: Origins -> Hub */}
+                  {originsList.map((_, i) => {
+                    const cardY = origTop + i * stepY + cardHeight / 2;
+                    const startX = origColX + cardWidth;
+                    const d = `M ${startX} ${cardY} C ${startX + 140} ${cardY}, ${hubInputX - 140} ${hubCenterY}, ${hubInputX} ${hubCenterY}`;
+                    return (
+                      <g key={`c-o-${i}`}>
+                        <path d={d} fill="none" stroke="url(#clientOrigGrad)" strokeWidth="3.5" />
+                        <circle cx={startX} cy={cardY} r="6" fill="#0191FF" />
+                      </g>
+                    );
+                  })}
+
+                  {/* Right Curves: Hub -> Destinations */}
+                  {destinationsList.map((_, j) => {
+                    const cardY = destTop + j * stepY + cardHeight / 2;
+                    const targetX = destColX;
+                    const d = `M ${hubOutputX} ${hubCenterY} C ${hubOutputX + 140} ${hubCenterY}, ${targetX - 140} ${cardY}, ${targetX} ${cardY}`;
+                    return (
+                      <g key={`c-d-${j}`}>
+                        <path d={d} fill="none" stroke="url(#clientDestGrad)" strokeWidth="3.5" />
+                        <circle cx={targetX} cy={cardY} r="6" fill="#0191FF" />
+                      </g>
+                    );
+                  })}
+
+                  {/* Hub Junction Pins */}
+                  <circle cx={hubInputX} cy={hubCenterY} r="7" fill="#0191FF" />
+                  <circle cx={hubOutputX} cy={hubCenterY} r="7" fill="#0191FF" />
+                </svg>
+
+                {/* Left: Origins Column */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${origColX}px`,
+                    top: `${origTop}px`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: `${cardGap}px`,
+                    zIndex: 2,
+                  }}
+                >
+                  {originsList.map(o => (
+                    <ClientConnectionCard key={o.id} title={o.title} icon={o.iconName || 'file'} brand={o.useBrand} theme={theme} />
+                  ))}
+                </div>
+
+                {/* Center: Crestone Core Hub */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${hubLeft}px`,
+                    top: `${hubTop}px`,
+                    width: `${hubSize}px`,
+                    height: `${hubSize}px`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    zIndex: 2,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${hubSize}px`,
+                      height: `${hubSize}px`,
+                      borderRadius: '50%',
+                      background: 'linear-gradient(135deg, #07153a 0%, #1e1b4b 100%)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '3px solid rgba(99, 102, 241, 0.6)',
+                      boxShadow: isDark
+                        ? '0 0 50px rgba(1, 145, 255, 0.5), 0 20px 40px rgba(0, 0, 0, 0.6)'
+                        : '0 15px 35px rgba(1, 145, 255, 0.3), 0 5px 15px rgba(0, 0, 0, 0.1)',
+                    }}
+                  >
+                    <CrestoneLogo size={90} color1="#66B6FF" color2="#ffffff" />
                   </div>
+                </div>
+
+                {/* Right: Destinations Column */}
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: `${destColX}px`,
+                    top: `${destTop}px`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: `${cardGap}px`,
+                    zIndex: 2,
+                  }}
+                >
+                  {destinationsList.map(d => (
+                    <ClientConnectionCard key={d.id} title={d.title} icon={d.iconName || 'file'} brand={d.useBrand} theme={theme} />
+                  ))}
                 </div>
               </div>
+            );
+          })()}
 
-              {/* 4. Slide Compatibilidad */}
-              <div
-                ref={compatibilityRef}
+          {/* 4. Slide Compatibilidad */}
+          <div
+            ref={compatibilityRef}
+            style={{
+              ...slideWrapperStyle,
+              position: activeTab === 'compatibility' ? 'relative' : 'absolute',
+              left: 0,
+              top: 0,
+              opacity: activeTab === 'compatibility' ? 1 : 0,
+              pointerEvents: activeTab === 'compatibility' ? 'auto' : 'none',
+              zIndex: activeTab === 'compatibility' ? 10 : 1,
+              backgroundImage: `url(${bgSlideUrl})`
+            }}
+          >
+            <div style={{ position: 'absolute', top: '70px', left: '100px', zIndex: 3 }}>
+              <h1 style={{ margin: 0, fontSize: '42px', fontWeight: 800, color: textColorMain, letterSpacing: '-0.5px' }}>
+                {lang === 'en' ? 'Supported Compatibility & Integrations' : 'Ecosistema de Compatibilidad'}
+              </h1>
+            </div>
+            <div style={{ position: 'absolute', top: '160px', left: '100px', right: '100px', display: 'flex', gap: '40px' }}>
+              <div style={{ flex: 1, ...glassStyle, borderRadius: '24px', padding: '36px' }}>
+                <h2 style={{ fontSize: '32px', fontWeight: 700, color: isDark ? '#ffffff' : '#2d3748', margin: '0 0 20px 0', borderBottom: '1px solid #cbd5e1', paddingBottom: '10px' }}>
+                  {lang === 'en' ? 'Origins' : 'Orígenes'}
+                </h2>
+                {renderPptColumnGrid('origins')}
+              </div>
+              <div style={{ flex: 2, ...glassStyle, borderRadius: '24px', padding: '36px' }}>
+                <h2 style={{ fontSize: '32px', fontWeight: 700, color: isDark ? '#ffffff' : '#2d3748', margin: '0 0 20px 0', borderBottom: '1px solid #cbd5e1', paddingBottom: '10px' }}>
+                  {lang === 'en' ? 'Destinations' : 'Destinos'}
+                </h2>
+                {renderPptColumnGrid('destinations')}
+              </div>
+            </div>
+          </div>
+
+          {/* 5. Slide Despliegue */}
+          <div
+            ref={deploymentRef}
+            style={{
+              ...slideWrapperStyle,
+              position: activeTab === 'deployment' ? 'relative' : 'absolute',
+              left: 0,
+              top: 0,
+              opacity: activeTab === 'deployment' ? 1 : 0,
+              pointerEvents: activeTab === 'deployment' ? 'auto' : 'none',
+              zIndex: activeTab === 'deployment' ? 10 : 1,
+              backgroundColor: isDark ? '#0f172a' : '#ffffff'
+            }}
+          >
+            <div style={{ width: '1280px', height: '720px', position: 'absolute', top: 0, left: 0, transform: 'scale(1.5)', transformOrigin: 'top left', backgroundImage: `url(${isDark ? bgDespliegueDark : bgDespliegueLight})`, backgroundSize: '100% 100%' }}>
+              {/* SVG Connecting Arrows Layer */}
+              <svg
                 style={{
-                  ...slideWrapperStyle,
-                  position: activeTab === 'compatibility' ? 'relative' : 'absolute',
-                  left: 0,
+                  position: 'absolute',
                   top: 0,
-                  opacity: activeTab === 'compatibility' ? 1 : 0,
-                  pointerEvents: activeTab === 'compatibility' ? 'auto' : 'none',
-                  zIndex: activeTab === 'compatibility' ? 10 : 1,
-                  backgroundImage: `url(${bgSlideUrl})`
+                  left: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 2,
+                  pointerEvents: 'none'
                 }}
               >
-                <div style={{ position: 'absolute', top: '70px', left: '100px', zIndex: 3 }}>
-                  <h1 style={{ margin: 0, fontSize: '42px', fontWeight: 800, color: textColorMain, letterSpacing: '-0.5px' }}>
-                    {lang === 'en' ? 'Supported Compatibility & Integrations' : 'Ecosistema de Compatibilidad'}
-                  </h1>
-                </div>
-                <div style={{ position: 'absolute', top: '160px', left: '100px', right: '100px', display: 'flex', gap: '40px' }}>
-                  <div style={{ flex: 1, ...glassStyle, borderRadius: '24px', padding: '36px' }}>
-                    <h2 style={{ fontSize: '32px', fontWeight: 700, color: isDark ? '#ffffff' : '#2d3748', margin: '0 0 20px 0', borderBottom: '1px solid #cbd5e1', paddingBottom: '10px' }}>
-                      {lang === 'en' ? 'Origins' : 'Orígenes'}
-                    </h2>
-                    {renderPptColumnGrid('origins')}
-                  </div>
-                  <div style={{ flex: 2, ...glassStyle, borderRadius: '24px', padding: '36px' }}>
-                    <h2 style={{ fontSize: '32px', fontWeight: 700, color: isDark ? '#ffffff' : '#2d3748', margin: '0 0 20px 0', borderBottom: '1px solid #cbd5e1', paddingBottom: '10px' }}>
-                      {lang === 'en' ? 'Destinations' : 'Destinos'}
-                    </h2>
-                    {renderPptColumnGrid('destinations')}
-                  </div>
-                </div>
+                <defs>
+                  <marker
+                    id="arrowheadDeckDeployment"
+                    viewBox="0 0 10 10"
+                    refX="6"
+                    refY="5"
+                    markerWidth="6"
+                    markerHeight="6"
+                    orient="auto-start-reverse"
+                  >
+                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill={arrowColor} />
+                  </marker>
+                </defs>
+
+                {/* Flow 1: Cloud Deployment Arrows */}
+                <g>
+                  <circle cx={120 + 260} cy={245} r={5} fill={arrowColor} />
+                  <line x1={120 + 260} y1={245} x2={510 - 6} y2={245} stroke={arrowColor} strokeWidth={2.5} markerEnd="url(#arrowheadDeckDeployment)" />
+                </g>
+                <g>
+                  <circle cx={510 + 260} cy={245} r={5} fill={arrowColor} />
+                  <line x1={510 + 260} y1={245} x2={900 - 6} y2={245} stroke={arrowColor} strokeWidth={2.5} markerEnd="url(#arrowheadDeckDeployment)" />
+                </g>
+
+                {/* Flow 2: Self Hosted Deployment Arrows */}
+                <g>
+                  <circle cx={150 + 260} cy={510} r={5} fill={arrowColor} />
+                  <line x1={150 + 260} y1={510} x2={480 - 6} y2={510} stroke={arrowColor} strokeWidth={2.5} markerEnd="url(#arrowheadDeckDeployment)" />
+                </g>
+                <g>
+                  <circle cx={480 + 260} cy={510} r={5} fill={arrowColor} />
+                  <line x1={480 + 260} y1={510} x2={900 - 6} y2={510} stroke={arrowColor} strokeWidth={2.5} markerEnd="url(#arrowheadDeckDeployment)" />
+                </g>
+              </svg>
+
+              <div style={{ position: 'absolute', top: '60px', left: '80px', zIndex: 2 }}>
+                <h1 style={{ margin: 0, fontSize: '40px', fontWeight: 800, color: textColorMain }}>
+                  {lang === 'en' ? 'Deployment Options' : 'Opciones de Despliegue'}
+                </h1>
+              </div>
+              {/* Flow 1 */}
+              <div style={{ position: 'absolute', top: '135px', left: '80px', zIndex: 2 }}>
+                <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: textColorSub }}>
+                  {lang === 'en' ? 'Cloud Deployment' : 'Despliegue Cloud'}
+                </h2>
+              </div>
+              <div style={{ position: 'absolute', top: '185px', left: '120px', width: '260px', textAlign: 'center', fontSize: '13px', fontWeight: 600, color: networkLabelColor }}>Customer Network</div>
+              <div style={{ position: 'absolute', top: '185px', left: '510px', width: '260px', textAlign: 'center', fontSize: '13px', fontWeight: 600, color: networkLabelColor }}>Crestone Network</div>
+              <div style={{ position: 'absolute', top: '185px', left: '900px', width: '260px', textAlign: 'center', fontSize: '13px', fontWeight: 600, color: networkLabelColor }}>Destination Network</div>
+
+              <div style={{ position: 'absolute', top: '220px', left: '120px', zIndex: 4 }}>
+                <ConnectionCard title={deployOrigin.title} icon={deployOrigin.iconName || 'file'} brand={deployOrigin.useBrand} theme={theme} />
+              </div>
+              <div style={{ position: 'absolute', top: '175px', left: '460px', width: '360px', height: '140px', borderRadius: '12px', zIndex: 1, ...glassStyle }} />
+              <div style={{ position: 'absolute', top: '220px', left: '510px', zIndex: 4 }}>
+                <CrestoneCard theme={theme} />
+              </div>
+              <div style={{ position: 'absolute', top: '220px', left: '900px', zIndex: 4 }}>
+                <ConnectionCard title={deployDestination.title} icon={deployDestination.iconName || 'file'} brand={deployDestination.useBrand} theme={theme} />
               </div>
 
-              {/* 5. Slide Despliegue */}
-              <div
-                ref={deploymentRef}
-                style={{
-                  ...slideWrapperStyle,
-                  position: activeTab === 'deployment' ? 'relative' : 'absolute',
-                  left: 0,
-                  top: 0,
-                  opacity: activeTab === 'deployment' ? 1 : 0,
-                  pointerEvents: activeTab === 'deployment' ? 'auto' : 'none',
-                  zIndex: activeTab === 'deployment' ? 10 : 1,
-                  backgroundColor: isDark ? '#0f172a' : '#ffffff'
-                }}
-              >
-                <div style={{ width: '1280px', height: '720px', position: 'absolute', top: 0, left: 0, transform: 'scale(1.5)', transformOrigin: 'top left', backgroundImage: `url(${isDark ? bgDespliegueDark : bgDespliegueLight})`, backgroundSize: '100% 100%' }}>
-                  <div style={{ position: 'absolute', top: '60px', left: '80px', zIndex: 2 }}>
-                    <h1 style={{ margin: 0, fontSize: '40px', fontWeight: 800, color: textColorMain }}>
-                      {lang === 'en' ? 'Deployment Options' : 'Opciones de Despliegue'}
-                    </h1>
-                  </div>
-                  {/* Flow 1 */}
-                  <div style={{ position: 'absolute', top: '135px', left: '80px', zIndex: 2 }}>
-                    <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: textColorSub }}>
-                      {lang === 'en' ? 'Cloud Deployment' : 'Despliegue Cloud'}
-                    </h2>
-                  </div>
-                  <div style={{ position: 'absolute', top: '185px', left: '120px', width: '260px', textAlign: 'center', fontSize: '13px', fontWeight: 600, color: networkLabelColor }}>Customer Network</div>
-                  <div style={{ position: 'absolute', top: '185px', left: '510px', width: '260px', textAlign: 'center', fontSize: '13px', fontWeight: 600, color: networkLabelColor }}>Crestone Network</div>
-                  <div style={{ position: 'absolute', top: '185px', left: '900px', width: '260px', textAlign: 'center', fontSize: '13px', fontWeight: 600, color: networkLabelColor }}>Destination Network</div>
+              {/* Flow 2 */}
+              <div style={{ position: 'absolute', top: '380px', left: '80px', zIndex: 2 }}>
+                <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: textColorSub }}>
+                  {lang === 'en' ? 'Self Hosted Deployment' : 'Despliegue Self Hosted'}
+                </h2>
+              </div>
+              <div style={{ position: 'absolute', top: '430px', left: '120px', width: '650px', textAlign: 'center', fontSize: '13px', fontWeight: 600, color: networkLabelColor }}>Customer Network</div>
+              <div style={{ position: 'absolute', top: '430px', left: '900px', width: '260px', textAlign: 'center', fontSize: '13px', fontWeight: 600, color: networkLabelColor }}>Destination Network</div>
 
-                  <div style={{ position: 'absolute', top: '220px', left: '120px', zIndex: 4 }}>
-                    <ConnectionCard title={deployOrigin.title} icon={deployOrigin.iconName || 'file'} brand={deployOrigin.useBrand} theme={theme} />
-                  </div>
-                  <div style={{ position: 'absolute', top: '175px', left: '460px', width: '360px', height: '140px', borderRadius: '12px', zIndex: 1, ...glassStyle }} />
-                  <div style={{ position: 'absolute', top: '220px', left: '510px', zIndex: 4 }}>
-                    <CrestoneCard theme={theme} />
-                  </div>
-                  <div style={{ position: 'absolute', top: '220px', left: '900px', zIndex: 4 }}>
-                    <ConnectionCard title={deployDestination.title} icon={deployDestination.iconName || 'file'} brand={deployDestination.useBrand} theme={theme} />
-                  </div>
-
-                  {/* Flow 2 */}
-                  <div style={{ position: 'absolute', top: '380px', left: '80px', zIndex: 2 }}>
-                    <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 700, color: textColorSub }}>
-                      {lang === 'en' ? 'Self Hosted Deployment' : 'Despliegue Self Hosted'}
-                    </h2>
-                  </div>
-                  <div style={{ position: 'absolute', top: '430px', left: '120px', width: '650px', textAlign: 'center', fontSize: '13px', fontWeight: 600, color: networkLabelColor }}>Customer Network</div>
-                  <div style={{ position: 'absolute', top: '430px', left: '900px', width: '260px', textAlign: 'center', fontSize: '13px', fontWeight: 600, color: networkLabelColor }}>Destination Network</div>
-
-                  <div style={{ position: 'absolute', top: '450px', left: '120px', width: '650px', height: '120px', borderRadius: '12px', zIndex: 1, ...glassStyle }} />
-                  <div style={{ position: 'absolute', top: '485px', left: '150px', zIndex: 4 }}>
-                    <ConnectionCard title={deployOrigin.title} icon={deployOrigin.iconName || 'file'} brand={deployOrigin.useBrand} theme={theme} />
-                  </div>
-                  <div style={{ position: 'absolute', top: '485px', left: '480px', zIndex: 4 }}>
-                    <CrestoneCard theme={theme} />
-                  </div>
-                  <div style={{ position: 'absolute', top: '485px', left: '900px', zIndex: 4 }}>
-                    <ConnectionCard title={deployDestination.title} icon={deployDestination.iconName || 'file'} brand={deployDestination.useBrand} theme={theme} />
-                  </div>
-                </div>
+              <div style={{ position: 'absolute', top: '450px', left: '120px', width: '650px', height: '120px', borderRadius: '12px', zIndex: 1, ...glassStyle }} />
+              <div style={{ position: 'absolute', top: '485px', left: '150px', zIndex: 4 }}>
+                <ConnectionCard title={deployOrigin.title} icon={deployOrigin.iconName || 'file'} brand={deployOrigin.useBrand} theme={theme} />
+              </div>
+              <div style={{ position: 'absolute', top: '485px', left: '480px', zIndex: 4 }}>
+                <CrestoneCard theme={theme} />
+              </div>
+              <div style={{ position: 'absolute', top: '485px', left: '900px', zIndex: 4 }}>
+                <ConnectionCard title={deployDestination.title} icon={deployDestination.iconName || 'file'} brand={deployDestination.useBrand} theme={theme} />
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* 3. Bottom Bar: Left = Zoom Controls, Right = Generate / Download PDF */}
+      {!isEmbedded && (
+        <div className="w-full flex items-center justify-between z-10 shrink-0 px-1 py-1">
+          {/* Left: Zoom Controls */}
+          <div className="flex items-center gap-1.5 bg-container border border-neutral-200 dark:border-neutral-800 rounded-xl p-1 shadow-xs">
+            <Button
+              variant="light"
+              onClick={handleZoomOut}
+              title={t.zoomOut}
+              iconName="zoomOut"
+              isIconButton
+            >
+              {t.zoomOut}
+            </Button>
+
+            <span className="text-xs font-semibold px-2 min-w-[52px] text-center text-neutral-700 dark:text-neutral-300">
+              {Math.round(zoom * 100)}%
+            </span>
+
+            <Button
+              variant="light"
+              onClick={handleZoomIn}
+              title={t.zoomIn}
+              iconName="zoomIn"
+              isIconButton
+            >
+              {t.zoomIn}
+            </Button>
+
+            <div className="w-[1px] h-4 bg-neutral-200 dark:border-neutral-700 mx-0.5" />
+
+            <Button
+              variant="light"
+              onClick={() => {
+                const fit = calculateFitZoom();
+                setZoom(fit.min);
+                setZoomScale({ x: fit.x, y: fit.y });
+                setPan({ x: 0, y: 0 });
+              }}
+              title={t.resetZoom}
+              iconName="sync"
+              isIconButton
+            >
+              {t.resetZoom}
+            </Button>
+          </div>
+
+          {/* Right: Generate / Download PDF */}
+          <Button
+            variant="info"
+            onClick={compilePresentationPDF}
+            disabled={isGenerating}
+            title={t.generateDeck}
+            iconName="file"
+          >
+            {isGenerating ? t.generatingPdf : t.generateDeck}
+          </Button>
+        </div>
+      )}
+
+      {/* 4. Caralstable Drawer Component (All configuration in Gear) */}
+      <Drawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        title={t.settings}
+        size="md"
+      >
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* Idioma */}
+          <Select
+            label={t.language}
+            value={lang}
+            onChange={(e) => setLang(e.target.value as 'es' | 'en')}
+            options={[
+              { value: 'es', label: 'Español' },
+              { value: 'en', label: 'English' },
+            ]}
+          />
+
+          <div className="border-b border-neutral-200 dark:border-neutral-800 pt-1 pb-2" />
+
+          {/* Cliente / Propuesta Para */}
+          <Input
+            label={t.clientProposal}
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            placeholder={t.clientPlaceholder}
+          />
+
+          {/* Entorno / URL */}
+          <Input
+            label={t.environment}
+            value={environment}
+            onChange={(e) => setEnvironment(e.target.value)}
+          />
+
+          {/* Tema del Deck */}
+          <Select
+            label={t.deckTheme}
+            value={theme}
+            onChange={(e) => setTheme(e.target.value as 'light' | 'dark')}
+            options={[
+              { value: 'light', label: t.light },
+              { value: 'dark', label: t.dark },
+            ]}
+          />
+
+          <div className="border-b border-neutral-200 dark:border-neutral-800 pt-1 pb-2" />
+
+          {/* Orígenes Checkboxes */}
+          <div>
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+              {t.origins} ({selectedOrigins.length})
+            </label>
+            <div className="grid grid-cols-1 gap-1 max-h-40 overflow-y-auto pr-1 border border-neutral-200 dark:border-neutral-800 rounded-lg p-2 bg-neutral-50 dark:bg-neutral-900/40">
+              {data.origins.map(o => (
+                <label key={o.id} className="flex items-center gap-2 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 p-1.5 rounded cursor-pointer transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={selectedOrigins.includes(o.id)}
+                    onChange={() => handleToggleOrigin(o.id)}
+                    className="rounded accent-info-main cursor-pointer"
+                  />
+                  <span>{o.title}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Destinos Checkboxes */}
+          <div>
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+              {t.destinations} ({selectedDestinations.length})
+            </label>
+            <div className="grid grid-cols-1 gap-1 max-h-48 overflow-y-auto pr-1 border border-neutral-200 dark:border-neutral-800 rounded-lg p-2 bg-neutral-50 dark:bg-neutral-900/40">
+              {data.destinations.map(d => (
+                <label key={d.id} className="flex items-center gap-2 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 p-1.5 rounded cursor-pointer transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={selectedDestinations.includes(d.id)}
+                    onChange={() => handleToggleDestination(d.id)}
+                    className="rounded accent-info-main cursor-pointer"
+                  />
+                  <span>{d.title}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="border-b border-neutral-200 dark:border-neutral-800 pt-1 pb-2" />
+
+          {/* Foco Slide Despliegue */}
+          <div className="space-y-3">
+            <label className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+              {t.deploymentFocus}
+            </label>
+            <Select
+              label={lang === 'es' ? 'Origen Enfoque' : 'Origin Focus'}
+              value={deployOriginId}
+              onChange={(e) => setDeployOriginId(e.target.value)}
+              options={data.origins.map(o => ({
+                value: o.id,
+                label: o.title,
+              }))}
+            />
+            <Select
+              label={lang === 'es' ? 'Destino Enfoque' : 'Destination Focus'}
+              value={deployDestinationId}
+              onChange={(e) => setDeployDestinationId(e.target.value)}
+              options={data.destinations.map(d => ({
+                value: d.id,
+                label: d.title,
+              }))}
+            />
+          </div>
+        </div>
+      </Drawer>
     </div>
   );
 }
+

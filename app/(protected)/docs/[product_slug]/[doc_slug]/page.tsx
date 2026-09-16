@@ -46,7 +46,12 @@ const BRANDBOOK_PAGES: Record<string, { pageType: BrandbookPageType; title: stri
   'generador-de-portadas': { pageType: 'generate-cover', title: 'Generador de Portadas', icon: 'image', order: 10 },
   'recursos-graficos-generate-deck': { pageType: 'generate-deck', title: 'Generador de Presentaciones', icon: 'presentation', order: 11 },
   'generate-deck': { pageType: 'generate-deck', title: 'Generador de Presentaciones', icon: 'presentation', order: 11 },
-  'generador-de-presentaciones': { pageType: 'generate-deck', title: 'Generador de Presentaciones', icon: 'presentation', order: 11 }
+  'generador-de-presentaciones': { pageType: 'generate-deck', title: 'Generador de Presentaciones', icon: 'presentation', order: 11 },
+  'recursos-graficos-origins-destinations': { pageType: 'origins-destinations', title: 'Listado de Orígenes y Destinos', icon: 'network', order: 12 },
+  'origins-destinations': { pageType: 'origins-destinations', title: 'Listado de Orígenes y Destinos', icon: 'network', order: 12 },
+  'origenes-destinos': { pageType: 'origins-destinations', title: 'Listado de Orígenes y Destinos', icon: 'network', order: 12 },
+  'compatibilidad': { pageType: 'origins-destinations', title: 'Listado de Orígenes y Destinos', icon: 'network', order: 12 },
+  'compatibility-list': { pageType: 'origins-destinations', title: 'Listado de Orígenes y Destinos', icon: 'network', order: 12 }
 };
 
 export async function generateMetadata({
@@ -240,6 +245,13 @@ export default async function DocumentViewerPage({
           isBrand: false,
           href: `/docs/${product_slug}/recursos-graficos-deployment-options`,
           variant: brandbookInfo.pageType === 'deployment-options' ? 'info' : 'ghost'
+        },
+        {
+          label: 'Orígenes y Destinos',
+          icon: null,
+          isBrand: false,
+          href: `/docs/${product_slug}/recursos-graficos-origins-destinations`,
+          variant: brandbookInfo.pageType === 'origins-destinations' ? 'info' : 'ghost'
         },
         {
           label: 'Generador de Portadas',

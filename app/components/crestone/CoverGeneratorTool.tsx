@@ -1,8 +1,10 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Button } from 'caralstable';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { Button, Drawer } from 'caralstable';
 import { CaralIcon } from 'iconcaral2';
+import Input from '@/app/components/Input';
+import Select from '@/app/components/Select';
 
 interface BackgroundOption {
   id: string;
@@ -203,21 +205,29 @@ const getScaledPositions = (bgId: string) => {
 const translations = {
   en: {
     generatorTitle: 'Presentation Cover Generator',
-    generatorSubtitle: 'Select a corporate background diagram and drag-and-drop the logo images on top.',
+    generatorSubtitle: 'Select a corporate background diagram and customize titles and connections in high resolution 16:9.',
+    settings: 'Cover Settings',
+    fullscreen: 'Fullscreen',
+    exitFullscreen: 'Exit Fullscreen',
+    zoomIn: 'Zoom In',
+    zoomOut: 'Zoom Out',
+    resetZoom: 'Reset Fit',
+    downloadPng: 'Download Cover (PNG 16:9)',
+    downloading: 'Downloading...',
+    generatingPng: 'Generating PNG...',
+    language: 'Language',
     labelCoverTitle: 'Cover Title',
     labelCoverSubtitle: 'Cover Subtitle',
     labelCoverTag: 'Footer Environment',
     labelBgImage: 'Diagram Background',
     labelTheme: 'Background Theme',
-    labelDestinations: 'Select Connections',
+    labelDestinations: 'Active Connections',
     searchDestPlaceholder: 'Search connections...',
     noResults: 'No connections found',
-    downloadPng: 'Download Cover (PNG)',
-    downloading: 'Downloading...',
     resetPositions: 'Reset Positions',
     themeLight: 'Light Theme',
     themeDark: 'Dark Theme',
-    dragHelper: 'Drag the logo images inside the canvas and position them over the circles!',
+    dragHelper: 'Drag the logo cards inside the canvas or double-click to replace them!',
     modalTitle: 'Change Connection',
     modalSearchPlaceholder: 'Search replacement...',
     modalCancel: 'Cancel',
@@ -226,21 +236,29 @@ const translations = {
   },
   es: {
     generatorTitle: 'Generador de Portadas',
-    generatorSubtitle: 'Selecciona un fondo de diagrama corporativo y arrastra los logos de conexión sobre él.',
+    generatorSubtitle: 'Selecciona un fondo de diagrama corporativo y personaliza títulos y conexiones en alta resolución 16:9.',
+    settings: 'Configuración de Portada',
+    fullscreen: 'Pantalla Completa',
+    exitFullscreen: 'Salir de Pantalla Completa',
+    zoomIn: 'Zoom In',
+    zoomOut: 'Zoom Out',
+    resetZoom: 'Ajustar Vista',
+    downloadPng: 'Descargar Portada (PNG 16:9)',
+    downloading: 'Descargando...',
+    generatingPng: 'Generando PNG...',
+    language: 'Idioma',
     labelCoverTitle: 'Título de Portada',
     labelCoverSubtitle: 'Subtítulo de Portada',
-    labelCoverTag: 'Entorno',
+    labelCoverTag: 'Entorno / Tag',
     labelBgImage: 'Diagrama de Fondo',
     labelTheme: 'Tema de Fondo',
-    labelDestinations: 'Seleccionar Conexiones',
+    labelDestinations: 'Conexiones Activas',
     searchDestPlaceholder: 'Buscar conexiones...',
     noResults: 'No se encontraron conexiones',
-    downloadPng: 'Descargar Portada (PNG)',
-    downloading: 'Descargando...',
     resetPositions: 'Restaurar Posiciones',
     themeLight: 'Claro (Light)',
     themeDark: 'Oscuro (Dark)',
-    dragHelper: '¡Arrastra los logos dentro del lienzo y ubícalos sobre los círculos del fondo!',
+    dragHelper: '¡Arrastra los logos dentro del lienzo o haz doble clic para reemplazarlos!',
     modalTitle: 'Cambiar Conexión',
     modalSearchPlaceholder: 'Buscar reemplazo...',
     modalCancel: 'Cancelar',
@@ -249,45 +267,160 @@ const translations = {
   }
 };
 
-export default function CoverGeneratorTool() {
-  const [coverTitle, setCoverTitle] = useState('CRESTONE');
-  const [coverSubtitle, setCoverSubtitle] = useState('Matriz de Integración y Destinos Soportados');
-  const [coverTag, setCoverTag] = useState('crestone.seidoranalytics.com/');
-  const [selectedBgId, setSelectedBgId] = useState<string>('9d2o');
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+export interface CoverGeneratorToolProps {
+  isEmbedded?: boolean;
+  coverTitle?: string;
+  coverSubtitle?: string;
+  coverTag?: string;
+  selectedBgId?: string;
+  theme?: 'dark' | 'light';
+  isDrawerOpen?: boolean;
+  onDrawerOpenChange?: (open: boolean) => void;
+  onConfigChange?: (config: any) => void;
+}
+
+export default function CoverGeneratorTool({
+  isEmbedded = false,
+  coverTitle: propCoverTitle,
+  coverSubtitle: propCoverSubtitle,
+  coverTag: propCoverTag,
+  selectedBgId: propSelectedBgId,
+  theme: propTheme,
+  isDrawerOpen: propIsDrawerOpen,
+  onDrawerOpenChange,
+  onConfigChange,
+}: CoverGeneratorToolProps = {}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement>(null);
+
+  const [coverTitle, setCoverTitle] = useState(propCoverTitle || 'CRESTONE');
+  const [coverSubtitle, setCoverSubtitle] = useState(propCoverSubtitle || 'Matriz de Integración y Destinos Soportados');
+  const [coverTag, setCoverTag] = useState(propCoverTag || 'crestone.seidoranalytics.com/');
+  const [selectedBgId, setSelectedBgId] = useState<string>(propSelectedBgId || '9d2o');
+  const [theme, setTheme] = useState<'dark' | 'light'>(propTheme || 'dark');
   const [lang, setLang] = useState<'es' | 'en'>('es');
   const t = translations[lang];
 
+  useEffect(() => {
+    if (propCoverTitle !== undefined) setCoverTitle(propCoverTitle);
+  }, [propCoverTitle]);
+
+  useEffect(() => {
+    if (propCoverSubtitle !== undefined) setCoverSubtitle(propCoverSubtitle);
+  }, [propCoverSubtitle]);
+
+  useEffect(() => {
+    if (propCoverTag !== undefined) setCoverTag(propCoverTag);
+  }, [propCoverTag]);
+
+  useEffect(() => {
+    if (propSelectedBgId !== undefined) {
+      setSelectedBgId(propSelectedBgId);
+      if (presets[propSelectedBgId]) {
+        setActiveLogos(presets[propSelectedBgId].logos);
+        setCardPositions(getScaledPositions(propSelectedBgId));
+      }
+    }
+  }, [propSelectedBgId]);
+
+  useEffect(() => {
+    if (propTheme !== undefined) setTheme(propTheme);
+  }, [propTheme]);
+
   const [activeLogos, setActiveLogos] = useState<string[]>(presets['9d2o'].logos);
   const [searchQuery, setSearchQuery] = useState('');
-  const [cardPositions, setCardPositions] = useState<{ [id: string]: { left: number, top: number } }>(() => getScaledPositions('9d2o'));
+  const [cardPositions, setCardPositions] = useState<{ [id: string]: { left: number; top: number } }>(() => getScaledPositions('9d2o'));
   const [editingLogoId, setEditingLogoId] = useState<string | null>(null);
   const [modalSearchQuery, setModalSearchQuery] = useState('');
 
-  const [scale, setScale] = useState(0.4);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLDivElement>(null);
+  // Drawer and presentation states
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+
+  // 16:9 Canvas Dimensions
+  const canvasWidth = 1920;
+  const canvasHeight = 1080;
+
+  // Zoom & Pan states
+  const [zoom, setZoom] = useState(1);
+  const [zoomScale, setZoomScale] = useState({ x: 1, y: 1 });
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDraggingCanvas, setIsDraggingCanvas] = useState(false);
+  const dragCanvasStartRef = useRef({ x: 0, y: 0 });
+  const panStartRef = useRef({ x: 0, y: 0 });
 
   const basePath = '/img/crestone/portada/';
   const bgSlideDark = '/img/crestone/portada/bgdark.jpg';
   const bgSlideLight = '/img/crestone/portada/bgligth.jpg';
 
+  // Calculate Auto-Fit Zoom based on Container Dimensions (16:9)
+  const calculateFitZoom = useCallback(() => {
+    if (!viewportRef.current) return { x: 1, y: 1, min: 1 };
+    const { clientWidth, clientHeight } = viewportRef.current;
+    if (clientWidth === 0 || clientHeight === 0) return { x: 1, y: 1, min: 1 };
+    const scaleX = clientWidth / canvasWidth;
+    const scaleY = clientHeight / canvasHeight;
+    return { x: scaleX, y: scaleY, min: Math.min(scaleX, scaleY) };
+  }, [canvasWidth, canvasHeight]);
+
+  // Update zoom when container size changes
   useEffect(() => {
-    const handleResize = () => {
-      if (containerRef.current) {
-        const width = containerRef.current.clientWidth;
-        setScale(Math.min(width / 1920, 0.95));
-      }
+    const updateZoom = () => {
+      const fit = calculateFitZoom();
+      setZoom(fit.min);
+      setZoomScale({ x: fit.x, y: fit.y });
+      setPan({ x: 0, y: 0 });
     };
-    handleResize();
-    const timer = setTimeout(handleResize, 150);
-    window.addEventListener('resize', handleResize);
+
+    updateZoom();
+
+    const currentViewport = viewportRef.current;
+    const observer = new ResizeObserver(() => {
+      updateZoom();
+    });
+
+    if (currentViewport) {
+      observer.observe(currentViewport);
+    }
+
     return () => {
-      clearTimeout(timer);
-      window.removeEventListener('resize', handleResize);
+      if (currentViewport) {
+        observer.unobserve(currentViewport);
+      }
+      observer.disconnect();
     };
-  }, []);
+  }, [calculateFitZoom]);
+
+  // Handle Fullscreen toggle
+  const toggleFullscreen = () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      containerRef.current.requestFullscreen().catch(() => {
+        setIsFullscreen(!isFullscreen);
+      });
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen().catch(() => {
+        setIsFullscreen(false);
+      });
+      setIsFullscreen(false);
+    }
+  };
+
+  useEffect(() => {
+    const handleFsChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      setTimeout(() => {
+        const fit = calculateFitZoom();
+        setZoom(fit.min);
+        setZoomScale({ x: fit.x, y: fit.y });
+        setPan({ x: 0, y: 0 });
+      }, 100);
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, [calculateFitZoom]);
 
   const selectedBg = backgroundOptions.find(bg => bg.id === selectedBgId) || backgroundOptions[6];
   const filteredLogos = logoOptions.filter(logo => logo.title.toLowerCase().includes(searchQuery.toLowerCase()));
@@ -332,16 +465,46 @@ export default function CoverGeneratorTool() {
     }
   };
 
-  const handleMouseDown = (e: React.MouseEvent, id: string, index: number) => {
+  // Canvas Pan Handlers
+  const handleCanvasMouseDown = (e: React.MouseEvent) => {
+    if (e.button !== 0) return;
+    setIsDraggingCanvas(true);
+    dragCanvasStartRef.current = { x: e.clientX, y: e.clientY };
+    panStartRef.current = { x: pan.x, y: pan.y };
+  };
+
+  const handleCanvasMouseMove = (e: React.MouseEvent) => {
+    if (!isDraggingCanvas) return;
+    const dx = e.clientX - dragCanvasStartRef.current.x;
+    const dy = e.clientY - dragCanvasStartRef.current.y;
+    setPan({
+      x: panStartRef.current.x + dx,
+      y: panStartRef.current.y + dy,
+    });
+  };
+
+  const handleCanvasMouseUp = () => {
+    setIsDraggingCanvas(false);
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+    setZoom((prev) => Math.min(Math.max(prev * zoomFactor, 0.25), 3));
+  };
+
+  // Draggable Logo Handlers
+  const handleLogoMouseDown = (e: React.MouseEvent, id: string, index: number) => {
+    e.stopPropagation();
     e.preventDefault();
     const startX = e.clientX;
     const startY = e.clientY;
     const defaultPos = { left: 800 + (index % 5) * 160, top: 880 + Math.floor(index / 5) * 110 };
     const currentPos = cardPositions[id] || defaultPos;
 
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const deltaX = (moveEvent.clientX - startX) / scale;
-      const deltaY = (moveEvent.clientY - startY) / scale;
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const deltaX = (moveEvent.clientX - startX) / zoom;
+      const deltaY = (moveEvent.clientY - startY) / zoom;
       setCardPositions(prev => ({
         ...prev,
         [id]: {
@@ -351,13 +514,13 @@ export default function CoverGeneratorTool() {
       }));
     };
 
-    const handleMouseUp = () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
+    const onMouseUp = () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
     };
 
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
   };
 
   const downloadPng = async () => {
@@ -367,8 +530,17 @@ export default function CoverGeneratorTool() {
       const { toPng } = await import('html-to-image');
       const dataUrl = await toPng(canvasRef.current, {
         pixelRatio: 2,
+        width: 1920,
+        height: 1080,
         style: {
-          transform: 'scale(1)',
+          transform: 'none',
+          transformOrigin: '0 0',
+          position: 'static',
+          left: '0px',
+          top: '0px',
+          margin: '0px',
+          width: '1920px',
+          height: '1080px',
         }
       });
       const link = document.createElement('a');
@@ -384,354 +556,430 @@ export default function CoverGeneratorTool() {
 
   const bgImgUrl = `${basePath}${selectedBg.file}`;
 
+  const [internalDrawerOpen, setInternalDrawerOpen] = useState(false);
+  const isDrawerOpen = propIsDrawerOpen !== undefined ? propIsDrawerOpen : internalDrawerOpen;
+  const setDrawerOpen = (val: boolean) => {
+    setInternalDrawerOpen(val);
+    onDrawerOpenChange?.(val);
+  };
+
   return (
-    <div className="w-full flex flex-col gap-8">
-      {/* Intro Header */}
-      <div className="bg-container border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div>
-            <h2 className="text-2xl font-bold font-poppins text-neutral-900 dark:text-white mb-2">
-              {t.generatorTitle}
-            </h2>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400 max-w-3xl leading-relaxed">
-              {t.generatorSubtitle}
+    <div
+      ref={containerRef}
+      className={`w-full flex flex-col items-center justify-center font-poppins select-none ${
+        isEmbedded
+          ? 'w-full h-full relative overflow-hidden bg-transparent'
+          : isFullscreen
+            ? 'fixed inset-0 z-50 bg-neutral-900 p-3 overflow-hidden justify-between'
+            : 'relative my-auto gap-2'
+      }`}
+    >
+      {/* 1. Top Bar Controls */}
+      {!isEmbedded && (
+        <div className="w-full flex items-center justify-between z-10 shrink-0 px-1">
+          {/* Settings Button (Left) */}
+          <Button
+            variant="light"
+            onClick={() => setDrawerOpen(true)}
+            title={t.settings}
+            iconName="gear"
+            isIconButton
+          >
+            {t.settings}
+          </Button>
+
+          {/* Presentation / Fullscreen Button (Right) */}
+          <Button
+            variant={isFullscreen ? 'info' : 'light'}
+            onClick={toggleFullscreen}
+            title={isFullscreen ? t.exitFullscreen : t.fullscreen}
+            iconName="screenView"
+            isIconButton
+          >
+            {isFullscreen ? t.exitFullscreen : t.fullscreen}
+          </Button>
+        </div>
+      )}
+
+      {/* 2. Central 16:9 Viewport Canvas Container: Fitted Perfectly by Height */}
+      <div
+        ref={viewportRef}
+        onMouseDown={handleCanvasMouseDown}
+        onMouseMove={handleCanvasMouseMove}
+        onMouseUp={handleCanvasMouseUp}
+        onMouseLeave={handleCanvasMouseUp}
+        onWheel={handleWheel}
+        className={`relative overflow-hidden flex items-center justify-center cursor-grab active:cursor-grabbing transition-colors ${
+          isEmbedded
+            ? 'w-full h-full bg-transparent border-none rounded-none shadow-none'
+            : `aspect-[16/9] max-w-full w-auto mx-auto rounded-[12px] border border-neutral-200 dark:border-neutral-800 shadow-[0px_0px_8px_0px_rgba(0,0,0,0.25)] bg-white dark:bg-[#07153a]/90 ${
+                isFullscreen
+                  ? 'h-[calc(100vh-125px)]'
+                  : 'h-[calc(100vh-270px)] min-h-[440px] max-h-[820px]'
+              }`
+        }`}
+      >
+        {/* Transform Scale Wrapper */}
+        <div
+          ref={canvasRef}
+          style={{
+            width: `${canvasWidth}px`,
+            height: `${canvasHeight}px`,
+            transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+            transformOrigin: 'center center',
+            transition: isDraggingCanvas ? 'none' : 'transform 0.15s ease-out',
+            position: 'relative',
+            overflow: 'hidden',
+            backgroundImage: `url(${theme === 'light' ? bgSlideLight : bgSlideDark})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            color: theme === 'light' ? '#0f172a' : '#ffffff',
+            fontFamily: "'Poppins', 'Outfit', 'Inter', sans-serif",
+            flexShrink: 0,
+            userSelect: 'none'
+          }}
+        >
+          {/* Tech Dot Grid */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100%',
+              backgroundImage: theme === 'light'
+                ? 'radial-gradient(rgba(15, 23, 42, 0.08) 1.5px, transparent 1.5px)'
+                : 'radial-gradient(rgba(255, 255, 255, 0.05) 1.5px, transparent 1.5px)',
+              backgroundSize: '32px 32px',
+              pointerEvents: 'none',
+              zIndex: 0
+            }}
+          />
+
+          {/* Selected Diagram Background */}
+          <img
+            src={bgImgUrl}
+            alt={selectedBg.title}
+            style={{
+              position: 'absolute',
+              left: `${selectedBg.left}px`,
+              top: `${selectedBg.top}px`,
+              width: `${selectedBg.width}px`,
+              height: `${selectedBg.height}px`,
+              pointerEvents: 'none',
+              zIndex: 1
+            }}
+          />
+
+          {/* Title Panel */}
+          <div
+            style={{
+              position: 'absolute',
+              left: '152px',
+              top: '410px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '10px',
+              maxWidth: '800px',
+              zIndex: 3,
+              pointerEvents: 'none'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
+              <CrestoneLogo color1={theme === 'light' ? '#0191FF' : '#66B6FF'} color2={theme === 'light' ? '#1b2c6d' : '#ffffff'} size={70} />
+              <h1
+                style={{
+                  fontFamily: "'Poppins', 'Outfit', 'Inter', sans-serif",
+                  fontSize: '80px',
+                  fontWeight: 800,
+                  lineHeight: 1.07,
+                  margin: 0,
+                  letterSpacing: '-1.5px',
+                  background: 'linear-gradient(90deg, #0191FF, #66B6FF)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent'
+                }}
+              >
+                {coverTitle}
+              </h1>
+            </div>
+            <p
+              style={{
+                fontSize: '32px',
+                fontWeight: 400,
+                margin: 0,
+                color: theme === 'light' ? '#1e293b' : '#e2e8f0',
+                opacity: 0.9,
+                textShadow: theme === 'light' ? '0 1px 4px rgba(255, 255, 255, 0.60)' : '0 2px 6px rgba(0, 0, 0, 0.3)'
+              }}
+            >
+              {coverSubtitle}
             </p>
           </div>
+
+          {/* Footer Tag Panel */}
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '60px',
+              left: '100px',
+              right: '100px',
+              zIndex: 3,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'flex-end',
+              borderTop: theme === 'light' ? '1.5px solid rgba(15, 23, 42, 0.15)' : '1.5px solid rgba(255, 255, 255, 0.12)',
+              paddingTop: '20px',
+              pointerEvents: 'none'
+            }}
+          >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: theme === 'light' ? '#475569' : '#94a3b8', letterSpacing: '1.5px' }}>
+                {lang === 'es' ? 'Más Información' : 'More Information'}
+              </span>
+              <span style={{ fontSize: '16px', fontWeight: 700, color: theme === 'light' ? '#0f172a' : '#ffffff' }}>
+                crestone.io
+              </span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
+              <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: theme === 'light' ? '#475569' : '#94a3b8', letterSpacing: '1.5px' }}>
+                {lang === 'es' ? 'Entorno' : 'Environment'}
+              </span>
+              <span style={{ fontSize: '16px', fontWeight: 700, color: '#10b981' }}>
+                ● {coverTag}
+              </span>
+            </div>
+          </div>
+
+          {/* Draggable Logos */}
+          {activeLogos.map((logoId, index) => {
+            const logoInfo = logoOptions.find(l => l.id === logoId);
+            if (!logoInfo) return null;
+
+            const logoImgUrl = `${basePath}${logoInfo.file}`;
+            const defaultPos = { left: 800 + (index % 5) * 160, top: 880 + Math.floor(index / 5) * 110 };
+            const finalPos = cardPositions[logoId] || defaultPos;
+
+            return (
+              <div
+                key={logoId}
+                style={{
+                  position: 'absolute',
+                  left: `${finalPos.left}px`,
+                  top: `${finalPos.top}px`,
+                  width: '139px',
+                  height: '98px',
+                  cursor: 'grab',
+                  zIndex: 10,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+                onMouseDown={(e) => handleLogoMouseDown(e, logoId, index)}
+                onDoubleClick={() => setEditingLogoId(logoId)}
+                title={`${t.dragHelper} | ${t.doubleClickHint}`}
+              >
+                <img
+                  src={logoImgUrl}
+                  alt={logoInfo.title}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    pointerEvents: 'none',
+                    filter: 'drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35))'
+                  }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* 3. Bottom Bar Floating Controls */}
+      {!isEmbedded && (
+        <div className="w-full flex items-center justify-between z-10 shrink-0 px-1">
+          {/* Left: Zoom & Position Controls */}
+          <div className="flex items-center gap-1.5 bg-container/90 backdrop-blur-md border border-neutral-200 dark:border-neutral-800 rounded-xl p-1 shadow-sm">
+            <Button
+              variant="light"
+              onClick={() => setZoom((prev) => Math.min(prev + 0.1, 3))}
+              title={t.zoomIn}
+              iconName="zoomIn"
+              isIconButton
+            >
+              {t.zoomIn}
+            </Button>
+            <Button
+              variant="light"
+              onClick={() => setZoom((prev) => Math.max(prev - 0.1, 0.25))}
+              title={t.zoomOut}
+              iconName="zoomOut"
+              isIconButton
+            >
+              {t.zoomOut}
+            </Button>
+            <Button
+              variant="light"
+              onClick={() => {
+                const fit = calculateFitZoom();
+                setZoom(fit.min);
+                setZoomScale({ x: fit.x, y: fit.y });
+                setPan({ x: 0, y: 0 });
+              }}
+              title={t.resetZoom}
+              iconName="sync"
+              isIconButton
+            >
+              {t.resetZoom}
+            </Button>
+            <div className="w-px h-5 bg-neutral-200 dark:bg-neutral-700 mx-1" />
+            <Button
+              variant="ghost"
+              onClick={() => setCardPositions(getScaledPositions(selectedBgId))}
+              title={t.resetPositions}
+              className="text-xs"
+            >
+              {t.resetPositions}
+            </Button>
+          </div>
+
+          {/* Right: Download Action */}
           <Button
             variant="info"
             onClick={downloadPng}
             disabled={isDownloading}
-            className="shrink-0 flex items-center gap-2"
+            title={t.downloadPng}
+            iconName="arrowDownToLine"
           >
-            <CaralIcon name="arrowDownToLine" size={18} />
-            {isDownloading ? t.downloading : t.downloadPng}
+            {isDownloading ? t.generatingPng : t.downloadPng}
           </Button>
         </div>
-      </div>
+      )}
 
-      {/* Main Workspace */}
-      <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-        {/* Controls Sidebar */}
-        <div className="xl:col-span-4 bg-container border border-neutral-200 dark:border-neutral-800 rounded-2xl p-6 shadow-xs flex flex-col gap-5 max-h-[85vh] overflow-y-auto">
-          {/* Cover Titles */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
-              {t.labelCoverTitle}
-            </label>
-            <input
-              type="text"
-              value={coverTitle}
-              onChange={(e) => setCoverTitle(e.target.value)}
-              className="w-full text-xs px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
-            />
-          </div>
+      {/* 4. Caralstable Drawer Component (Gear Button Configuration) */}
+      <Drawer
+        isOpen={isDrawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        title={t.settings}
+        size="md"
+      >
+        <div className="flex-1 overflow-y-auto p-5 space-y-5">
+          {/* Idioma */}
+          <Select
+            label={t.language}
+            value={lang}
+            onChange={(e) => setLang(e.target.value as 'es' | 'en')}
+            options={[
+              { value: 'es', label: 'Español' },
+              { value: 'en', label: 'English' },
+            ]}
+          />
 
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
-              {t.labelCoverSubtitle}
-            </label>
-            <input
-              type="text"
-              value={coverSubtitle}
-              onChange={(e) => setCoverSubtitle(e.target.value)}
-              className="w-full text-xs px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
-            />
-          </div>
+          <div className="border-b border-neutral-200 dark:border-neutral-800 pt-1 pb-2" />
 
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
-              {t.labelCoverTag}
-            </label>
-            <input
-              type="text"
-              value={coverTag}
-              onChange={(e) => setCoverTag(e.target.value)}
-              className="w-full text-xs px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
-            />
-          </div>
+          {/* Título de Portada */}
+          <Input
+            label={t.labelCoverTitle}
+            value={coverTitle}
+            onChange={(e) => setCoverTitle(e.target.value)}
+          />
 
-          {/* Theme */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
-              {t.labelTheme}
-            </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setTheme('dark')}
-                className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all ${
-                  theme === 'dark'
-                    ? 'bg-info-main/10 border-info-main text-info-main'
-                    : 'bg-neutral-50 dark:bg-neutral-800/60 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
-                }`}
-              >
-                🌙 {t.themeDark}
-              </button>
-              <button
-                type="button"
-                onClick={() => setTheme('light')}
-                className={`px-3 py-2 rounded-lg text-xs font-semibold border transition-all ${
-                  theme === 'light'
-                    ? 'bg-info-main/10 border-info-main text-info-main'
-                    : 'bg-neutral-50 dark:bg-neutral-800/60 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
-                }`}
-              >
-                ☀️ {t.themeLight}
-              </button>
-            </div>
-          </div>
+          {/* Subtítulo de Portada */}
+          <Input
+            label={t.labelCoverSubtitle}
+            value={coverSubtitle}
+            onChange={(e) => setCoverSubtitle(e.target.value)}
+          />
 
-          {/* Background Presets */}
-          <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-2">
-              {t.labelBgImage}
-            </label>
-            <div className="grid grid-cols-1 gap-1.5 max-h-48 overflow-y-auto pr-1">
-              {backgroundOptions.map((bg) => (
-                <button
-                  key={bg.id}
-                  onClick={() => handleSelectBg(bg.id)}
-                  className={`px-3 py-2 rounded-lg text-xs font-semibold text-left border transition-all ${
-                    selectedBgId === bg.id
-                      ? 'bg-info-main/10 border-info-main text-info-main'
-                      : 'bg-neutral-50 dark:bg-neutral-800/60 border-neutral-200 dark:border-neutral-700 text-neutral-700 dark:text-neutral-300'
-                  }`}
-                >
-                  {bg.title}
-                </button>
-              ))}
-            </div>
-          </div>
+          {/* Tag / Entorno */}
+          <Input
+            label={t.labelCoverTag}
+            value={coverTag}
+            onChange={(e) => setCoverTag(e.target.value)}
+          />
 
-          {/* Logo Pickers */}
+          <div className="border-b border-neutral-200 dark:border-neutral-800 pt-1 pb-2" />
+
+          {/* Tema del Fondo */}
+          <Select
+            label={t.labelTheme}
+            value={theme}
+            onChange={(e) => setTheme(e.target.value as 'dark' | 'light')}
+            options={[
+              { value: 'dark', label: t.themeDark },
+              { value: 'light', label: t.themeLight },
+            ]}
+          />
+
+          {/* Diagrama de Fondo */}
+          <Select
+            label={t.labelBgImage}
+            value={selectedBgId}
+            onChange={(e) => handleSelectBg(e.target.value)}
+            options={backgroundOptions.map((bg) => ({
+              value: bg.id,
+              label: bg.title,
+            }))}
+          />
+
+          <div className="border-b border-neutral-200 dark:border-neutral-800 pt-1 pb-2" />
+
+          {/* Conexiones / Logos Activos */}
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-neutral-500 mb-1">
+            <label className="block text-sm font-medium text-neutral-800 dark:text-neutral-200 mb-2">
               {t.labelDestinations} ({activeLogos.length})
             </label>
-            <input
-              type="text"
+
+            <Input
               placeholder={t.searchDestPlaceholder}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full text-xs px-3 py-1.5 mb-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
+              leftIcon="search"
             />
-            <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
+
+            <div className="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1 mt-3">
               {filteredLogos.map((logo) => {
                 const isActive = activeLogos.includes(logo.id);
                 const logoImgUrl = `${basePath}${logo.file}`;
                 return (
                   <button
                     key={logo.id}
+                    type="button"
                     onClick={() => handleToggleLogo(logo.id)}
-                    className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all ${
+                    className={`flex items-center gap-2 p-2 rounded-xl border text-left transition-all cursor-pointer ${
                       isActive
-                        ? 'border-info-main bg-info-main/10 text-info-main'
-                        : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
+                        ? 'border-info-main/40 bg-info-main/10 text-info-main'
+                        : 'border-neutral-200 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 hover:border-neutral-300'
                     }`}
                   >
-                    <img src={logoImgUrl} className="w-12 h-8 object-contain mb-1" alt={logo.title} />
-                    <span className="text-2xs font-semibold truncate w-full">{logo.title}</span>
+                    <img src={logoImgUrl} className="w-8 h-6 object-contain shrink-0" alt={logo.title} />
+                    <span className="text-xs font-semibold truncate flex-1">{logo.title}</span>
+                    <input
+                      type="checkbox"
+                      checked={isActive}
+                      readOnly
+                      className="rounded accent-info-main w-3.5 h-3.5 pointer-events-none shrink-0"
+                    />
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Reset positions */}
-          <Button
-            variant="ghost"
-            onClick={() => setCardPositions(getScaledPositions(selectedBgId))}
-            className="w-full text-xs"
-          >
-            🔄 {t.resetPositions}
-          </Button>
-        </div>
-
-        {/* Right Canvas Widescreen Preview */}
-        <div className="xl:col-span-8 flex flex-col gap-4">
-          <div
-            ref={containerRef}
-            className="w-full overflow-hidden rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-neutral-900 relative shadow-inner"
-            style={{ height: `${1080 * scale}px` }}
-          >
-            <div
-              className="absolute left-1/2 top-0 origin-top"
-              style={{
-                width: '1920px',
-                height: '1080px',
-                transform: `translateX(-50%) scale(${scale})`,
-              }}
+          <div className="pt-2">
+            <Button
+              variant="light"
+              onClick={() => setCardPositions(getScaledPositions(selectedBgId))}
+              className="w-full text-xs"
             >
-              <div
-                ref={canvasRef}
-                style={{
-                  width: '1920px',
-                  height: '1080px',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  backgroundImage: `url(${theme === 'light' ? bgSlideLight : bgSlideDark})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  color: theme === 'light' ? '#0f172a' : '#ffffff',
-                  fontFamily: "'Poppins', 'Outfit', 'Inter', sans-serif"
-                }}
-              >
-                {/* Tech Dot Grid */}
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '100%',
-                    height: '100%',
-                    backgroundImage: theme === 'light'
-                      ? 'radial-gradient(rgba(15, 23, 42, 0.08) 1.5px, transparent 1.5px)'
-                      : 'radial-gradient(rgba(255, 255, 255, 0.05) 1.5px, transparent 1.5px)',
-                    backgroundSize: '32px 32px',
-                    pointerEvents: 'none',
-                    zIndex: 0
-                  }}
-                />
-
-                {/* Selected Diagram Background */}
-                <img
-                  src={bgImgUrl}
-                  alt={selectedBg.title}
-                  style={{
-                    position: 'absolute',
-                    left: `${selectedBg.left}px`,
-                    top: `${selectedBg.top}px`,
-                    width: `${selectedBg.width}px`,
-                    height: `${selectedBg.height}px`,
-                    pointerEvents: 'none',
-                    zIndex: 1
-                  }}
-                />
-
-                {/* Title Panel */}
-                <div style={{
-                  position: 'absolute',
-                  left: '152px',
-                  top: '410px',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: '10px',
-                  maxWidth: '800px',
-                  zIndex: 3,
-                  pointerEvents: 'none'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-                    <CrestoneLogo color1={theme === 'light' ? '#0191FF' : '#66B6FF'} color2={theme === 'light' ? '#1b2c6d' : '#ffffff'} size={70} />
-                    <h1 style={{
-                      fontFamily: "'Poppins', 'Outfit', 'Inter', sans-serif",
-                      fontSize: '80px',
-                      fontWeight: 800,
-                      lineHeight: 1.07,
-                      margin: 0,
-                      letterSpacing: '-1.5px',
-                      background: 'linear-gradient(90deg, #0191FF, #66B6FF)',
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent'
-                    }}>
-                      {coverTitle}
-                    </h1>
-                  </div>
-                  <p style={{
-                    fontSize: '32px',
-                    fontWeight: 400,
-                    margin: 0,
-                    color: theme === 'light' ? '#1e293b' : '#e2e8f0',
-                    opacity: 0.9,
-                    textShadow: theme === 'light' ? '0 1px 4px rgba(255, 255, 255, 0.60)' : '0 2px 6px rgba(0, 0, 0, 0.3)'
-                  }}>
-                    {coverSubtitle}
-                  </p>
-                </div>
-
-                {/* Footer Tag Panel */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: '60px',
-                  left: '100px',
-                  right: '100px',
-                  zIndex: 3,
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'flex-end',
-                  borderTop: theme === 'light' ? '1.5px solid rgba(15, 23, 42, 0.15)' : '1.5px solid rgba(255, 255, 255, 0.12)',
-                  paddingTop: '20px',
-                  pointerEvents: 'none'
-                }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: theme === 'light' ? '#475569' : '#94a3b8', letterSpacing: '1.5px' }}>
-                      {lang === 'es' ? 'Más Información' : 'More Information'}
-                    </span>
-                    <span style={{ fontSize: '16px', fontWeight: 700, color: theme === 'light' ? '#0f172a' : '#ffffff' }}>
-                      crestone.io
-                    </span>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', alignItems: 'flex-end' }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', color: theme === 'light' ? '#475569' : '#94a3b8', letterSpacing: '1.5px' }}>
-                      {lang === 'es' ? 'Entorno' : 'Environment'}
-                    </span>
-                    <span style={{ fontSize: '16px', fontWeight: 700, color: '#10b981' }}>
-                      ● {coverTag}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Draggable Logos */}
-                {activeLogos.map((logoId, index) => {
-                  const logoInfo = logoOptions.find(l => l.id === logoId);
-                  if (!logoInfo) return null;
-
-                  const logoImgUrl = `${basePath}${logoInfo.file}`;
-                  const defaultPos = { left: 800 + (index % 5) * 160, top: 880 + Math.floor(index / 5) * 110 };
-                  const finalPos = cardPositions[logoId] || defaultPos;
-
-                  return (
-                    <div
-                      key={logoId}
-                      style={{
-                        position: 'absolute',
-                        left: `${finalPos.left}px`,
-                        top: `${finalPos.top}px`,
-                        width: '139px',
-                        height: '98px',
-                        cursor: 'grab',
-                        zIndex: 10,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                      onMouseDown={(e) => handleMouseDown(e, logoId, index)}
-                      onDoubleClick={() => setEditingLogoId(logoId)}
-                      title={`${t.dragHelper} | ${t.doubleClickHint}`}
-                    >
-                      <img
-                        src={logoImgUrl}
-                        alt={logoInfo.title}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'contain',
-                          pointerEvents: 'none',
-                          filter: 'drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35))'
-                        }}
-                      />
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
+              {t.resetPositions}
+            </Button>
           </div>
-          <p className="text-center text-xs text-neutral-500 italic">
-            💡 {t.dragHelper} ({t.doubleClickHint})
-          </p>
         </div>
-      </div>
+      </Drawer>
 
-      {/* Replace Logo Modal Overlay */}
+      {/* 5. Replace Logo Modal Overlay (on double click) */}
       {editingLogoId !== null && (
         <div
           className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -747,7 +995,7 @@ export default function CoverGeneratorTool() {
               </h3>
               <button
                 type="button"
-                className="text-neutral-500 hover:text-neutral-800 dark:hover:text-white text-xl"
+                className="text-neutral-500 hover:text-neutral-800 dark:hover:text-white text-xl cursor-pointer"
                 onClick={() => { setEditingLogoId(null); setModalSearchQuery(''); }}
               >
                 &times;
@@ -755,12 +1003,11 @@ export default function CoverGeneratorTool() {
             </div>
 
             <div className="p-6 overflow-y-auto flex-1 flex flex-col gap-4">
-              <input
-                type="text"
+              <Input
                 placeholder={t.modalSearchPlaceholder}
                 value={modalSearchQuery}
                 onChange={(e) => setModalSearchQuery(e.target.value)}
-                className="w-full text-xs px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-neutral-50 dark:bg-neutral-800 text-neutral-900 dark:text-white"
+                leftIcon="search"
                 autoFocus
               />
 
@@ -775,7 +1022,7 @@ export default function CoverGeneratorTool() {
                       <button
                         key={logo.id}
                         type="button"
-                        className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all text-center relative ${
+                        className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all text-center relative cursor-pointer ${
                           isSelf
                             ? 'border-info-main bg-info-main/10 text-info-main'
                             : isActive

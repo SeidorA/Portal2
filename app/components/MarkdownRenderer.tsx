@@ -217,6 +217,8 @@ const renderTableCellContent = (children: any): any => {
   return children;
 };
 
+const PreContext = React.createContext<boolean>(false);
+
 export default function MarkdownRenderer({ content, noTableBorders = false, lang }: { content: string, noTableBorders?: boolean, lang?: 'es' | 'en' }) {
   const { language } = useTranslation();
   const activeLang = lang || (language as 'es' | 'en') || 'es';
@@ -227,7 +229,7 @@ export default function MarkdownRenderer({ content, noTableBorders = false, lang
     <div className={`prose prose-neutral dark:prose-invert max-w-none 
       prose-headings:font-poppins prose-headings:font-bold
       prose-a:text-blue-600 dark:prose-a:text-blue-400
-      prose-code:text-info-main prose-code:bg-info-main/10 prose-code:px-1 prose-code:rounded
+      prose-code:before:content-none prose-code:after:content-none
       prose-pre:bg-neutral-900 prose-pre:text-neutral-100
       ${noTableBorders ? 'prose-table:border-none prose-th:border-none prose-td:border-none prose-tr:border-none [&_table]:!border-none [&_th]:!border-none [&_td]:!border-none [&_tr]:!border-none' : ''}`}
     >
@@ -334,16 +336,29 @@ export default function MarkdownRenderer({ content, noTableBorders = false, lang
             return renderTitleWithIcon('strong', children, props, "font-bold inline-flex items-center gap-1.5 align-middle");
           },
           a: ({ node, ...props }) => <a className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer" {...props} />,
-          code: ({ node, inline, className, children, ...props }: any) => {
-            const match = /language-(\w+)/.exec(className || '');
-            return !inline ? (
-              <div className="bg-neutral-900 text-neutral-100 rounded-md p-4 my-4 overflow-x-auto text-sm font-mono">
+          pre: ({ node, children, ...props }: any) => {
+            return (
+              <PreContext.Provider value={true}>
+                <pre className="bg-neutral-900 text-neutral-100 rounded-lg p-4 my-4 overflow-x-auto text-sm font-mono border border-neutral-800" {...props}>
+                  {children}
+                </pre>
+              </PreContext.Provider>
+            );
+          },
+          code: ({ node, className, children, ...props }: any) => {
+            const isInsidePre = React.useContext(PreContext);
+            if (isInsidePre) {
+              return (
                 <code className={className} {...props}>
                   {children}
                 </code>
-              </div>
-            ) : (
-              <code className="bg-neutral-100 dark:bg-neutral-800 text-pink-500 dark:text-pink-400 px-1.5 py-0.5 rounded-md text-sm font-mono" {...props}>
+              );
+            }
+            return (
+              <code
+                className="bg-neutral-100 dark:bg-neutral-800 text-pink-600 dark:text-pink-400 px-1.5 py-0.5 rounded text-[0.875em] font-mono font-normal border border-neutral-200 dark:border-neutral-700/60 inline align-baseline"
+                {...props}
+              >
                 {children}
               </code>
             );

@@ -6,6 +6,8 @@ import { Button, Drawer, Tabs, Toggle } from 'caralstable'
 import { Brand, CaralIcon } from 'iconcaral2'
 import FileUploader from '@/app/components/FileUploader'
 import IconPickerModal from '@/app/components/IconPickerModal'
+import Input from '@/app/components/Input'
+import Select from '@/app/components/Select'
 import { useTranslation } from '@/app/context/LanguageContext'
 
 const ApiFeaturePreview = ({ url, apiScript }: { url: string, apiScript?: string }) => {
@@ -924,30 +926,20 @@ export default function ProductosPage() {
                   </button>
                 </div>
 
-                <div className="flex flex-col">
-                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">
-                    {t('products.titleField', 'Titulo')}
-                  </label>
-                  <input
-                    required
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
-                    placeholder={t('products.titlePlaceholder', 'Ej: Crestone')}
-                  />
-                </div>
+                <Input
+                  label={t('products.titleField', 'Titulo')}
+                  required
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder={t('products.titlePlaceholder', 'Ej: Crestone')}
+                />
 
-                <div className="flex flex-col">
-                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">
-                    {t('products.slugField', 'Titulo (Slug)')}
-                  </label>
-                  <input
-                    value={newLink}
-                    onChange={(e) => setNewLink(e.target.value)}
-                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
-                    placeholder={t('products.slugPlaceholder', 'Ej: crestone')}
-                  />
-                </div>
+                <Input
+                  label={t('products.slugField', 'Titulo (Slug)')}
+                  value={newLink}
+                  onChange={(e) => setNewLink(e.target.value)}
+                  placeholder={t('products.slugPlaceholder', 'Ej: crestone')}
+                />
               </div>
 
               {/* Fila 2: Descripción */}
@@ -969,32 +961,24 @@ export default function ProductosPage() {
               {/* Fila 3: Estado, Categoría */}
               <div className="grid grid-cols-[auto_1fr_1fr] gap-4">
                 <div className="w-10 invisible"></div>
-                <div className="flex flex-col">
-                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">
-                    {t('products.statusField', 'Estado')}
-                  </label>
-                  <select
-                    value={newStatus}
-                    onChange={(e) => setNewStatus(e.target.value)}
-                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="Publicada">{t('products.statusPublished', 'Publicada')}</option>
-                    <option value="Borrador">{t('products.statusDraft', 'Borrador')}</option>
-                  </select>
-                </div>
-                <div className="flex flex-col">
-                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">
-                    {t('products.categoryField', 'Categoria')}
-                  </label>
-                  <select
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="own_tech">Own Tech</option>
-                    <option value="actin">Act-in</option>
-                  </select>
-                </div>
+                <Select
+                  label={t('products.statusField', 'Estado')}
+                  value={newStatus}
+                  onChange={(e) => setNewStatus(e.target.value)}
+                  options={[
+                    { value: 'Publicada', label: t('products.statusPublished', 'Publicada') },
+                    { value: 'Borrador', label: t('products.statusDraft', 'Borrador') },
+                  ]}
+                />
+                <Select
+                  label={t('products.categoryField', 'Categoria')}
+                  value={newCategory}
+                  onChange={(e) => setNewCategory(e.target.value)}
+                  options={[
+                    { value: 'own_tech', label: 'Own Tech' },
+                    { value: 'actin', label: 'Act-in' },
+                  ]}
+                />
               </div>
 
               {/* Links Section */}
@@ -1003,35 +987,24 @@ export default function ProductosPage() {
                   {t('products.links', 'Links')}
                 </div>
                 <div className="p-4 grid grid-cols-3 gap-4 bg-container/20">
-                  <div className="flex flex-col">
-                    <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">Live Demo</label>
-                    <input
-                      value={newLinkDemo}
-                      onChange={(e) => setNewLinkDemo(e.target.value)}
-                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
-                      placeholder="Crestone.io"
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">Landing</label>
-                    <input
-                      value={newLinkLanding}
-                      onChange={(e) => setNewLinkLanding(e.target.value)}
-                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
-                      placeholder="Crestone"
-                    />
-                  </div>
-                  <div className="flex flex-col">
-                    <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">
-                      {t('sidebar.documentation', 'Documentacion')}
-                    </label>
-                    <input
-                      value={newLinkDocs}
-                      onChange={(e) => setNewLinkDocs(e.target.value)}
-                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500"
-                      placeholder="Crestone-help.com"
-                    />
-                  </div>
+                  <Input
+                    label="Live Demo"
+                    value={newLinkDemo}
+                    onChange={(e) => setNewLinkDemo(e.target.value)}
+                    placeholder="Crestone.io"
+                  />
+                  <Input
+                    label="Landing"
+                    value={newLinkLanding}
+                    onChange={(e) => setNewLinkLanding(e.target.value)}
+                    placeholder="Crestone"
+                  />
+                  <Input
+                    label={t('sidebar.documentation', 'Documentacion')}
+                    value={newLinkDocs}
+                    onChange={(e) => setNewLinkDocs(e.target.value)}
+                    placeholder="Crestone-help.com"
+                  />
                 </div>
               </div>
 
