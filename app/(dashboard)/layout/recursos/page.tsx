@@ -26,8 +26,19 @@ export default function RecursosPage() {
   const [destinationPath, setDestinationPath] = useState('');
   const [contextMenu, setContextMenu] = useState<{ visible: boolean, x: number, y: number, item: StorageItem | null }>({ visible: false, x: 0, y: 0, item: null });
 
+  const [copiedItemName, setCopiedItemName] = useState<string | null>(null);
+
   const supabase = createClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleCopyLink = (fileName: string) => {
+    const url = getPublicUrl(fileName);
+    navigator.clipboard.writeText(url);
+    setCopiedItemName(fileName);
+    setTimeout(() => {
+      setCopiedItemName(prev => (prev === fileName ? null : prev));
+    }, 2000);
+  };
 
   useEffect(() => {
     const handleClick = () => setContextMenu(prev => ({ ...prev, visible: false }));
@@ -342,6 +353,7 @@ export default function RecursosPage() {
               // File
               const isImage = item.metadata?.mimetype?.startsWith('image/');
               const url = getPublicUrl(item.name);
+              const isCopied = copiedItemName === item.name;
 
               return (
                 <div
@@ -349,7 +361,7 @@ export default function RecursosPage() {
                   className="bg-container border border-neutral-200 dark:border-neutral-800 rounded-xl flex flex-col overflow-hidden hover:shadow-lg transition-all group relative"
                   onContextMenu={(e) => handleContextMenu(e, item)}
                 >
-                  <div className="h-32 bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center overflow-hidden">
+                  <div className="h-32 bg-neutral-100 dark:bg-neutral-900 flex items-center justify-center overflow-hidden relative">
                     {isImage ? (
                       <img src={url} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                     ) : (
@@ -357,10 +369,45 @@ export default function RecursosPage() {
                         <CaralIcon name="file" size="l" />
                       </div>
                     )}
+                    {/* Quick action button overlay */}
+                    <div className={`absolute top-2 right-2 flex items-center gap-1.5 transition-opacity ${isCopied ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleCopyLink(item.name);
+                        }}
+                        title={isCopied ? t("resourcesAdmin.linkCopied", "¡Enlace copiado!") : t("resourcesAdmin.copyLink", "Copiar enlace")}
+                        className={`p-1.5 rounded-lg backdrop-blur-md transition-all shadow-md cursor-pointer flex items-center gap-1 ${
+                          isCopied
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-white/90 dark:bg-neutral-800/90 text-neutral-700 dark:text-neutral-200 hover:bg-white dark:hover:bg-neutral-700 hover:text-blue-600'
+                        }`}
+                      >
+                        <CaralIcon name={isCopied ? "check" : "link"} size="s" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="p-3 flex flex-col gap-1">
-                    <span className="text-sm font-medium truncate w-full text-neutral-900 dark:text-white" title={item.name}>{item.name}</span>
-                    <span className="text-xs text-neutral-500 truncate">{item.metadata?.mimetype || t("resourcesAdmin.fileTypeFallback", "Archivo")}</span>
+                  <div className="p-3 flex items-center justify-between gap-2">
+                    <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                      <span className="text-sm font-medium truncate w-full text-neutral-900 dark:text-white" title={item.name}>{item.name}</span>
+                      <span className="text-xs text-neutral-500 truncate">{item.metadata?.mimetype || t("resourcesAdmin.fileTypeFallback", "Archivo")}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopyLink(item.name);
+                      }}
+                      title={isCopied ? t("resourcesAdmin.linkCopied", "¡Enlace copiado!") : t("resourcesAdmin.copyLink", "Copiar enlace")}
+                      className={`p-1.5 rounded-lg border transition-all shrink-0 cursor-pointer ${
+                        isCopied
+                          ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400'
+                          : 'border-neutral-200 dark:border-neutral-700 text-neutral-500 hover:text-blue-600 hover:border-blue-300 dark:hover:border-blue-700 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                      }`}
+                    >
+                      <CaralIcon name={isCopied ? "check" : "link"} size="s" />
+                    </button>
                   </div>
                 </div>
               );
@@ -409,8 +456,7 @@ export default function RecursosPage() {
             <button
               className="flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 w-full text-left transition-colors border-b border-neutral-100 dark:border-neutral-800 cursor-pointer"
               onClick={() => {
-                const url = getPublicUrl(contextMenu.item!.name);
-                navigator.clipboard.writeText(url);
+                handleCopyLink(contextMenu.item!.name);
                 setContextMenu(prev => ({ ...prev, visible: false }));
               }}
             >

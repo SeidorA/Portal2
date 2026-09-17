@@ -60,6 +60,7 @@ export default function BrandbookViewer({ pageType, product }: BrandbookViewerPr
   }
   const assets = product.assets || {};
   const [copiedHex, setCopiedHex] = useState<string | null>(null);
+  const [copiedDownloadId, setCopiedDownloadId] = useState<string | null>(null);
   const [downloadFilter, setDownloadFilter] = useState<'all' | 'png' | 'jpg' | 'svg'>('all');
   const [downloadSearch, setDownloadSearch] = useState('');
   const [activeLogoBg, setActiveLogoBg] = useState<'solid' | 'grid'>('solid');
@@ -68,6 +69,12 @@ export default function BrandbookViewer({ pageType, product }: BrandbookViewerPr
     navigator.clipboard.writeText(text);
     setCopiedHex(text);
     setTimeout(() => setCopiedHex(null), 2000);
+  };
+
+  const handleCopyDownloadUrl = (url: string, id: string) => {
+    navigator.clipboard.writeText(url);
+    setCopiedDownloadId(id);
+    setTimeout(() => setCopiedDownloadId(null), 2000);
   };
 
   // Color slots data preparation
@@ -856,16 +863,31 @@ export default function BrandbookViewer({ pageType, product }: BrandbookViewerPr
                       </div>
                     </div>
 
-                    <a
-                      href={asset.url}
-                      download={asset.name}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="p-2.5 rounded-xl bg-neutral-100 hover:bg-blue-50 dark:bg-neutral-800 dark:hover:bg-blue-950/40 text-neutral-600 hover:text-blue-600 dark:text-neutral-300 dark:hover:text-blue-400 transition-colors shrink-0 shadow-2xs"
-                      title="Descargar archivo"
-                    >
-                      <CaralIcon name="arrowDownToLine" size={16} />
-                    </a>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleCopyDownloadUrl(asset.url, asset.id || asset.name || String(idx))}
+                        className={`p-2.5 rounded-xl transition-all shadow-2xs cursor-pointer ${
+                          copiedDownloadId === (asset.id || asset.name || String(idx))
+                            ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400'
+                            : 'bg-neutral-100 hover:bg-blue-50 dark:bg-neutral-800 dark:hover:bg-blue-950/40 text-neutral-600 hover:text-blue-600 dark:text-neutral-300 dark:hover:text-blue-400'
+                        }`}
+                        title={copiedDownloadId === (asset.id || asset.name || String(idx)) ? '¡Enlace copiado!' : 'Copiar enlace'}
+                      >
+                        <CaralIcon name={copiedDownloadId === (asset.id || asset.name || String(idx)) ? "check" : "link"} size={16} />
+                      </button>
+
+                      <a
+                        href={asset.url}
+                        download={asset.name}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="p-2.5 rounded-xl bg-neutral-100 hover:bg-blue-50 dark:bg-neutral-800 dark:hover:bg-blue-950/40 text-neutral-600 hover:text-blue-600 dark:text-neutral-300 dark:hover:text-blue-400 transition-colors shrink-0 shadow-2xs"
+                        title="Descargar archivo"
+                      >
+                        <CaralIcon name="arrowDownToLine" size={16} />
+                      </a>
+                    </div>
                   </div>
                 );
               })}

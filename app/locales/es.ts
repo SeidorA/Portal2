@@ -725,6 +725,7 @@ export const es = {
     cancel: "Cancelar",
     move: "Mover",
     copyLink: "Copiar enlace",
+    linkCopied: "¡Enlace copiado!",
     delete: "Eliminar",
     newFolderPrompt: "Nombre de la nueva carpeta:",
     deleteConfirmFolder: "¿Estás seguro de que deseas eliminar la carpeta \"{name}\"?",
@@ -963,6 +964,12 @@ export const es = {
     errorDeleting: "Error eliminando: "
   },
   content: {
+    // Header & Tabs
+    headerTitle: "Base de conocimiento",
+    headerSubtitle: "Gestiona los productos, módulos y documentos de la base de conocimiento.",
+    privateTab: "Privados",
+    publicTab: "Públicos",
+
     // Columns
     colProducts: "Productos",
     colModules: "Módulos",

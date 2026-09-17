@@ -208,9 +208,9 @@ export default function Sidebar({
   return (
     <aside
       style={{
-        width: isSidebarOpen ? 250 : 0,
-        minWidth: isSidebarOpen ? 250 : 0,
-        maxWidth: isSidebarOpen ? 250 : 0,
+        width: isSidebarOpen ? 300 : 0,
+        minWidth: isSidebarOpen ? 300 : 0,
+        maxWidth: isSidebarOpen ? 300 : 0,
       }}
       className={`hidden md:!block transition-all duration-300 ease-in-out border-neutral-400 shrink-0 bg-container overflow-y-auto overflow-x-hidden ${className || "h-full"} ${isSidebarOpen
         ? "p-4 border-r opacity-100"

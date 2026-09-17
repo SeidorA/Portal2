@@ -727,6 +727,7 @@ export const en: Translations = {
     cancel: "Cancel",
     move: "Move",
     copyLink: "Copy link",
+    linkCopied: "Link copied!",
     delete: "Delete",
     newFolderPrompt: "New folder name:",
     deleteConfirmFolder: "Are you sure you want to delete folder \"{name}\"?",
@@ -965,6 +966,12 @@ export const en: Translations = {
     errorDeleting: "Error deleting: "
   },
   content: {
+    // Header & Tabs
+    headerTitle: "Knowledge Base",
+    headerSubtitle: "Manage products, modules, and documentation in the knowledge base.",
+    privateTab: "Private",
+    publicTab: "Public",
+
     // Columns
     colProducts: "Products",
     colModules: "Modules",

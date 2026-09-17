@@ -467,14 +467,14 @@ export default function CoverGeneratorTool({
 
   // Canvas Pan Handlers
   const handleCanvasMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 0) return;
+    if (isEmbedded || e.button !== 0) return;
     setIsDraggingCanvas(true);
     dragCanvasStartRef.current = { x: e.clientX, y: e.clientY };
     panStartRef.current = { x: pan.x, y: pan.y };
   };
 
   const handleCanvasMouseMove = (e: React.MouseEvent) => {
-    if (!isDraggingCanvas) return;
+    if (isEmbedded || !isDraggingCanvas) return;
     const dx = e.clientX - dragCanvasStartRef.current.x;
     const dy = e.clientY - dragCanvasStartRef.current.y;
     setPan({
@@ -488,6 +488,7 @@ export default function CoverGeneratorTool({
   };
 
   const handleWheel = (e: React.WheelEvent) => {
+    if (isEmbedded) return;
     e.preventDefault();
     const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
     setZoom((prev) => Math.min(Math.max(prev * zoomFactor, 0.25), 3));

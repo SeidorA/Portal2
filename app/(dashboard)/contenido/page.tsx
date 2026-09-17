@@ -21,6 +21,7 @@ export default function ContenidoPage() {
 
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null);
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [activeScope, setActiveScope] = useState<'private' | 'public'>('private');
   const [sectionPath, setSectionPath] = useState<{ id: string, title: string }[]>([]);
   const currentSection = sectionPath.length > 0 ? sectionPath[sectionPath.length - 1] : null;
 
@@ -79,7 +80,14 @@ export default function ContenidoPage() {
   };
 
   // --- DERIVED STATE ---
-  const visibleModules = modulesList.filter(m => m.product_id === selectedProduct).sort((a, b) => a.order_index - b.order_index);
+  const visibleModules = modulesList
+    .filter(m => {
+      if (m.product_id !== selectedProduct) return false;
+      const isPub = Array.isArray(m.allowed_roles) && m.allowed_roles.includes('public');
+      return activeScope === 'public' ? isPub : !isPub;
+    })
+    .sort((a, b) => a.order_index - b.order_index);
+
   const visibleContent = docs
     .filter(c => c.module_id === selectedModule)
     .sort((a, b) => a.order_index - b.order_index)
@@ -220,7 +228,13 @@ export default function ContenidoPage() {
         const { error } = await supabase.from('modules').update({ title: moduleTitle }).eq('id', editingModuleId);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('modules').insert([{ title: moduleTitle, product_id: selectedProduct, order_index: visibleModules.length }]);
+        const allowedRoles = activeScope === 'public' ? ['public'] : [];
+        const { error } = await supabase.from('modules').insert([{
+          title: moduleTitle,
+          product_id: selectedProduct,
+          order_index: visibleModules.length,
+          allowed_roles: allowedRoles,
+        }]);
         if (error) throw error;
       }
       setIsModuleModalOpen(false);
@@ -232,11 +246,13 @@ export default function ContenidoPage() {
 
   const saveReleaseNoteModule = async () => {
     try {
+      const allowedRoles = activeScope === 'public' ? ['public'] : [];
       // Create the module
       const { data: moduleData, error: modError } = await supabase.from('modules').insert([{
         title: releaseNoteTitle,
         product_id: selectedProduct,
-        order_index: visibleModules.length
+        order_index: visibleModules.length,
+        allowed_roles: allowedRoles,
       }]).select().single();
       if (modError) throw modError;
 
@@ -249,7 +265,8 @@ export default function ContenidoPage() {
         type: 'release_note',
         content: releaseNoteUrl,
         description: JSON.stringify({ docBaseUrl, imgFolder }),
-        order_index: 0
+        order_index: 0,
+        allowed_roles: allowedRoles,
       }]);
       if (docError) throw docError;
 
@@ -273,7 +290,8 @@ export default function ContenidoPage() {
       setDocToEdit(doc);
       setDefaultDocType(doc.type || 'document');
     } else {
-      setDocToEdit(prefillSectionId ? { section: prefillSectionId, type } : null);
+      const allowedRoles = activeScope === 'public' ? ['public'] : [];
+      setDocToEdit(prefillSectionId ? { section: prefillSectionId, type, allowed_roles: allowedRoles } : { allowed_roles: allowedRoles, type });
       setDefaultDocType(type);
     }
     setIsDocModalOpen(true);
@@ -283,10 +301,15 @@ export default function ContenidoPage() {
 
   const saveDoc = async (payload: any) => {
     try {
+      const allowedRoles = activeScope === 'public'
+        ? (Array.isArray(payload.allowed_roles) && payload.allowed_roles.length > 0 ? payload.allowed_roles : ['public'])
+        : (payload.allowed_roles || []);
+
       const fullPayload = {
         ...payload,
         module_id: selectedModule,
         product_id: selectedProduct,
+        allowed_roles: allowedRoles,
       };
 
       if (docToEdit?.id) {
@@ -309,11 +332,13 @@ export default function ContenidoPage() {
 
     try {
       setLoading(true);
+      const allowedRoles = activeScope === 'public' ? ['public'] : [];
+
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const text = await file.text();
         const parsed = parseDocusaurusMarkdown(text, file.name);
-        
+
         const parentSection = currentSection ? currentSection.id : null;
 
         const payload = {
@@ -328,12 +353,13 @@ export default function ContenidoPage() {
           status: 'published',
           module_id: selectedModule,
           product_id: selectedProduct,
+          allowed_roles: allowedRoles,
         };
 
         const { error } = await supabase.from('documentation').insert([payload]);
         if (error) {
-            console.error('Error importing', file.name, error);
-            alert(t('content.errorImportingFile', `Error al importar ${file.name}: ${error.message}`, { file: file.name, error: error.message }));
+          console.error('Error importing', file.name, error);
+          alert(t('content.errorImportingFile', `Error al importar ${file.name}: ${error.message}`, { file: file.name, error: error.message }));
         }
       }
       setIsAddMenuOpen(false);
@@ -351,7 +377,44 @@ export default function ContenidoPage() {
 
   return (
     <>
-      <div className="flex h-[calc(100vh-60px)] w-full overflow-hidden rounded-xl bg-container">
+      <div className='w-full bg-container rounded-xl p-4 mb-2'>
+        <h3 className="font-bold text-lg">{t('content.headerTitle', "Base de conocimiento")}</h3>
+        <p className="text-sm text-neutral-800">{t('content.headerSubtitle', "Gestiona los productos, módulos y documentos de la base de conocimiento.")}</p>
+
+        <div className='w-full flex justify-between items-center mt-4'>
+          <div className='flex bg-neutral-200 dark:bg-neutral-800 rounded-lg p-1 gap-1'>
+            <Button
+              variant={activeScope === 'private' ? 'light' : 'ghost'}
+              onClick={() => {
+                setActiveScope('private');
+                setSelectedModule(null);
+                setSectionPath([]);
+              }}
+            >
+              {t('content.privateTab', 'Privados')}
+            </Button>
+            <Button
+              variant={activeScope === 'public' ? 'light' : 'ghost'}
+              onClick={() => {
+                setActiveScope('public');
+                setSelectedModule(null);
+                setSectionPath([]);
+              }}
+            >
+              {t('content.publicTab', 'Públicos')}
+            </Button>
+          </div>
+          <Button
+            variant='info'
+            isIconButton
+            iconName='circleInfo'
+            title={activeScope === 'public'
+              ? 'Documentación pública accesible para portales externos y clientes.'
+              : 'Documentación interna accesible solo para usuarios autenticados.'}
+          />
+        </div>
+      </div>
+      <div className="flex h-[calc(100vh-260px)] w-full overflow-hidden rounded-xl bg-container">
         <DragDropContext onDragEnd={handleDragEnd}>
 
           {/* COLUMNA 1: PRODUCTOS */}
@@ -380,7 +443,7 @@ export default function ContenidoPage() {
           {/* COLUMNA 2: MÓDULOS */}
           {!isDocModalOpen && (
             <ManagementColumn
-              title={t('content.colModules', "Módulos")}
+              title={`${t('content.colModules', "Módulos")} (${activeScope === 'public' ? t('content.publicTab', 'Públicos') : t('content.privateTab', 'Privados')})`}
               isOpen={!!selectedProduct}
               actionElement={
                 <div className="relative">
@@ -481,7 +544,7 @@ export default function ContenidoPage() {
                       >
                         <CaralIcon name='map' /> {t('content.newRoadmapRoot', "Nuevo Roadmap (Raíz)")}
                       </button>
-                      
+
                       <button
                         className="p-2 w-full text-left px-4 py-2 hover:bg-neutral-200 hover:text-info-main! flex items-center gap-2 border-b-2 border-neutral-200 dark:border-neutral-800"
                         onClick={() => openDocModal(undefined, 'battlecard')}
@@ -676,13 +739,13 @@ export default function ContenidoPage() {
         />
       </div>
 
-      <input 
-        type="file" 
-        multiple 
-        accept=".md" 
-        ref={fileInputRef} 
-        onChange={handleImportDocusaurus} 
-        style={{ display: 'none' }} 
+      <input
+        type="file"
+        multiple
+        accept=".md"
+        ref={fileInputRef}
+        onChange={handleImportDocusaurus}
+        style={{ display: 'none' }}
       />
 
       {/* --- MODAL DE MÓDULOS --- */}

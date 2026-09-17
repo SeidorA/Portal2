@@ -103,44 +103,44 @@ export function getHazStyle(position?: HazPosition): {
     case 'top-left':
       return {
         containerClass: 'absolute pointer-events-none overflow-visible flex items-start justify-start',
-        imgClass: 'w-[750px] h-[750px] max-w-none object-contain opacity-90 transition-all duration-500',
+        imgClass: 'w-[750px] h-[750px] max-w-none object-contain blur-[20px] transition-all duration-500',
         containerStyle: { top: -100, left: -200 },
       };
     case 'top-right':
       return {
         containerClass: 'absolute pointer-events-none overflow-visible flex items-start justify-end',
-        imgClass: 'w-[750px] h-[750px] max-w-none object-contain opacity-90 transition-all duration-500',
+        imgClass: 'w-[750px] h-[750px] max-w-none object-contain blur-[20px] transition-all duration-500',
         containerStyle: { top: -100, right: -200 },
       };
     case 'bottom-left':
       return {
         containerClass: 'absolute pointer-events-none overflow-visible flex items-end justify-start',
-        imgClass: 'w-[750px] h-[750px] max-w-none object-contain opacity-90 transition-all duration-500',
+        imgClass: 'w-[750px] h-[750px] max-w-none object-contain blur-[20px] transition-all duration-500',
         containerStyle: { bottom: -100, left: -200 },
       };
     case 'bottom-right':
       return {
         containerClass: 'absolute pointer-events-none overflow-visible flex items-end justify-end',
-        imgClass: 'w-[750px] h-[750px] max-w-none object-contain opacity-90 transition-all duration-500',
+        imgClass: 'w-[750px] h-[750px] max-w-none object-contain blur-[20px] transition-all duration-500',
         containerStyle: { bottom: -300, right: -200 },
       };
     case 'top':
       return {
         containerClass: 'absolute pointer-events-none overflow-visible left-1/2 -translate-x-1/2 flex items-start justify-center',
-        imgClass: 'w-[750px] h-[750px] max-w-none object-contain opacity-90 transition-all duration-500',
+        imgClass: 'w-[750px] h-[750px] max-w-none object-contain blur-[20px] transition-all duration-500',
         containerStyle: { top: -300 },
       };
     case 'bottom':
       return {
         containerClass: 'absolute pointer-events-none overflow-visible left-1/2 -translate-x-1/2 flex items-end justify-center',
-        imgClass: 'w-[750px] h-[750px] max-w-none object-contain opacity-90 transition-all duration-500',
+        imgClass: 'w-[750px] h-[750px] max-w-none object-contain blur-[20px] transition-all duration-500',
         containerStyle: { bottom: -300 },
       };
     case 'center':
     default:
       return {
         containerClass: 'absolute inset-0 m-auto w-[85%] h-[85%] pointer-events-none flex items-center justify-center',
-        imgClass: 'w-full h-full object-contain opacity-90 transition-all duration-500',
+        imgClass: 'w-full h-full object-contain blur-[20px] transition-all duration-500',
       };
   }
 }

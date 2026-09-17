@@ -529,8 +529,8 @@ export default function PresentationEditor({
             }
           }}
           className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all cursor-pointer ${isLeftDrawerOpen && leftNavTab === 'slides'
-              ? 'bg-blue-600 text-white shadow-md'
-              : 'text-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+            ? 'bg-blue-600 text-white shadow-md'
+            : 'text-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800'
             }`}
           title="Diapositivas"
         >
@@ -547,8 +547,8 @@ export default function PresentationEditor({
             }
           }}
           className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all cursor-pointer ${isLeftDrawerOpen && leftNavTab === 'recursos'
-              ? 'bg-blue-600 text-white shadow-md'
-              : 'text-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+            ? 'bg-blue-600 text-white shadow-md'
+            : 'text-neutral-800 hover:bg-neutral-100 dark:hover:bg-neutral-800'
             }`}
           title="Recursos"
         >
@@ -700,8 +700,8 @@ export default function PresentationEditor({
                       setDragOverSlideIndex(null);
                     }}
                     className={`w-full py-2.5 px-3 rounded-xl border-2 border-dashed flex items-center justify-center gap-2 transition-all select-none ${isOverDeleteZone
-                        ? 'bg-red-500 text-white border-red-600 scale-[1.03] shadow-lg ring-4 ring-red-500/20 font-bold'
-                        : 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-red-300 dark:border-red-800/80 animate-pulse'
+                      ? 'bg-red-500 text-white border-red-600 scale-[1.03] shadow-lg ring-4 ring-red-500/20 font-bold'
+                      : 'bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border-red-300 dark:border-red-800/80 animate-pulse'
                       }`}
                   >
                     <CaralIcon name="trash" size={16} />
@@ -755,6 +755,25 @@ export default function PresentationEditor({
                         <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
                           Título
                         </span>
+                      </div>
+                      <CaralIcon name="chevronRigth" size={14} classname="text-neutral-400 group-hover:text-blue-500" />
+                    </div>
+
+                    {/* Párrafo */}
+                    <div
+                      draggable
+                      onDragStart={(e) => handleDragStart(e, 'paragraph')}
+                      onClick={() => handleAddBlockToColumn(0, 'paragraph')}
+                      className="w-full flex items-center justify-between p-2.5 rounded-lg border border-neutral-200 dark:border-neutral-800 hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/30 transition-all text-left group cursor-grab active:cursor-grabbing shadow-sm"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <CaralIcon name="fontAlignLeft" size={16} classname="text-neutral-800" />
+                        <div>
+                          <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 block">
+                            Párrafo
+                          </span>
+                          <span className="text-[10px] text-neutral-400">Texto descriptivo o continuo</span>
+                        </div>
                       </div>
                       <CaralIcon name="chevronRigth" size={14} classname="text-neutral-400 group-hover:text-blue-500" />
                     </div>
@@ -868,11 +887,10 @@ export default function PresentationEditor({
                         <button
                           key={haz.id}
                           onClick={() => handleSelectHaz(haz.id)}
-                          className={`p-1.5 rounded-xl border text-left transition-all relative overflow-hidden flex flex-col gap-1 cursor-pointer group ${
-                            isSelected
+                          className={`p-1.5 rounded-xl border text-left transition-all relative overflow-hidden flex flex-col gap-1 cursor-pointer group ${isSelected
                               ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/30 dark:bg-blue-950/40'
                               : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/50'
-                          }`}
+                            }`}
                         >
                           <div className="w-full h-10 rounded-lg bg-neutral-950 flex items-center justify-center overflow-hidden relative border border-neutral-800/80">
                             <img
@@ -912,11 +930,10 @@ export default function PresentationEditor({
                             <button
                               key={pos.id}
                               onClick={() => handleSelectHazPosition(pos.id)}
-                              className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 ${
-                                isPosSelected
+                              className={`p-1.5 rounded-lg border text-center transition-all cursor-pointer flex flex-col items-center justify-center gap-0.5 ${isPosSelected
                                   ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 font-bold shadow-sm'
                                   : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-                              }`}
+                                }`}
                               title={pos.label}
                             >
                               <span className="text-xs font-mono">{pos.icon}</span>
@@ -966,8 +983,8 @@ export default function PresentationEditor({
                         key={ratio.id}
                         onClick={() => handleChangeDistribution(ratio.id)}
                         className={`px-2.5 py-1 rounded-full font-medium transition-all cursor-pointer ${currentSlide.distribution === ratio.id
-                            ? 'bg-blue-600 text-white shadow-sm'
-                            : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                           }`}
                       >
                         {ratio.label}
@@ -988,8 +1005,8 @@ export default function PresentationEditor({
                         key={ratio.id}
                         onClick={() => handleChangeDistribution(ratio.id)}
                         className={`px-2.5 py-1 rounded-full font-medium transition-all cursor-pointer ${currentSlide.distribution === ratio.id
-                            ? 'bg-blue-600 text-white shadow-sm'
-                            : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                          ? 'bg-blue-600 text-white shadow-sm'
+                          : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                           }`}
                       >
                         {ratio.label}
@@ -1006,8 +1023,8 @@ export default function PresentationEditor({
                   <button
                     onClick={() => handleSetImageColumn(null, false)}
                     className={`px-2.5 py-1 rounded-full font-medium transition-all cursor-pointer ${!currentSlide.columns?.some((c) => c.isFullBleedImage)
-                        ? 'bg-neutral-700 text-white shadow-sm dark:bg-neutral-200 dark:text-neutral-900'
-                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                      ? 'bg-neutral-700 text-white shadow-sm dark:bg-neutral-200 dark:text-neutral-900'
+                      : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                       }`}
                   >
                     Ninguna
@@ -1017,8 +1034,8 @@ export default function PresentationEditor({
                       key={idx}
                       onClick={() => handleSetImageColumn(idx, false)}
                       className={`px-2.5 py-1 rounded-full font-medium transition-all cursor-pointer ${col.isFullBleedImage
-                          ? 'bg-blue-600 text-white shadow-sm'
-                          : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
                         }`}
                     >
                       Col {idx + 1}
@@ -1081,11 +1098,10 @@ export default function PresentationEditor({
                             onClick={() => updateCurrentSlide({
                               resourceConfig: { ...(currentSlide.resourceConfig || {}), selectedBgId: preset.id }
                             })}
-                            className={`px-2 py-0.5 rounded-full font-medium transition-all cursor-pointer ${
-                              isSelected
+                            className={`px-2 py-0.5 rounded-full font-medium transition-all cursor-pointer ${isSelected
                                 ? 'bg-blue-600 text-white shadow-sm'
                                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                            }`}
+                              }`}
                           >
                             {preset.label}
                           </button>
@@ -1114,11 +1130,10 @@ export default function PresentationEditor({
                     {/* Open Settings Drawer */}
                     <button
                       onClick={() => setResourceDrawerOpen(true)}
-                      className={`px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-                        resourceDrawerOpen
+                      className={`px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all cursor-pointer ${resourceDrawerOpen
                           ? 'bg-blue-600 text-white shadow-sm'
                           : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200'
-                      }`}
+                        }`}
                       title="Configuración de portada (textos, logos, entorno)"
                     >
                       <CaralIcon name="gear" size={13} />
@@ -1145,11 +1160,10 @@ export default function PresentationEditor({
                             onClick={() => updateCurrentSlide({
                               resourceConfig: { ...(currentSlide.resourceConfig || {}), bgTheme: th.id }
                             })}
-                            className={`px-2.5 py-0.5 rounded-full font-medium transition-all cursor-pointer ${
-                              isSelected
+                            className={`px-2.5 py-0.5 rounded-full font-medium transition-all cursor-pointer ${isSelected
                                 ? 'bg-blue-600 text-white shadow-sm'
                                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                            }`}
+                              }`}
                           >
                             {th.label}
                           </button>
@@ -1161,11 +1175,10 @@ export default function PresentationEditor({
 
                     <button
                       onClick={() => setResourceDrawerOpen(true)}
-                      className={`px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-                        resourceDrawerOpen
+                      className={`px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all cursor-pointer ${resourceDrawerOpen
                           ? 'bg-blue-600 text-white shadow-sm'
                           : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200'
-                      }`}
+                        }`}
                     >
                       <CaralIcon name="gear" size={13} />
                       <span>Configuración</span>
@@ -1190,11 +1203,10 @@ export default function PresentationEditor({
                             onClick={() => updateCurrentSlide({
                               resourceConfig: { ...(currentSlide.resourceConfig || {}), theme: th.id }
                             })}
-                            className={`px-2.5 py-0.5 rounded-full font-medium transition-all cursor-pointer ${
-                              isSelected
+                            className={`px-2.5 py-0.5 rounded-full font-medium transition-all cursor-pointer ${isSelected
                                 ? 'bg-blue-600 text-white shadow-sm'
                                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                            }`}
+                              }`}
                           >
                             {th.label}
                           </button>
@@ -1206,11 +1218,10 @@ export default function PresentationEditor({
 
                     <button
                       onClick={() => setResourceDrawerOpen(true)}
-                      className={`px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-                        resourceDrawerOpen
+                      className={`px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all cursor-pointer ${resourceDrawerOpen
                           ? 'bg-blue-600 text-white shadow-sm'
                           : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200'
-                      }`}
+                        }`}
                     >
                       <CaralIcon name="gear" size={13} />
                       <span>Configuración</span>
@@ -1238,11 +1249,10 @@ export default function PresentationEditor({
                             onClick={() => updateCurrentSlide({
                               resourceConfig: { ...(currentSlide.resourceConfig || {}), deckTab: tb.id }
                             })}
-                            className={`px-2.5 py-0.5 rounded-full font-medium transition-all cursor-pointer ${
-                              isSelected
+                            className={`px-2.5 py-0.5 rounded-full font-medium transition-all cursor-pointer ${isSelected
                                 ? 'bg-blue-600 text-white shadow-sm'
                                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                            }`}
+                              }`}
                           >
                             {tb.label}
                           </button>
@@ -1254,11 +1264,10 @@ export default function PresentationEditor({
 
                     <button
                       onClick={() => setResourceDrawerOpen(true)}
-                      className={`px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-                        resourceDrawerOpen
+                      className={`px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all cursor-pointer ${resourceDrawerOpen
                           ? 'bg-blue-600 text-white shadow-sm'
                           : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200'
-                      }`}
+                        }`}
                     >
                       <CaralIcon name="gear" size={13} />
                       <span>Configuración</span>
@@ -1285,11 +1294,10 @@ export default function PresentationEditor({
                             onClick={() => updateCurrentSlide({
                               resourceConfig: { ...(currentSlide.resourceConfig || {}), theme: th.id }
                             })}
-                            className={`px-2.5 py-0.5 rounded-full font-medium transition-all cursor-pointer ${
-                              isSelected
+                            className={`px-2.5 py-0.5 rounded-full font-medium transition-all cursor-pointer ${isSelected
                                 ? 'bg-blue-600 text-white shadow-sm'
                                 : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white'
-                            }`}
+                              }`}
                           >
                             {th.label}
                           </button>
@@ -1301,11 +1309,10 @@ export default function PresentationEditor({
 
                     <button
                       onClick={() => setResourceDrawerOpen(true)}
-                      className={`px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-                        resourceDrawerOpen
+                      className={`px-2.5 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all cursor-pointer ${resourceDrawerOpen
                           ? 'bg-blue-600 text-white shadow-sm'
                           : 'bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-700 dark:text-neutral-200'
-                      }`}
+                        }`}
                     >
                       <CaralIcon name="gear" size={13} />
                       <span>Configuración</span>
@@ -1332,11 +1339,10 @@ export default function PresentationEditor({
             {/* Slide Settings / Haz Button */}
             <button
               onClick={() => setRightSidebar({ open: true, blockType: 'slide' })}
-              className={`px-3 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
-                rightSidebar?.open && rightSidebar.blockType === 'slide'
+              className={`px-3 py-1 rounded-full font-medium flex items-center gap-1.5 transition-all cursor-pointer ${rightSidebar?.open && rightSidebar.blockType === 'slide'
                   ? 'bg-blue-600 text-white shadow-sm'
                   : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
-              }`}
+                }`}
               title="Configuración de página y haz de luz"
             >
               <CaralIcon name="cube" size={14} />
@@ -1346,654 +1352,700 @@ export default function PresentationEditor({
         )}
 
         {/* Canvas Frame Wrapper ensuring strict 16:9 container */}
-        <div className="flex-1 w-full min-h-0 flex items-center justify-center relative">
+        <div className="flex-1 w-full min-h-0 flex items-center justify-center relative p-3 overflow-hidden">
           {/* 16:9 Slide Canvas Frame */}
           <div
-            className="w-full max-w-6xl xl:max-w-7xl max-h-full aspect-video bg-white dark:bg-neutral-950 rounded-2xl shadow-xl border border-neutral-200/80 dark:border-neutral-800 flex flex-col relative overflow-hidden transition-all duration-300"
-            style={{ aspectRatio: '16 / 9' }}
+            className="aspect-video w-full max-h-full bg-white dark:bg-neutral-950 rounded-2xl shadow-2xl border border-neutral-200/80 dark:border-neutral-800 flex flex-col relative overflow-hidden transition-all duration-200 shrink-0"
+            style={{
+              aspectRatio: '16 / 9',
+              maxHeight: 'calc(100vh - 170px)',
+              maxWidth: 'min(100%, calc((100vh - 170px) * 16 / 9), 1400px)',
+              width: '100%',
+              height: 'auto',
+            }}
           >
-          {/* Haz de luz Background Effect */}
-          {currentSlide.hazEffect && (
-            <div
-              className={getHazStyle(currentSlide.hazPosition).containerClass}
-              style={getHazStyle(currentSlide.hazPosition).containerStyle}
-            >
-              <img
-                src={`/img/haz/${currentSlide.hazEffect}.png`}
-                alt={`Haz ${currentSlide.hazEffect}`}
-                className={getHazStyle(currentSlide.hazPosition).imgClass}
-              />
-            </div>
-          )}
-
-          {/* RENDER SLIDE CONTENT */}
-          {currentSlide.type === 'empty' && !isChoosingColumns ? (
-            /* INITIAL STATE: 2 CARDS (Figma Frame 847:8043) */
-            <div className="flex-1 flex items-center justify-center p-8 relative z-10">
-              <div className="grid grid-cols-2 gap-6 max-w-lg w-full">
-                {/* Card 1: En blanco */}
-                <button
-                  onClick={handleStartBlankFlow}
-                  className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-blue-500 bg-neutral-50/50 dark:bg-neutral-900/40 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition-all group cursor-pointer shadow-sm hover:shadow-md"
-                >
-                  <div className="w-16 h-16 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center mb-4 text-neutral-600 dark:text-neutral-300 group-hover:text-blue-600 group-hover:scale-105 transition-all shadow-sm">
-                    <CaralIcon name="file" size={28} />
-                  </div>
-                  <span className="font-bold text-base font-poppins text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
-                    En blanco
-                  </span>
-                  <span className="text-xs text-neutral-400 mt-1 text-center">
-                    Elegir columnas y estructura visual
-                  </span>
-                </button>
-
-                {/* Card 2: Usar recurso */}
-                <button
-                  onClick={() => setIsResourceModalOpen(true)}
-                  className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-blue-500 bg-neutral-50/50 dark:bg-neutral-900/40 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition-all group cursor-pointer shadow-sm hover:shadow-md"
-                >
-                  <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4 text-blue-600 group-hover:scale-105 transition-all shadow-sm">
-                    <CaralIcon name="cube" size={28} />
-                  </div>
-                  <span className="font-bold text-base font-poppins text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
-                    Usar recurso
-                  </span>
-                  <span className="text-xs text-neutral-400 mt-1 text-center">
-                    Portadas, Diagramas y matrices de Crestone
-                  </span>
-                </button>
+            {/* Haz de luz Background Effect */}
+            {currentSlide.hazEffect && (
+              <div
+                className={getHazStyle(currentSlide.hazPosition).containerClass}
+                style={getHazStyle(currentSlide.hazPosition).containerStyle}
+              >
+                <img
+                  src={`/img/haz/${currentSlide.hazEffect}.png`}
+                  alt={`Haz ${currentSlide.hazEffect}`}
+                  className={getHazStyle(currentSlide.hazPosition).imgClass}
+                />
               </div>
-            </div>
-          ) : isChoosingColumns || currentSlide.type === 'empty' ? (
-            /* STEP 1.1: COLUMN QUANTITY SELECTOR (Figma 848:8230) */
-            <div className="flex-1 flex flex-col items-center justify-center p-10 animate-fade-in relative z-10">
-              <h3 className="text-2xl font-bold font-poppins text-neutral-900 dark:text-neutral-100 mb-2 text-center">
-                Elige la cantidad de columnas
-              </h3>
-              <p className="text-sm text-neutral-800 mb-8 text-center max-w-md">
-                Estructura tu diapositiva dividiéndola en bloques modulares adaptables.
-              </p>
+            )}
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl w-full">
-                {/* 1 Columna */}
-                <button
-                  onClick={() => handleSelectColumnCount(1)}
-                  className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-blue-500 bg-neutral-50/50 dark:bg-neutral-900/30 hover:bg-blue-50/20 transition-all group cursor-pointer"
-                >
-                  <div className="w-full h-12 rounded-lg border border-neutral-300 dark:border-neutral-700 group-hover:border-blue-500 bg-white dark:bg-neutral-800 mb-3 flex items-center justify-center">
-                    <div className="w-8 h-2 rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
-                  </div>
-                  <span className="font-bold text-sm text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
-                    1 Columna
-                  </span>
-                  <span className="text-xs text-neutral-400 mt-1">Lienzo completo</span>
-                </button>
+            {/* RENDER SLIDE CONTENT */}
+            {currentSlide.type === 'empty' && !isChoosingColumns ? (
+              /* INITIAL STATE: 2 CARDS (Figma Frame 847:8043) */
+              <div className="flex-1 flex items-center justify-center p-8 relative z-10">
+                <div className="grid grid-cols-2 gap-6 max-w-lg w-full">
+                  {/* Card 1: En blanco */}
+                  <button
+                    onClick={handleStartBlankFlow}
+                    className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-blue-500 bg-neutral-50/50 dark:bg-neutral-900/40 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition-all group cursor-pointer shadow-sm hover:shadow-md"
+                  >
+                    <div className="w-16 h-16 rounded-2xl bg-white dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex items-center justify-center mb-4 text-neutral-600 dark:text-neutral-300 group-hover:text-blue-600 group-hover:scale-105 transition-all shadow-sm">
+                      <CaralIcon name="file" size={28} />
+                    </div>
+                    <span className="font-bold text-base font-poppins text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
+                      En blanco
+                    </span>
+                    <span className="text-xs text-neutral-400 mt-1 text-center">
+                      Elegir columnas y estructura visual
+                    </span>
+                  </button>
 
-                {/* 2 Columnas */}
-                <button
-                  onClick={() => handleSelectColumnCount(2)}
-                  className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-blue-500 bg-neutral-50/50 dark:bg-neutral-900/30 hover:bg-blue-50/20 transition-all group cursor-pointer"
-                >
-                  <div className="w-full h-12 rounded-lg border border-neutral-300 dark:border-neutral-700 group-hover:border-blue-500 bg-white dark:bg-neutral-800 mb-3 grid grid-cols-2 gap-1 p-1">
-                    <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
-                    <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
-                  </div>
-                  <span className="font-bold text-sm text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
-                    2 Columnas
-                  </span>
-                  <span className="text-xs text-neutral-400 mt-1">Dividido 50/50</span>
-                </button>
-
-                {/* 3 Columnas */}
-                <button
-                  onClick={() => handleSelectColumnCount(3)}
-                  className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-blue-500 bg-neutral-50/50 dark:bg-neutral-900/30 hover:bg-blue-50/20 transition-all group cursor-pointer"
-                >
-                  <div className="w-full h-12 rounded-lg border border-neutral-300 dark:border-neutral-700 group-hover:border-blue-500 bg-white dark:bg-neutral-800 mb-3 grid grid-cols-3 gap-1 p-1">
-                    <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
-                    <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
-                    <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
-                  </div>
-                  <span className="font-bold text-sm text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
-                    3 Columnas
-                  </span>
-                  <span className="text-xs text-neutral-400 mt-1">Triptico modular</span>
-                </button>
-
-                {/* 4 Columnas */}
-                <button
-                  onClick={() => handleSelectColumnCount(4)}
-                  className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-blue-500 bg-neutral-50/50 dark:bg-neutral-900/30 hover:bg-blue-50/20 transition-all group cursor-pointer"
-                >
-                  <div className="w-full h-12 rounded-lg border border-neutral-300 dark:border-neutral-700 group-hover:border-blue-500 bg-white dark:bg-neutral-800 mb-3 grid grid-cols-4 gap-1 p-1">
-                    <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
-                    <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
-                    <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
-                    <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
-                  </div>
-                  <span className="font-bold text-sm text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
-                    4 Columnas
-                  </span>
-                  <span className="text-xs text-neutral-400 mt-1">Matriz cuadrícula</span>
-                </button>
+                  {/* Card 2: Usar recurso */}
+                  <button
+                    onClick={() => setIsResourceModalOpen(true)}
+                    className="flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-blue-500 bg-neutral-50/50 dark:bg-neutral-900/40 hover:bg-blue-50/30 dark:hover:bg-blue-950/20 transition-all group cursor-pointer shadow-sm hover:shadow-md"
+                  >
+                    <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center mb-4 text-blue-600 group-hover:scale-105 transition-all shadow-sm">
+                      <CaralIcon name="cube" size={28} />
+                    </div>
+                    <span className="font-bold text-base font-poppins text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
+                      Usar recurso
+                    </span>
+                    <span className="text-xs text-neutral-400 mt-1 text-center">
+                      Portadas, Diagramas y matrices de Crestone
+                    </span>
+                  </button>
+                </div>
               </div>
+            ) : isChoosingColumns || currentSlide.type === 'empty' ? (
+              /* STEP 1.1: COLUMN QUANTITY SELECTOR (Figma 848:8230) */
+              <div className="flex-1 flex flex-col items-center justify-center p-10 animate-fade-in relative z-10">
+                <h3 className="text-2xl font-bold font-poppins text-neutral-900 dark:text-neutral-100 mb-2 text-center">
+                  Elige la cantidad de columnas
+                </h3>
+                <p className="text-sm text-neutral-800 mb-8 text-center max-w-md">
+                  Estructura tu diapositiva dividiéndola en bloques modulares adaptables.
+                </p>
 
-              {currentSlide.type !== 'empty' && (
-                <button
-                  onClick={() => setIsChoosingColumns(false)}
-                  className="mt-6 text-sm text-neutral-800 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer"
-                >
-                  Volver a la diapositiva
-                </button>
-              )}
-            </div>
-          ) : currentSlide.type === 'resource' ? (
-            /* CRESTONE RESOURCE EMBED */
-            <div className="w-full h-full relative overflow-hidden z-10 flex items-center justify-center">
-              {currentSlide.resourceType === 'cover' && (
-                <CoverGeneratorTool
-                  isEmbedded
-                  selectedBgId={currentSlide.resourceConfig?.selectedBgId || '9d2o'}
-                  theme={currentSlide.resourceConfig?.theme || 'dark'}
-                  coverTitle={currentSlide.resourceConfig?.coverTitle}
-                  coverSubtitle={currentSlide.resourceConfig?.coverSubtitle}
-                  coverTag={currentSlide.resourceConfig?.coverTag}
-                  isDrawerOpen={resourceDrawerOpen}
-                  onDrawerOpenChange={setResourceDrawerOpen}
-                />
-              )}
-              {currentSlide.resourceType === 'connections' && (
-                <ConnectionsDiagramTool
-                  isEmbedded
-                  bgTheme={currentSlide.resourceConfig?.bgTheme || 'light'}
-                  activeDrawer={resourceDrawerOpen ? 'settings' : null}
-                  onActiveDrawerChange={(d) => setResourceDrawerOpen(Boolean(d))}
-                />
-              )}
-              {currentSlide.resourceType === 'deployment' && (
-                <DeploymentOptionsTool
-                  isEmbedded
-                  theme={currentSlide.resourceConfig?.theme || 'light'}
-                  isDrawerOpen={resourceDrawerOpen}
-                  onDrawerOpenChange={setResourceDrawerOpen}
-                />
-              )}
-              {currentSlide.resourceType === 'deck' && (
-                <DeckGeneratorTool
-                  isEmbedded
-                  activeTab={currentSlide.resourceConfig?.deckTab || 'cover'}
-                  onActiveTabChange={(tab) => updateCurrentSlide({
-                    resourceConfig: { ...(currentSlide.resourceConfig || {}), deckTab: tab }
-                  })}
-                  theme={currentSlide.resourceConfig?.theme || 'light'}
-                  isDrawerOpen={resourceDrawerOpen}
-                  onDrawerOpenChange={setResourceDrawerOpen}
-                />
-              )}
-              {currentSlide.resourceType === 'origins-destinations' && (
-                <OriginsDestinationsTool
-                  isEmbedded
-                  theme={currentSlide.resourceConfig?.theme || 'light'}
-                  activeDrawer={resourceDrawerOpen ? 'settings' : null}
-                  onActiveDrawerChange={(d) => setResourceDrawerOpen(Boolean(d))}
-                />
-              )}
-            </div>
-          ) : (
-            /* STEP 2 & 3: COLUMNS LAYOUT WITH DRAG & DROP AND FULL-BLEED IMAGE ENFORCEMENT */
-            <div
-              className="flex-1 grid h-full w-full relative z-10"
-              style={{
-                gridTemplateColumns: getGridTemplateColumns(),
-              }}
-            >
-              {(currentSlide.columns || []).map((col, cIdx) => {
-                const isImageCol = col.type === 'image' || col.isFullBleedImage;
-                const isAutoHeight = col.heightMode === 'auto';
-                const isLastCol = cIdx === (currentSlide.columns?.length || 1) - 1;
-                const isOver = dragOverColIndex === cIdx;
-                const blocks = col.blocks || [];
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-2xl w-full">
+                  {/* 1 Columna */}
+                  <button
+                    onClick={() => handleSelectColumnCount(1)}
+                    className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-blue-500 bg-neutral-50/50 dark:bg-neutral-900/30 hover:bg-blue-50/20 transition-all group cursor-pointer"
+                  >
+                    <div className="w-full h-12 rounded-lg border border-neutral-300 dark:border-neutral-700 group-hover:border-blue-500 bg-white dark:bg-neutral-800 mb-3 flex items-center justify-center">
+                      <div className="w-8 h-2 rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
+                    </div>
+                    <span className="font-bold text-sm text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
+                      1 Columna
+                    </span>
+                    <span className="text-xs text-neutral-400 mt-1">Lienzo completo</span>
+                  </button>
 
-                const colPaddingClass =
-                  col.padding === '0'
-                    ? 'p-0'
-                    : col.padding === '10'
-                      ? 'p-3'
-                      : col.padding === '40'
-                        ? 'p-12'
-                        : 'p-6';
-                const colVAlignClass =
-                  col.verticalAlign === 'top'
-                    ? 'justify-start'
-                    : col.verticalAlign === 'center'
-                      ? 'justify-center'
-                      : col.verticalAlign === 'bottom'
-                        ? 'justify-end'
-                        : 'justify-start';
-                const colGlassClass = col.glassEffect
-                  ? 'backdrop-blur-2xl bg-white/40 dark:bg-neutral-900/40 border border-white/40 dark:border-white/10 rounded-2xl shadow-xl'
-                  : '';
+                  {/* 2 Columnas */}
+                  <button
+                    onClick={() => handleSelectColumnCount(2)}
+                    className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-blue-500 bg-neutral-50/50 dark:bg-neutral-900/30 hover:bg-blue-50/20 transition-all group cursor-pointer"
+                  >
+                    <div className="w-full h-12 rounded-lg border border-neutral-300 dark:border-neutral-700 group-hover:border-blue-500 bg-white dark:bg-neutral-800 mb-3 grid grid-cols-2 gap-1 p-1">
+                      <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
+                      <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
+                    </div>
+                    <span className="font-bold text-sm text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
+                      2 Columnas
+                    </span>
+                    <span className="text-xs text-neutral-400 mt-1">Dividido 50/50</span>
+                  </button>
 
-                return (
-                  <div
-                    key={col.id || cIdx}
-                    onDragOver={(e) => handleDragOver(e, cIdx)}
-                    onDragLeave={handleDragLeave}
-                    onDrop={(e) => handleDrop(e, cIdx)}
-                    className={`h-full flex flex-col relative group/col transition-all ${isImageCol
+                  {/* 3 Columnas */}
+                  <button
+                    onClick={() => handleSelectColumnCount(3)}
+                    className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-blue-500 bg-neutral-50/50 dark:bg-neutral-900/30 hover:bg-blue-50/20 transition-all group cursor-pointer"
+                  >
+                    <div className="w-full h-12 rounded-lg border border-neutral-300 dark:border-neutral-700 group-hover:border-blue-500 bg-white dark:bg-neutral-800 mb-3 grid grid-cols-3 gap-1 p-1">
+                      <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
+                      <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
+                      <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
+                    </div>
+                    <span className="font-bold text-sm text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
+                      3 Columnas
+                    </span>
+                    <span className="text-xs text-neutral-400 mt-1">Triptico modular</span>
+                  </button>
+
+                  {/* 4 Columnas */}
+                  <button
+                    onClick={() => handleSelectColumnCount(4)}
+                    className="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-neutral-200 dark:border-neutral-800 hover:border-blue-500 bg-neutral-50/50 dark:bg-neutral-900/30 hover:bg-blue-50/20 transition-all group cursor-pointer"
+                  >
+                    <div className="w-full h-12 rounded-lg border border-neutral-300 dark:border-neutral-700 group-hover:border-blue-500 bg-white dark:bg-neutral-800 mb-3 grid grid-cols-4 gap-1 p-1">
+                      <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
+                      <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
+                      <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
+                      <div className="h-full rounded bg-neutral-200 dark:bg-neutral-600 group-hover:bg-blue-400" />
+                    </div>
+                    <span className="font-bold text-sm text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
+                      4 Columnas
+                    </span>
+                    <span className="text-xs text-neutral-400 mt-1">Matriz cuadrícula</span>
+                  </button>
+                </div>
+
+                {currentSlide.type !== 'empty' && (
+                  <button
+                    onClick={() => setIsChoosingColumns(false)}
+                    className="mt-6 text-sm text-neutral-800 hover:text-neutral-700 dark:hover:text-neutral-300 cursor-pointer"
+                  >
+                    Volver a la diapositiva
+                  </button>
+                )}
+              </div>
+            ) : currentSlide.type === 'resource' ? (
+              /* CRESTONE RESOURCE EMBED */
+              <div className="w-full h-full relative overflow-hidden z-10 flex items-center justify-center">
+                {currentSlide.resourceType === 'cover' && (
+                  <CoverGeneratorTool
+                    isEmbedded
+                    selectedBgId={currentSlide.resourceConfig?.selectedBgId || '9d2o'}
+                    theme={currentSlide.resourceConfig?.theme || 'dark'}
+                    coverTitle={currentSlide.resourceConfig?.coverTitle}
+                    coverSubtitle={currentSlide.resourceConfig?.coverSubtitle}
+                    coverTag={currentSlide.resourceConfig?.coverTag}
+                    isDrawerOpen={resourceDrawerOpen}
+                    onDrawerOpenChange={setResourceDrawerOpen}
+                    onConfigChange={(newCfg) => {
+                      updateCurrentSlide({
+                        resourceConfig: { ...(currentSlide.resourceConfig || {}), ...newCfg }
+                      });
+                    }}
+                  />
+                )}
+                {currentSlide.resourceType === 'connections' && (
+                  <ConnectionsDiagramTool
+                    isEmbedded
+                    bgTheme={currentSlide.resourceConfig?.bgTheme || 'light'}
+                    activeDrawer={resourceDrawerOpen ? 'settings' : null}
+                    onActiveDrawerChange={(d) => setResourceDrawerOpen(Boolean(d))}
+                  />
+                )}
+                {currentSlide.resourceType === 'deployment' && (
+                  <DeploymentOptionsTool
+                    isEmbedded
+                    theme={currentSlide.resourceConfig?.theme || 'light'}
+                    isDrawerOpen={resourceDrawerOpen}
+                    onDrawerOpenChange={setResourceDrawerOpen}
+                  />
+                )}
+                {currentSlide.resourceType === 'deck' && (
+                  <DeckGeneratorTool
+                    isEmbedded
+                    activeTab={currentSlide.resourceConfig?.deckTab || 'cover'}
+                    onActiveTabChange={(tab) => updateCurrentSlide({
+                      resourceConfig: { ...(currentSlide.resourceConfig || {}), deckTab: tab }
+                    })}
+                    theme={currentSlide.resourceConfig?.theme || 'light'}
+                    isDrawerOpen={resourceDrawerOpen}
+                    onDrawerOpenChange={setResourceDrawerOpen}
+                  />
+                )}
+                {currentSlide.resourceType === 'origins-destinations' && (
+                  <OriginsDestinationsTool
+                    isEmbedded
+                    theme={currentSlide.resourceConfig?.theme || 'light'}
+                    activeDrawer={resourceDrawerOpen ? 'settings' : null}
+                    onActiveDrawerChange={(d) => setResourceDrawerOpen(Boolean(d))}
+                  />
+                )}
+              </div>
+            ) : (
+              /* STEP 2 & 3: COLUMNS LAYOUT WITH DRAG & DROP AND FULL-BLEED IMAGE ENFORCEMENT */
+              <div
+                className="flex-1 grid h-full w-full relative z-10"
+                style={{
+                  gridTemplateColumns: getGridTemplateColumns(),
+                }}
+              >
+                {(currentSlide.columns || []).map((col, cIdx) => {
+                  const isImageCol = col.type === 'image' || col.isFullBleedImage;
+                  const isAutoHeight = col.heightMode === 'auto';
+                  const isLastCol = cIdx === (currentSlide.columns?.length || 1) - 1;
+                  const isOver = dragOverColIndex === cIdx;
+                  const blocks = col.blocks || [];
+
+                  const colPaddingClass =
+                    col.padding === '0'
+                      ? 'p-0'
+                      : col.padding === '10'
+                        ? 'p-3'
+                        : col.padding === '40'
+                          ? 'p-12'
+                          : 'p-6';
+                  const colVAlignClass =
+                    col.verticalAlign === 'top'
+                      ? 'justify-start'
+                      : col.verticalAlign === 'center'
+                        ? 'justify-center'
+                        : col.verticalAlign === 'bottom'
+                          ? 'justify-end'
+                          : 'justify-start';
+                  const colGlassClass = col.glassEffect
+                    ? 'backdrop-blur-2xl bg-white/40 dark:bg-neutral-900/40 border border-white/40 dark:border-white/10 rounded-2xl shadow-xl'
+                    : '';
+
+                  return (
+                    <div
+                      key={col.id || cIdx}
+                      onDragOver={(e) => handleDragOver(e, cIdx)}
+                      onDragLeave={handleDragLeave}
+                      onDrop={(e) => handleDrop(e, cIdx)}
+                      className={`h-full flex flex-col relative group/col transition-all ${isImageCol
                         ? 'p-0 overflow-hidden'
                         : `p-4 overflow-hidden ${isAutoHeight ? colVAlignClass : ''}`
-                      } ${!isLastCol ? 'border-r border-dashed border-neutral-200/80 dark:border-neutral-800' : ''
-                      } ${isOver ? 'ring-4 ring-inset ring-blue-500/40 bg-blue-50/20' : ''}`}
-                  >
-                    {isImageCol ? (
-                      /* FULL-BLEED IMAGE BLOCK (NO MARGIN, EXTENDS TO BORDER) */
-                      <div className="w-full h-full relative group flex items-center justify-center bg-neutral-50 dark:bg-neutral-900/60">
-                        {col.imageUrl ? (
-                          <>
-                            <img
-                              src={col.imageUrl}
-                              alt="Col Media"
-                              className="w-full h-full object-cover"
-                            />
-                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                              <Button
-                                variant="light"
-                                size="sm"
-                                onClick={() => handleTriggerUpload(cIdx)}
-                                iconName="image"
-                              >
-                                Cambiar
-                              </Button>
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                onClick={() => handleUpdateColumn(cIdx, { imageUrl: '' })}
-                                iconName="trash"
-                              >
-                                Quitar
-                              </Button>
-                            </div>
-                          </>
-                        ) : (
-                          /* EMPTY FULL-BLEED IMAGE PLACEHOLDER (Figma 848:8563 Frame 8599) */
-                          <button
-                            onClick={() => handleTriggerUpload(cIdx)}
-                            className="w-full h-full flex flex-col items-center justify-center p-8 hover:bg-blue-50/20 dark:hover:bg-blue-950/20 transition-all cursor-pointer group"
-                          >
-                            <div className="w-14 h-14 rounded-full bg-neutral-200/80 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300 group-hover:bg-blue-500 group-hover:text-white group-hover:scale-110 transition-all shadow-sm mb-3">
-                              <CaralIcon name="plus" size={24} />
-                            </div>
-                            <span className="font-poppins font-medium text-sm text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
-                              Agregar imagen
-                            </span>
-                            <span className="text-xs text-neutral-400 mt-1">
-                              Imagen a sangre completa
-                            </span>
-                          </button>
-                        )}
-                      </div>
-                    ) : (
-                      /* CONTENT DROP ZONE / EDITABLE BLOCKS */
-                      <div
-                        className={`w-full flex flex-col ${isAutoHeight ? 'h-auto max-h-full' : 'h-full'
-                          } ${colPaddingClass} ${colGlassClass} overflow-y-auto transition-all`}
-                      >
-                        <div className={`flex-1 flex flex-col w-full ${!isAutoHeight ? colVAlignClass : ''}`}>
-                          <div className="space-y-4 w-full">
-                            {blocks.length === 0 ? (
-                              /* EMPTY DROP ZONE PLACEHOLDER */
-                              <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-2xl p-6 flex flex-col items-center justify-center text-center my-auto min-h-[180px] bg-neutral-50/40 dark:bg-neutral-900/20">
-                                <CaralIcon name="cube" size={26} classname="text-neutral-400 mb-2" />
-                                <span className="font-bold text-xs text-neutral-700 dark:text-neutral-300">
-                                  Arrastra o añade bloques aquí
-                                </span>
-                                <span className="text-[11px] text-neutral-400 mt-0.5 max-w-xs">
-                                  Arrastra Títulos, Párrafos o Bloques Explicativos desde "Recursos"
-                                </span>
-
-                                <div className="flex items-center flex-wrap gap-1.5 mt-3 justify-center">
-                                  <button
-                                    onClick={() => handleAddBlockToColumn(cIdx, 'title')}
-                                    className="px-2.5 py-1 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 hover:border-blue-500 hover:text-blue-600 text-xs font-semibold flex items-center gap-1 transition-all shadow-2xs cursor-pointer"
-                                  >
-                                    <span className="font-bold">H1</span>
-                                    <span>+ Título</span>
-                                  </button>
-                                  <button
-                                    onClick={() => handleAddBlockToColumn(cIdx, 'explicativo')}
-                                    className="px-2.5 py-1 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 hover:border-blue-500 hover:text-blue-600 text-xs font-semibold flex items-center gap-1 transition-all shadow-2xs cursor-pointer"
-                                  >
-                                    <CaralIcon name="rigthJoinW" size={12} />
-                                    <span>+ Explicativo</span>
-                                  </button>
-                                  <button
-                                    onClick={() => handleAddBlockToColumn(cIdx, 'paragraph')}
-                                    className="px-2.5 py-1 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 hover:border-blue-500 hover:text-blue-600 text-xs font-semibold flex items-center gap-1 transition-all shadow-2xs cursor-pointer"
-                                  >
-                                    <span>+ Párrafo</span>
-                                  </button>
-                                  <button
-                                    onClick={() => handleAddBlockToColumn(cIdx, 'image')}
-                                    className="px-2.5 py-1 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 hover:border-blue-500 hover:text-blue-600 text-xs font-semibold flex items-center gap-1 transition-all shadow-2xs cursor-pointer"
-                                  >
-                                    <CaralIcon name="image" size={12} />
-                                    <span>+ Imagen</span>
-                                  </button>
-                                </div>
+                        } ${!isLastCol ? 'border-r border-dashed border-neutral-200/80 dark:border-neutral-800' : ''
+                        } ${isOver ? 'ring-4 ring-inset ring-blue-500/40 bg-blue-50/20' : ''}`}
+                    >
+                      {isImageCol ? (
+                        /* FULL-BLEED IMAGE BLOCK (NO MARGIN, EXTENDS TO BORDER) */
+                        <div className="w-full h-full relative group flex items-center justify-center bg-neutral-50 dark:bg-neutral-900/60">
+                          {col.imageUrl ? (
+                            <>
+                              <img
+                                src={col.imageUrl}
+                                alt="Col Media"
+                                className="w-full h-full object-cover"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <Button
+                                  variant="light"
+                                  size="sm"
+                                  onClick={() => handleTriggerUpload(cIdx)}
+                                  iconName="image"
+                                >
+                                  Cambiar
+                                </Button>
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  onClick={() => handleUpdateColumn(cIdx, { imageUrl: '' })}
+                                  iconName="trash"
+                                >
+                                  Quitar
+                                </Button>
                               </div>
-                            ) : (
-                              /* LIST OF DROPPED BLOCKS */
-                              <div className="space-y-4 w-full">
-                                {blocks.map((block) => {
-                                  const isSelected = selectedBlockId === block.id;
+                            </>
+                          ) : (
+                            /* EMPTY FULL-BLEED IMAGE PLACEHOLDER (Figma 848:8563 Frame 8599) */
+                            <button
+                              onClick={() => handleTriggerUpload(cIdx)}
+                              className="w-full h-full flex flex-col items-center justify-center p-8 hover:bg-blue-50/20 dark:hover:bg-blue-950/20 transition-all cursor-pointer group"
+                            >
+                              <div className="w-14 h-14 rounded-full bg-neutral-200/80 dark:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-300 group-hover:bg-blue-500 group-hover:text-white group-hover:scale-110 transition-all shadow-sm mb-3">
+                                <CaralIcon name="plus" size={24} />
+                              </div>
+                              <span className="font-poppins font-medium text-sm text-neutral-800 dark:text-neutral-200 group-hover:text-blue-600">
+                                Agregar imagen
+                              </span>
+                              <span className="text-xs text-neutral-400 mt-1">
+                                Imagen a sangre completa
+                              </span>
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        /* CONTENT DROP ZONE / EDITABLE BLOCKS */
+                        <div
+                          className={`w-full flex flex-col ${isAutoHeight ? 'h-auto max-h-full' : 'h-full'
+                            } ${colPaddingClass} ${colGlassClass} overflow-y-auto transition-all`}
+                        >
+                          <div className={`flex-1 flex flex-col w-full ${!isAutoHeight ? colVAlignClass : ''}`}>
+                            <div className="space-y-4 w-full">
+                              {blocks.length === 0 ? (
+                                /* EMPTY DROP ZONE PLACEHOLDER */
+                                <div className="border-2 border-dashed border-neutral-300 dark:border-neutral-700 rounded-2xl p-6 flex flex-col items-center justify-center text-center my-auto min-h-[180px] bg-neutral-50/40 dark:bg-neutral-900/20">
+                                  <CaralIcon name="cube" size={26} classname="text-neutral-400 mb-2" />
+                                  <span className="font-bold text-xs text-neutral-700 dark:text-neutral-300">
+                                    Arrastra o añade bloques aquí
+                                  </span>
+                                  <span className="text-[11px] text-neutral-400 mt-0.5 max-w-xs">
+                                    Arrastra Títulos, Párrafos o Bloques Explicativos desde "Recursos"
+                                  </span>
 
-                                  return (
-                                    <div
-                                      key={block.id}
-                                      onClick={() => {
-                                        setSelectedBlockId(block.id);
-                                        if (block.type === 'explicativo') {
-                                          setRightSidebar({
-                                            open: true,
-                                            blockType: 'explicativo',
-                                            targetColIndex: cIdx,
-                                            targetBlockId: block.id,
-                                          });
-                                        }
-                                      }}
-                                      className={`group relative rounded-xl p-3 transition-all cursor-pointer border ${isSelected
-                                          ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/20 dark:bg-blue-950/20 shadow-sm'
-                                          : 'border-transparent hover:border-neutral-200 dark:hover:border-neutral-800 hover:bg-neutral-50/50 dark:hover:bg-neutral-900/30'
-                                        }`}
+                                  <div className="flex items-center flex-wrap gap-1.5 mt-3 justify-center">
+                                    <button
+                                      onClick={() => handleAddBlockToColumn(cIdx, 'title')}
+                                      className="px-2.5 py-1 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 hover:border-blue-500 hover:text-blue-600 text-xs font-semibold flex items-center gap-1 transition-all shadow-2xs cursor-pointer"
                                     >
-                                      <div className="flex items-center justify-between mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-500">
-                                          {block.type === 'title'
-                                            ? 'H1 Título'
-                                            : block.type === 'explicativo'
-                                              ? 'Bloque Explicativo'
-                                              : block.type === 'image'
-                                                ? 'Bloque Imagen'
-                                                : 'Párrafo'}
-                                        </span>
-                                        <button
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            handleDeleteBlock(cIdx, block.id);
-                                          }}
-                                          className="text-neutral-400 hover:text-red-500 p-1 cursor-pointer"
-                                          title="Eliminar bloque"
-                                        >
-                                          <CaralIcon name="trash" size={12} />
-                                        </button>
-                                      </div>
+                                      <span className="font-bold">H1</span>
+                                      <span>+ Título</span>
+                                    </button>
+                                    <button
+                                      onClick={() => handleAddBlockToColumn(cIdx, 'explicativo')}
+                                      className="px-2.5 py-1 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 hover:border-blue-500 hover:text-blue-600 text-xs font-semibold flex items-center gap-1 transition-all shadow-2xs cursor-pointer"
+                                    >
+                                      <CaralIcon name="rigthJoinW" size={12} />
+                                      <span>+ Explicativo</span>
+                                    </button>
+                                    <button
+                                      onClick={() => handleAddBlockToColumn(cIdx, 'paragraph')}
+                                      className="px-2.5 py-1 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 hover:border-blue-500 hover:text-blue-600 text-xs font-semibold flex items-center gap-1 transition-all shadow-2xs cursor-pointer"
+                                    >
+                                      <span>+ Párrafo</span>
+                                    </button>
+                                    <button
+                                      onClick={() => handleAddBlockToColumn(cIdx, 'image')}
+                                      className="px-2.5 py-1 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 hover:border-blue-500 hover:text-blue-600 text-xs font-semibold flex items-center gap-1 transition-all shadow-2xs cursor-pointer"
+                                    >
+                                      <CaralIcon name="image" size={12} />
+                                      <span>+ Imagen</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              ) : (
+                                /* LIST OF DROPPED BLOCKS */
+                                <div className="space-y-4 w-full">
+                                  {blocks.map((block) => {
+                                    const isSelected = selectedBlockId === block.id;
 
-                                      {block.type === 'title' ? (
-                                        <input
-                                          type="text"
-                                          value={block.content || block.title || ''}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelectedBlockId(block.id);
+                                    return (
+                                      <div
+                                        key={block.id}
+                                        onClick={() => {
+                                          setSelectedBlockId(block.id);
+                                          if (block.type === 'explicativo') {
                                             setRightSidebar({
                                               open: true,
-                                              blockType: 'text',
+                                              blockType: 'explicativo',
                                               targetColIndex: cIdx,
                                               targetBlockId: block.id,
                                             });
-                                          }}
-                                          onChange={(e) =>
-                                            handleUpdateBlockField(cIdx, block.id, {
-                                              content: e.target.value,
-                                              title: e.target.value,
-                                            })
                                           }
-                                          style={getBlockInlineStyle(block.style, 28)}
-                                          placeholder="Escribe el título aquí..."
-                                          className="w-full text-2xl xl:text-3xl font-bold font-poppins bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 text-neutral-900 dark:text-neutral-100"
-                                        />
-                                      ) : block.type === 'explicativo' ? (
-                                        /* BLOQUE EXPLICATIVO (Figma 843:7203) */
-                                        <div className="flex items-start gap-3">
-                                          <div
+                                        }}
+                                        className={`group relative rounded-xl p-3 transition-all cursor-pointer border ${isSelected
+                                          ? 'border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/20 dark:bg-blue-950/20 shadow-sm'
+                                          : 'border-transparent hover:border-neutral-200 dark:hover:border-neutral-800 hover:bg-neutral-50/50 dark:hover:bg-neutral-900/30'
+                                          }`}
+                                      >
+                                        <div className="flex items-center justify-between mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-500">
+                                            {block.type === 'title'
+                                              ? 'H1 Título'
+                                              : block.type === 'explicativo'
+                                                ? 'Bloque Explicativo'
+                                                : block.type === 'image'
+                                                  ? 'Bloque Imagen'
+                                                  : 'Párrafo'}
+                                          </span>
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleDeleteBlock(cIdx, block.id);
+                                            }}
+                                            className="text-neutral-400 hover:text-red-500 p-1 cursor-pointer"
+                                            title="Eliminar bloque"
+                                          >
+                                            <CaralIcon name="trash" size={12} />
+                                          </button>
+                                        </div>
+
+                                        {block.type === 'title' ? (
+                                          <input
+                                            type="text"
+                                            value={block.content || block.title || ''}
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               setSelectedBlockId(block.id);
                                               setRightSidebar({
                                                 open: true,
-                                                blockType: 'explicativo',
+                                                blockType: 'text',
                                                 targetColIndex: cIdx,
                                                 targetBlockId: block.id,
                                               });
-                                              setIsIconPickerOpen(true);
                                             }}
-                                            className="flex-shrink-0 mt-0.5 text-neutral-800 dark:text-neutral-200 hover:text-blue-500 transition-colors p-1.5 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer"
-                                            title="Cambiar ícono"
-                                          >
-                                            <CaralIcon
-                                              name={(block.icon as any) || 'settings'}
-                                              size={
-                                                block.size === 'large' ? 24 : block.size === 'small' ? 18 : 20
-                                              }
-                                            />
-                                          </div>
+                                            onChange={(e) =>
+                                              handleUpdateBlockField(cIdx, block.id, {
+                                                content: e.target.value,
+                                                title: e.target.value,
+                                              })
+                                            }
+                                            style={getBlockInlineStyle(block.style, 36)}
+                                            placeholder="Escribe el título aquí..."
+                                            className="w-full text-3xl xl:text-4xl 2xl:text-5xl font-extrabold font-poppins bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 text-neutral-900 dark:text-neutral-100 tracking-tight leading-tight mb-2"
+                                          />
+                                        ) : block.type === 'explicativo' ? (
+                                          /* BLOQUE EXPLICATIVO (Figma 843:7203) */
+                                          <div className={`flex items-start transition-all ${block.size === 'large' ? 'gap-4 my-2.5 xl:my-4' : block.size === 'small' ? 'gap-2 my-1' : 'gap-3 my-2'
+                                            }`}>
+                                            <div
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedBlockId(block.id);
+                                                setRightSidebar({
+                                                  open: true,
+                                                  blockType: 'explicativo',
+                                                  targetColIndex: cIdx,
+                                                  targetBlockId: block.id,
+                                                });
+                                                setIsIconPickerOpen(true);
+                                              }}
+                                              className={`flex-shrink-0 text-neutral-800 dark:text-neutral-200 hover:text-blue-500 transition-colors rounded-xl hover:bg-neutral-100 dark:hover:bg-neutral-800 cursor-pointer ${block.size === 'large' ? 'p-1 mt-1' : 'p-1 mt-0.5'
+                                                }`}
+                                              title="Cambiar ícono"
+                                            >
+                                              <CaralIcon
+                                                name={(block.icon as any) || 'settings'}
+                                                size={
+                                                  block.size === 'large' ? 32 : block.size === 'small' ? 18 : 24
+                                                }
+                                              />
+                                            </div>
 
-                                          <div className="flex-1 space-y-1">
-                                            <input
-                                              type="text"
-                                              value={block.title ?? block.content ?? ''}
-                                              onChange={(e) =>
-                                                handleUpdateBlockField(cIdx, block.id, {
-                                                  title: e.target.value,
-                                                })
-                                              }
-                                              style={getBlockInlineStyle(block.style, 18)}
-                                              placeholder="Título del beneficio o punto clave..."
-                                              className="w-full text-base xl:text-lg font-bold font-poppins bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 text-neutral-900 dark:text-neutral-100"
-                                            />
-                                            <textarea
-                                              value={block.description ?? ''}
-                                              onChange={(e) =>
-                                                handleUpdateBlockField(cIdx, block.id, {
-                                                  description: e.target.value,
-                                                })
-                                              }
-                                              placeholder="Descripción o detalles..."
-                                              rows={2}
-                                              className="w-full text-xs xl:text-sm text-neutral-600 dark:text-neutral-400 bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 resize-none leading-relaxed"
-                                            />
+                                            <div className="flex-1 space-y-1">
+                                              <input
+                                                type="text"
+                                                value={block.title ?? block.content ?? ''}
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setSelectedBlockId(block.id);
+                                                  setRightSidebar({
+                                                    open: true,
+                                                    blockType: 'explicativo',
+                                                    targetColIndex: cIdx,
+                                                    targetBlockId: block.id,
+                                                  });
+                                                }}
+                                                onChange={(e) =>
+                                                  handleUpdateBlockField(cIdx, block.id, {
+                                                    title: e.target.value,
+                                                  })
+                                                }
+                                                style={getBlockInlineStyle(
+                                                  block.style,
+                                                  block.size === 'large' ? 22 : block.size === 'small' ? 14 : 18
+                                                )}
+                                                placeholder="Título del beneficio o punto clave..."
+                                                className={`w-full font-extrabold font-poppins bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 text-neutral-900 dark:text-neutral-100 tracking-tight leading-snug ${block.size === 'large'
+                                                    ? 'text-xl xl:text-2xl'
+                                                    : block.size === 'small'
+                                                      ? 'text-sm'
+                                                      : 'text-base xl:text-lg'
+                                                  }`}
+                                              />
+                                              <textarea
+                                                value={block.description ?? ''}
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setSelectedBlockId(block.id);
+                                                  setRightSidebar({
+                                                    open: true,
+                                                    blockType: 'explicativo',
+                                                    targetColIndex: cIdx,
+                                                    targetBlockId: block.id,
+                                                  });
+                                                }}
+                                                onChange={(e) =>
+                                                  handleUpdateBlockField(cIdx, block.id, {
+                                                    description: e.target.value,
+                                                  })
+                                                }
+                                                placeholder="Descripción o detalles..."
+                                                rows={2}
+                                                className={`w-full text-neutral-600 dark:text-neutral-400 bg-transparent border-none focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1 resize-none leading-relaxed font-normal ${block.size === 'large'
+                                                    ? 'text-sm xl:text-base mt-1'
+                                                    : block.size === 'small'
+                                                      ? 'text-xs'
+                                                      : 'text-xs xl:text-sm mt-0.5'
+                                                  }`}
+                                              />
+                                            </div>
                                           </div>
-                                        </div>
-                                      ) : block.type === 'image' ? (
-                                        /* BLOQUE DE IMAGEN */
-                                        <div
-                                          className={`w-full flex ${block.imageAlign === 'left'
+                                        ) : block.type === 'image' ? (
+                                          /* BLOQUE DE IMAGEN */
+                                          <div
+                                            className={`w-full flex ${block.imageAlign === 'left'
                                               ? 'justify-start'
                                               : block.imageAlign === 'right'
                                                 ? 'justify-end'
                                                 : 'justify-center'
-                                            }`}
-                                        >
-                                          <div
+                                              }`}
+                                          >
+                                            <div
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedBlockId(block.id);
+                                                setRightSidebar({
+                                                  open: true,
+                                                  blockType: 'image',
+                                                  targetColIndex: cIdx,
+                                                  targetBlockId: block.id,
+                                                });
+                                              }}
+                                              style={{
+                                                width:
+                                                  block.imageSize === '25'
+                                                    ? '25%'
+                                                    : block.imageSize === '50'
+                                                      ? '50%'
+                                                      : block.imageSize === '75'
+                                                        ? '75%'
+                                                        : '100%',
+                                                padding:
+                                                  block.imagePadding === '25'
+                                                    ? '25px'
+                                                    : block.imagePadding === '10'
+                                                      ? '10px'
+                                                      : '0px',
+                                              }}
+                                              className="rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 min-h-[120px] flex items-center justify-center relative group/img cursor-pointer transition-all shadow-sm"
+                                            >
+                                              {block.imageUrl ? (
+                                                <>
+                                                  <img
+                                                    src={block.imageUrl}
+                                                    alt={block.title || 'Imagen del bloque'}
+                                                    className={`w-full h-auto max-h-[360px] object-cover ${block.imagePadding && block.imagePadding !== '0'
+                                                      ? 'rounded-lg shadow-sm'
+                                                      : 'rounded-xl'
+                                                      }`}
+                                                  />
+                                                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-xl">
+                                                    <button
+                                                      type="button"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setSelectedBlockId(block.id);
+                                                        setRightSidebar({
+                                                          open: true,
+                                                          blockType: 'image',
+                                                          targetColIndex: cIdx,
+                                                          targetBlockId: block.id,
+                                                        });
+                                                      }}
+                                                      className="px-3 py-1.5 rounded-lg bg-white/95 dark:bg-neutral-800/95 text-neutral-900 dark:text-neutral-100 text-xs font-semibold shadow-md flex items-center gap-1.5 hover:bg-white cursor-pointer"
+                                                    >
+                                                      <CaralIcon name="image" size={14} />
+                                                      <span>Cambiar</span>
+                                                    </button>
+                                                    <button
+                                                      type="button"
+                                                      onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleDeleteBlock(cIdx, block.id);
+                                                      }}
+                                                      className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 hover:bg-red-700 cursor-pointer"
+                                                    >
+                                                      <CaralIcon name="trash" size={14} />
+                                                      <span>Eliminar</span>
+                                                    </button>
+                                                  </div>
+                                                </>
+                                              ) : (
+                                                <div className="flex flex-col items-center justify-center p-6 text-center text-neutral-400 hover:text-blue-500 transition-colors">
+                                                  <CaralIcon name="image" size={32} classname="mb-2 text-neutral-400" />
+                                                  <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+                                                    Haz clic para agregar una imagen
+                                                  </span>
+                                                  <span className="text-[10px] text-neutral-400 mt-0.5">
+                                                    Carga desde tu equipo o pega una URL
+                                                  </span>
+                                                </div>
+                                              )}
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <textarea
+                                            value={block.content || block.description || ''}
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               setSelectedBlockId(block.id);
                                               setRightSidebar({
                                                 open: true,
-                                                blockType: 'image',
+                                                blockType: 'text',
                                                 targetColIndex: cIdx,
                                                 targetBlockId: block.id,
                                               });
                                             }}
-                                            style={{
-                                              width:
-                                                block.imageSize === '25'
-                                                  ? '25%'
-                                                  : block.imageSize === '50'
-                                                    ? '50%'
-                                                    : block.imageSize === '75'
-                                                      ? '75%'
-                                                      : '100%',
-                                              padding:
-                                                block.imagePadding === '25'
-                                                  ? '25px'
-                                                  : block.imagePadding === '10'
-                                                    ? '10px'
-                                                    : '0px',
-                                            }}
-                                            className="rounded-xl overflow-hidden border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 min-h-[120px] flex items-center justify-center relative group/img cursor-pointer transition-all shadow-sm"
-                                          >
-                                            {block.imageUrl ? (
-                                              <>
-                                                <img
-                                                  src={block.imageUrl}
-                                                  alt={block.title || 'Imagen del bloque'}
-                                                  className={`w-full h-auto max-h-[360px] object-cover ${block.imagePadding && block.imagePadding !== '0'
-                                                      ? 'rounded-lg shadow-sm'
-                                                      : 'rounded-xl'
-                                                    }`}
-                                                />
-                                                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center gap-2 rounded-xl">
-                                                  <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      setSelectedBlockId(block.id);
-                                                      setRightSidebar({
-                                                        open: true,
-                                                        blockType: 'image',
-                                                        targetColIndex: cIdx,
-                                                        targetBlockId: block.id,
-                                                      });
-                                                    }}
-                                                    className="px-3 py-1.5 rounded-lg bg-white/95 dark:bg-neutral-800/95 text-neutral-900 dark:text-neutral-100 text-xs font-semibold shadow-md flex items-center gap-1.5 hover:bg-white cursor-pointer"
-                                                  >
-                                                    <CaralIcon name="image" size={14} />
-                                                    <span>Cambiar</span>
-                                                  </button>
-                                                  <button
-                                                    type="button"
-                                                    onClick={(e) => {
-                                                      e.stopPropagation();
-                                                      handleDeleteBlock(cIdx, block.id);
-                                                    }}
-                                                    className="px-3 py-1.5 rounded-lg bg-red-600 text-white text-xs font-semibold shadow-md flex items-center gap-1.5 hover:bg-red-700 cursor-pointer"
-                                                  >
-                                                    <CaralIcon name="trash" size={14} />
-                                                    <span>Eliminar</span>
-                                                  </button>
-                                                </div>
-                                              </>
-                                            ) : (
-                                              <div className="flex flex-col items-center justify-center p-6 text-center text-neutral-400 hover:text-blue-500 transition-colors">
-                                                <CaralIcon name="image" size={32} classname="mb-2 text-neutral-400" />
-                                                <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">
-                                                  Haz clic para agregar una imagen
-                                                </span>
-                                                <span className="text-[10px] text-neutral-400 mt-0.5">
-                                                  Carga desde tu equipo o pega una URL
-                                                </span>
-                                              </div>
-                                            )}
-                                          </div>
-                                        </div>
-                                      ) : (
-                                        <textarea
-                                          value={block.content || block.description || ''}
-                                          onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelectedBlockId(block.id);
-                                            setRightSidebar({
-                                              open: true,
-                                              blockType: 'text',
-                                              targetColIndex: cIdx,
-                                              targetBlockId: block.id,
-                                            });
-                                          }}
-                                          onChange={(e) =>
-                                            handleUpdateBlockField(cIdx, block.id, {
-                                              content: e.target.value,
-                                              description: e.target.value,
-                                            })
-                                          }
-                                          style={getBlockInlineStyle(block.style, 16)}
-                                          placeholder="Escribe el texto explicativo o puntos clave..."
-                                          rows={3}
-                                          className="w-full text-sm xl:text-base bg-transparent border border-transparent hover:border-neutral-200 dark:hover:border-neutral-800 focus:border-blue-500 rounded-lg p-2 focus:outline-none resize-none text-neutral-700 dark:text-neutral-300 leading-relaxed"
-                                        />
-                                      )}
-                                    </div>
-                                  );
-                                })}
+                                            onChange={(e) =>
+                                              handleUpdateBlockField(cIdx, block.id, {
+                                                content: e.target.value,
+                                                description: e.target.value,
+                                              })
+                                            }
+                                            style={getBlockInlineStyle(block.style, 16)}
+                                            placeholder="Escribe el texto explicativo o puntos clave..."
+                                            rows={3}
+                                            className="w-full text-sm xl:text-base bg-transparent border border-transparent hover:border-neutral-200 dark:hover:border-neutral-800 focus:border-blue-500 rounded-lg p-2 focus:outline-none resize-none text-neutral-700 dark:text-neutral-300 leading-relaxed"
+                                          />
+                                        )}
+                                      </div>
+                                    );
+                                  })}
 
-                                {/* Quick add more buttons */}
-                                <div className="flex items-center gap-1.5 pt-1 opacity-0 group-hover/col:opacity-100 transition-opacity">
-                                  <button
-                                    onClick={() => handleAddBlockToColumn(cIdx, 'title')}
-                                    className="px-2 py-0.5 rounded-md bg-white/70 dark:bg-neutral-800/70 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-neutral-800 hover:text-blue-600 text-[11px] font-medium border border-neutral-200/50 dark:border-neutral-700/50 transition-colors cursor-pointer"
-                                  >
-                                    + Título
-                                  </button>
-                                  <button
-                                    onClick={() => handleAddBlockToColumn(cIdx, 'explicativo')}
-                                    className="px-2 py-0.5 rounded-md bg-white/70 dark:bg-neutral-800/70 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-neutral-800 hover:text-blue-600 text-[11px] font-medium border border-neutral-200/50 dark:border-neutral-700/50 transition-colors cursor-pointer"
-                                  >
-                                    + Explicativo
-                                  </button>
-                                  <button
-                                    onClick={() => handleAddBlockToColumn(cIdx, 'paragraph')}
-                                    className="px-2 py-0.5 rounded-md bg-white/70 dark:bg-neutral-800/70 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-neutral-800 hover:text-blue-600 text-[11px] font-medium border border-neutral-200/50 dark:border-neutral-700/50 transition-colors cursor-pointer"
-                                  >
-                                    + Párrafo
-                                  </button>
-                                  <button
-                                    onClick={() => handleAddBlockToColumn(cIdx, 'image')}
-                                    className="px-2 py-0.5 rounded-md bg-white/70 dark:bg-neutral-800/70 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-neutral-800 hover:text-blue-600 text-[11px] font-medium border border-neutral-200/50 dark:border-neutral-700/50 transition-colors cursor-pointer flex items-center gap-1"
-                                  >
-                                    <CaralIcon name="image" size={11} />
-                                    <span>+ Imagen</span>
-                                  </button>
+                                  {/* Quick add more buttons */}
+                                  <div className="flex items-center gap-1.5 pt-1 opacity-0 group-hover/col:opacity-100 transition-opacity">
+                                    <button
+                                      onClick={() => handleAddBlockToColumn(cIdx, 'title')}
+                                      className="px-2 py-0.5 rounded-md bg-white/70 dark:bg-neutral-800/70 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-neutral-800 hover:text-blue-600 text-[11px] font-medium border border-neutral-200/50 dark:border-neutral-700/50 transition-colors cursor-pointer"
+                                    >
+                                      + Título
+                                    </button>
+                                    <button
+                                      onClick={() => handleAddBlockToColumn(cIdx, 'explicativo')}
+                                      className="px-2 py-0.5 rounded-md bg-white/70 dark:bg-neutral-800/70 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-neutral-800 hover:text-blue-600 text-[11px] font-medium border border-neutral-200/50 dark:border-neutral-700/50 transition-colors cursor-pointer"
+                                    >
+                                      + Explicativo
+                                    </button>
+                                    <button
+                                      onClick={() => handleAddBlockToColumn(cIdx, 'paragraph')}
+                                      className="px-2 py-0.5 rounded-md bg-white/70 dark:bg-neutral-800/70 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-neutral-800 hover:text-blue-600 text-[11px] font-medium border border-neutral-200/50 dark:border-neutral-700/50 transition-colors cursor-pointer"
+                                    >
+                                      + Párrafo
+                                    </button>
+                                    <button
+                                      onClick={() => handleAddBlockToColumn(cIdx, 'image')}
+                                      className="px-2 py-0.5 rounded-md bg-white/70 dark:bg-neutral-800/70 hover:bg-blue-50 dark:hover:bg-blue-950/40 text-neutral-800 hover:text-blue-600 text-[11px] font-medium border border-neutral-200/50 dark:border-neutral-700/50 transition-colors cursor-pointer flex items-center gap-1"
+                                    >
+                                      <CaralIcon name="image" size={11} />
+                                      <span>+ Imagen</span>
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            )}
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Column footer indicator / quick config */}
+                          <div className="pt-2 flex items-center justify-between text-xs text-neutral-400 opacity-40 group-hover/col:opacity-100 transition-opacity">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedBlockId(null);
+                                setRightSidebar({
+                                  open: true,
+                                  blockType: 'column',
+                                  targetColIndex: cIdx,
+                                });
+                              }}
+                              className="flex items-center gap-1.5 font-mono text-[11px] text-neutral-600 dark:text-neutral-300 hover:text-blue-600 bg-white/70 dark:bg-neutral-800/70 backdrop-blur-md px-2 py-0.5 rounded-lg border border-neutral-200/60 dark:border-neutral-700/60 shadow-2xs transition-colors cursor-pointer"
+                              title="Configurar alineación vertical, padding y efecto vidrio de la columna"
+                            >
+                              <CaralIcon name="gear" size={12} />
+                              <span>Columna {cIdx + 1}</span>
+                            </button>
+                            <button
+                              onClick={() => handleSetImageColumn(cIdx)}
+                              className="text-blue-500 hover:text-blue-600 hover:underline flex items-center gap-1 font-medium text-[11px] transition-colors cursor-pointer bg-white/70 dark:bg-neutral-800/70 backdrop-blur-md px-2 py-0.5 rounded-lg border border-neutral-200/60 dark:border-neutral-700/60 shadow-2xs"
+                              title="Estilo de marca: Máximo 1 columna con imagen a sangre por diapositiva"
+                            >
+                              <CaralIcon name="image" size={12} />
+                              <span>Hacer Imagen a Sangre</span>
+                            </button>
                           </div>
                         </div>
-
-                        {/* Column footer indicator / quick config */}
-                        <div className="pt-2 flex items-center justify-between text-xs text-neutral-400 opacity-40 group-hover/col:opacity-100 transition-opacity">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedBlockId(null);
-                              setRightSidebar({
-                                open: true,
-                                blockType: 'column',
-                                targetColIndex: cIdx,
-                              });
-                            }}
-                            className="flex items-center gap-1.5 font-mono text-[11px] text-neutral-600 dark:text-neutral-300 hover:text-blue-600 bg-white/70 dark:bg-neutral-800/70 backdrop-blur-md px-2 py-0.5 rounded-lg border border-neutral-200/60 dark:border-neutral-700/60 shadow-2xs transition-colors cursor-pointer"
-                            title="Configurar alineación vertical, padding y efecto vidrio de la columna"
-                          >
-                            <CaralIcon name="gear" size={12} />
-                            <span>Columna {cIdx + 1}</span>
-                          </button>
-                          <button
-                            onClick={() => handleSetImageColumn(cIdx)}
-                            className="text-blue-500 hover:text-blue-600 hover:underline flex items-center gap-1 font-medium text-[11px] transition-colors cursor-pointer bg-white/70 dark:bg-neutral-800/70 backdrop-blur-md px-2 py-0.5 rounded-lg border border-neutral-200/60 dark:border-neutral-700/60 shadow-2xs"
-                            title="Estilo de marca: Máximo 1 columna con imagen a sangre por diapositiva"
-                          >
-                            <CaralIcon name="image" size={12} />
-                            <span>Hacer Imagen a Sangre</span>
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -2075,11 +2127,10 @@ export default function PresentationEditor({
                           key={haz.id}
                           type="button"
                           onClick={() => handleSelectHaz(haz.id)}
-                          className={`p-2 rounded-xl border text-left transition-all relative overflow-hidden flex flex-col gap-1.5 cursor-pointer group ${
-                            isSelected
+                          className={`p-2 rounded-xl border text-left transition-all relative overflow-hidden flex flex-col gap-1.5 cursor-pointer group ${isSelected
                               ? 'border-2 border-blue-500 ring-2 ring-blue-500/20 bg-blue-50/40 dark:bg-blue-950/50 shadow-sm'
                               : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/50'
-                          }`}
+                            }`}
                         >
                           <div className="w-full h-12 rounded-lg bg-neutral-950 flex items-center justify-center overflow-hidden relative border border-neutral-800/80">
                             <img
@@ -2130,11 +2181,10 @@ export default function PresentationEditor({
                         <button
                           type="button"
                           onClick={() => handleSelectHazPosition('top-left')}
-                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${
-                            (currentSlide.hazPosition || 'center') === 'top-left'
+                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${(currentSlide.hazPosition || 'center') === 'top-left'
                               ? 'border-2 border-blue-500 bg-blue-500 text-white shadow-md'
                               : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-600 dark:text-neutral-400 bg-white dark:bg-neutral-900'
-                          }`}
+                            }`}
                           title="Superior Izquierda"
                         >
                           ↖
@@ -2144,11 +2194,10 @@ export default function PresentationEditor({
                         <button
                           type="button"
                           onClick={() => handleSelectHazPosition('top')}
-                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${
-                            currentSlide.hazPosition === 'top'
+                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${currentSlide.hazPosition === 'top'
                               ? 'border-2 border-blue-500 bg-blue-500 text-white shadow-md'
                               : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-600 dark:text-neutral-400 bg-white dark:bg-neutral-900'
-                          }`}
+                            }`}
                           title="Superior Centro"
                         >
                           ↑
@@ -2158,11 +2207,10 @@ export default function PresentationEditor({
                         <button
                           type="button"
                           onClick={() => handleSelectHazPosition('top-right')}
-                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${
-                            currentSlide.hazPosition === 'top-right'
+                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${currentSlide.hazPosition === 'top-right'
                               ? 'border-2 border-blue-500 bg-blue-500 text-white shadow-md'
                               : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-600 dark:text-neutral-400 bg-white dark:bg-neutral-900'
-                          }`}
+                            }`}
                           title="Superior Derecha"
                         >
                           ↗
@@ -2177,11 +2225,10 @@ export default function PresentationEditor({
                         <button
                           type="button"
                           onClick={() => handleSelectHazPosition('center')}
-                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${
-                            (currentSlide.hazPosition || 'center') === 'center'
+                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${(currentSlide.hazPosition || 'center') === 'center'
                               ? 'border-2 border-blue-500 bg-blue-500 text-white shadow-md'
                               : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-600 dark:text-neutral-400 bg-white dark:bg-neutral-900'
-                          }`}
+                            }`}
                           title="Centro"
                         >
                           ⊙
@@ -2196,11 +2243,10 @@ export default function PresentationEditor({
                         <button
                           type="button"
                           onClick={() => handleSelectHazPosition('bottom-left')}
-                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${
-                            currentSlide.hazPosition === 'bottom-left'
+                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${currentSlide.hazPosition === 'bottom-left'
                               ? 'border-2 border-blue-500 bg-blue-500 text-white shadow-md'
                               : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-600 dark:text-neutral-400 bg-white dark:bg-neutral-900'
-                          }`}
+                            }`}
                           title="Inferior Izquierda"
                         >
                           ↙
@@ -2210,11 +2256,10 @@ export default function PresentationEditor({
                         <button
                           type="button"
                           onClick={() => handleSelectHazPosition('bottom')}
-                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${
-                            currentSlide.hazPosition === 'bottom'
+                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${currentSlide.hazPosition === 'bottom'
                               ? 'border-2 border-blue-500 bg-blue-500 text-white shadow-md'
                               : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-600 dark:text-neutral-400 bg-white dark:bg-neutral-900'
-                          }`}
+                            }`}
                           title="Inferior Centro"
                         >
                           ↓
@@ -2224,11 +2269,10 @@ export default function PresentationEditor({
                         <button
                           type="button"
                           onClick={() => handleSelectHazPosition('bottom-right')}
-                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${
-                            currentSlide.hazPosition === 'bottom-right'
+                          className={`h-11 rounded-xl border flex items-center justify-center font-bold text-sm transition-all cursor-pointer ${currentSlide.hazPosition === 'bottom-right'
                               ? 'border-2 border-blue-500 bg-blue-500 text-white shadow-md'
                               : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 text-neutral-600 dark:text-neutral-400 bg-white dark:bg-neutral-900'
-                          }`}
+                            }`}
                           title="Inferior Derecha"
                         >
                           ↘
@@ -2245,11 +2289,10 @@ export default function PresentationEditor({
                             key={pos.id}
                             type="button"
                             onClick={() => handleSelectHazPosition(pos.id)}
-                            className={`w-full px-3 py-2 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${
-                              isPosActive
+                            className={`w-full px-3 py-2 rounded-xl border flex items-center justify-between text-xs font-medium transition-all cursor-pointer ${isPosActive
                                 ? 'border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold'
                                 : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-neutral-900'
-                            }`}
+                              }`}
                           >
                             <div className="flex items-center gap-2">
                               <span className="font-mono text-sm">{pos.icon}</span>
@@ -2300,8 +2343,8 @@ export default function PresentationEditor({
                             }
                           }}
                           className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all cursor-pointer gap-1.5 ${currentHeightMode === 'full'
-                              ? 'border-2 border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 text-blue-600 shadow-sm'
-                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-neutral-900'
+                            ? 'border-2 border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 text-blue-600 shadow-sm'
+                            : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-neutral-900'
                             }`}
                         >
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -2323,8 +2366,8 @@ export default function PresentationEditor({
                             }
                           }}
                           className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all cursor-pointer gap-1.5 ${currentHeightMode === 'auto'
-                              ? 'border-2 border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 text-blue-600 shadow-sm'
-                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-neutral-900'
+                            ? 'border-2 border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 text-blue-600 shadow-sm'
+                            : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-neutral-900'
                             }`}
                         >
                           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -2394,8 +2437,8 @@ export default function PresentationEditor({
                                 }
                               }}
                               className={`flex flex-col items-center justify-center p-3 rounded-xl border transition-all cursor-pointer gap-1.5 ${isCurrent
-                                  ? 'border-2 border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 text-blue-600 shadow-sm'
-                                  : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-neutral-900'
+                                ? 'border-2 border-blue-500 bg-blue-50/60 dark:bg-blue-950/40 text-blue-600 shadow-sm'
+                                : 'border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-400 hover:bg-neutral-50 dark:hover:bg-neutral-800 hover:text-neutral-900'
                                 }`}
                             >
                               {v.icon}
@@ -2429,8 +2472,8 @@ export default function PresentationEditor({
                                 }
                               }}
                               className={`py-2 px-1 text-xs font-semibold rounded-lg transition-all cursor-pointer ${isCurrent
-                                  ? 'bg-white dark:bg-neutral-800 text-blue-600 shadow-sm border border-neutral-200/80 dark:border-neutral-700'
-                                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                                ? 'bg-white dark:bg-neutral-800 text-blue-600 shadow-sm border border-neutral-200/80 dark:border-neutral-700'
+                                : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
                                 }`}
                             >
                               {p}px
@@ -2457,15 +2500,15 @@ export default function PresentationEditor({
                           }
                         }}
                         className={`p-4 rounded-xl border-2 transition-all cursor-pointer flex items-center justify-between ${currentGlass
-                            ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-950/30'
-                            : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-950/50'
+                          ? 'border-blue-500 bg-blue-50/40 dark:bg-blue-950/30'
+                          : 'border-neutral-200 dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-950/50'
                           }`}
                       >
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-10 h-10 rounded-xl flex items-center justify-center transition-transform ${currentGlass
-                                ? 'bg-blue-600 text-white shadow-md'
-                                : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
+                              ? 'bg-blue-600 text-white shadow-md'
+                              : 'bg-neutral-200 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300'
                               }`}
                           >
                             <CaralIcon name="cube" size={20} />
@@ -2558,8 +2601,8 @@ export default function PresentationEditor({
                                   }
                                 }}
                                 className={`py-1.5 px-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${isCurrent
-                                    ? 'bg-white dark:bg-neutral-800 text-blue-600 shadow-sm border border-neutral-200/80 dark:border-neutral-700'
-                                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                                  ? 'bg-white dark:bg-neutral-800 text-blue-600 shadow-sm border border-neutral-200/80 dark:border-neutral-700'
+                                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
                                   }`}
                               >
                                 {sz}%
@@ -2664,8 +2707,8 @@ export default function PresentationEditor({
                                   }
                                 }}
                                 className={`h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${isCurrent
-                                    ? 'border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 shadow-sm'
-                                    : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                                  ? 'border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 shadow-sm'
+                                  : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                                   }`}
                                 title={al.label}
                               >
@@ -2706,8 +2749,8 @@ export default function PresentationEditor({
                                   }
                                 }}
                                 className={`py-1.5 px-2 text-xs font-semibold rounded-lg transition-all cursor-pointer ${isCurrent
-                                    ? 'bg-white dark:bg-neutral-800 text-blue-600 shadow-sm border border-neutral-200/80 dark:border-neutral-700'
-                                    : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
+                                  ? 'bg-white dark:bg-neutral-800 text-blue-600 shadow-sm border border-neutral-200/80 dark:border-neutral-700'
+                                  : 'text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-200'
                                   }`}
                               >
                                 {pad}px
@@ -3108,8 +3151,8 @@ export default function PresentationEditor({
                                         setActiveColorPicker(null);
                                       }}
                                       className={`w-9 h-9 rounded-lg border flex items-center justify-center transition-all hover:scale-110 cursor-pointer ${currentTextColor === c.hex
-                                          ? 'ring-2 ring-blue-500 ring-offset-2 border-transparent'
-                                          : 'border-neutral-300 dark:border-neutral-700'
+                                        ? 'ring-2 ring-blue-500 ring-offset-2 border-transparent'
+                                        : 'border-neutral-300 dark:border-neutral-700'
                                         }`}
                                       style={{ backgroundColor: c.hex }}
                                       title={`${c.name} (${c.role})`}
@@ -3174,8 +3217,8 @@ export default function PresentationEditor({
                                         setActiveColorPicker(null);
                                       }}
                                       className={`w-9 h-9 rounded-lg border flex items-center justify-center transition-all hover:scale-110 cursor-pointer ${currentBgColor === c.hex
-                                          ? 'ring-2 ring-blue-500 ring-offset-2 border-transparent'
-                                          : 'border-neutral-300 dark:border-neutral-700'
+                                        ? 'ring-2 ring-blue-500 ring-offset-2 border-transparent'
+                                        : 'border-neutral-300 dark:border-neutral-700'
                                         }`}
                                       style={{ backgroundColor: c.hex }}
                                       title={`${c.name} (${c.role})`}
@@ -3210,10 +3253,10 @@ export default function PresentationEditor({
                               })
                             }
                             className={`h-10 rounded-xl border flex items-center justify-center font-bold text-base transition-all cursor-pointer ${currentFontWeight === '700' ||
-                                currentFontWeight === '800' ||
-                                currentFontWeight === '900'
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
-                                : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                              currentFontWeight === '800' ||
+                              currentFontWeight === '900'
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
+                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                               }`}
                           >
                             B
@@ -3224,8 +3267,8 @@ export default function PresentationEditor({
                             type="button"
                             onClick={() => updateStyle({ italic: !style.italic })}
                             className={`h-10 rounded-xl border flex items-center justify-center italic font-serif text-base transition-all cursor-pointer ${style.italic
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
-                                : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
+                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                               }`}
                           >
                             I
@@ -3236,8 +3279,8 @@ export default function PresentationEditor({
                             type="button"
                             onClick={() => updateStyle({ underline: !style.underline })}
                             className={`h-10 rounded-xl border flex items-center justify-center underline text-base transition-all cursor-pointer ${style.underline
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
-                                : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
+                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                               }`}
                           >
                             U
@@ -3250,8 +3293,8 @@ export default function PresentationEditor({
                               updateStyle({ strikethrough: !style.strikethrough })
                             }
                             className={`h-10 rounded-xl border flex items-center justify-center line-through text-base transition-all cursor-pointer ${style.strikethrough
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
-                                : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
+                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                               }`}
                           >
                             S
@@ -3269,8 +3312,8 @@ export default function PresentationEditor({
                               })
                             }
                             className={`h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${style.listStyle === 'bullet'
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
-                                : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
+                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                               }`}
                             title="Lista de viñetas"
                           >
@@ -3302,8 +3345,8 @@ export default function PresentationEditor({
                               })
                             }
                             className={`h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${style.listStyle === 'number'
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
-                                : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
+                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                               }`}
                             title="Lista numerada"
                           >
@@ -3331,8 +3374,8 @@ export default function PresentationEditor({
                               })
                             }
                             className={`h-10 rounded-xl border flex items-center justify-center font-serif text-sm transition-all cursor-pointer ${style.script === 'superscript'
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
-                                : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
+                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                               }`}
                             title="Superíndice"
                           >
@@ -3349,8 +3392,8 @@ export default function PresentationEditor({
                               })
                             }
                             className={`h-10 rounded-xl border flex items-center justify-center font-serif text-sm transition-all cursor-pointer ${style.script === 'subscript'
-                                ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
-                                : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/40 text-blue-600'
+                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                               }`}
                             title="Subíndice"
                           >
@@ -3375,8 +3418,8 @@ export default function PresentationEditor({
                           type="button"
                           onClick={() => updateStyle({ align: 'left' })}
                           className={`h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${currentAlign === 'left'
-                              ? 'border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 shadow-sm'
-                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                            ? 'border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 shadow-sm'
+                            : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                             }`}
                           title="Alinear a la izquierda"
                         >
@@ -3402,8 +3445,8 @@ export default function PresentationEditor({
                           type="button"
                           onClick={() => updateStyle({ align: 'center' })}
                           className={`h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${currentAlign === 'center'
-                              ? 'border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 shadow-sm'
-                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                            ? 'border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 shadow-sm'
+                            : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                             }`}
                           title="Centrar"
                         >
@@ -3429,8 +3472,8 @@ export default function PresentationEditor({
                           type="button"
                           onClick={() => updateStyle({ align: 'right' })}
                           className={`h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${currentAlign === 'right'
-                              ? 'border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 shadow-sm'
-                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                            ? 'border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 shadow-sm'
+                            : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                             }`}
                           title="Alinear a la derecha"
                         >
@@ -3456,8 +3499,8 @@ export default function PresentationEditor({
                           type="button"
                           onClick={() => updateStyle({ align: 'justify' })}
                           className={`h-10 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${currentAlign === 'justify'
-                              ? 'border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 shadow-sm'
-                              : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
+                            ? 'border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-950/40 text-blue-600 shadow-sm'
+                            : 'border-neutral-200 dark:border-neutral-800 text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800'
                             }`}
                           title="Justificar"
                         >

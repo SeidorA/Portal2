@@ -360,8 +360,17 @@ export default function ProductosPage() {
   })
   const [isUploadingAssets, setIsUploadingAssets] = useState(false)
   const [isDraggingRack, setIsDraggingRack] = useState(false)
+  const [copiedRackAssetKey, setCopiedRackAssetKey] = useState<string | null>(null)
   const [activeColorSlot, setActiveColorSlot] = useState<'primary' | 'secondary' | 'accent' | 'text_main' | 'bg_light' | null>(null)
   const [previewMode, setPreviewMode] = useState<'light' | 'dark'>('light')
+
+  const handleCopyRackAssetUrl = (url: string, key: string) => {
+    navigator.clipboard.writeText(url)
+    setCopiedRackAssetKey(key)
+    setTimeout(() => {
+      setCopiedRackAssetKey(null)
+    }, 2000)
+  }
 
   // Create Form State
   const [newTitle, setNewTitle] = useState('')
@@ -3200,6 +3209,18 @@ export default function ProductosPage() {
 
                                 {/* Actions */}
                                 <div className="flex items-center gap-1 shrink-0">
+                                  <button
+                                    type="button"
+                                    onClick={() => handleCopyRackAssetUrl(asset.url, asset.id || asset.name || String(idx))}
+                                    className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
+                                      copiedRackAssetKey === (asset.id || asset.name || String(idx))
+                                        ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-400'
+                                        : 'hover:bg-white dark:hover:bg-neutral-700 text-neutral-500 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400'
+                                    }`}
+                                    title={copiedRackAssetKey === (asset.id || asset.name || String(idx)) ? '¡Enlace copiado!' : (t('resourcesAdmin.copyLink', 'Copiar enlace'))}
+                                  >
+                                    <CaralIcon name={copiedRackAssetKey === (asset.id || asset.name || String(idx)) ? 'check' : 'link'} size={14} />
+                                  </button>
                                   <a
                                     href={asset.url}
                                     download={asset.name}
