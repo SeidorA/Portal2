@@ -368,6 +368,18 @@ export default function BrandbookViewer({ pageType, product }: BrandbookViewerPr
                 <p className="text-xs text-neutral-800 mt-1">Aplicación del símbolo sobre el color primario</p>
               </div>
 
+              {/* Favicon / Pestaña de Navegador */}
+              {assets.favicon && (
+                <div className="flex flex-col rounded-2xl border border-neutral-200 dark:border-neutral-800 bg-container overflow-hidden p-6 items-center justify-center text-center shadow-2xs">
+                  <div className="w-28 h-28 rounded-2xl bg-neutral-100 dark:bg-neutral-800 border border-neutral-200 dark:border-neutral-700 flex flex-col items-center justify-center shadow-xs mb-4 p-2 gap-2">
+                    <img src={assets.favicon} alt="Favicon" className="w-10 h-10 object-contain" />
+                    <span className="text-[10px] text-neutral-500 font-mono">Favicon (Tab)</span>
+                  </div>
+                  <h4 className="text-sm font-bold text-neutral-900 dark:text-white">Favicon</h4>
+                  <p className="text-xs text-neutral-800 mt-1">Ícono de pestaña para navegadores y accesos</p>
+                </div>
+              )}
+
             </div>
           </div>
         </div>

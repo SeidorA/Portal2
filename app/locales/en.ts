@@ -311,6 +311,8 @@ export const en: Translations = {
     isologoNegativeBw: "Black & White (Negative)",
     isologoPositiveBwHint: "For light backgrounds / black ink print",
     isologoNegativeBwHint: "For dark backgrounds / white monochrome",
+    favicon: "Favicon / Browser Icon",
+    faviconHint: "Format .ico, .png or .svg for browser tabs and shortcuts",
     iconDark: "Icon / Isotype (Dark)",
     safetyZoneSection: "5. Safety Zone & Proportions",
     safetyZoneDesc: "Upload a diagram image depicting clearspace and minimum margins.",

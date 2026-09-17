@@ -199,6 +199,7 @@ interface ProductAssetsState {
   logo_dark?: string
   logo_positive_bw?: string
   logo_negative_bw?: string
+  favicon?: string
   safety_zone_image?: string
   icon_dark?: string
   cover_images?: string[]
@@ -351,6 +352,7 @@ export default function ProductosPage() {
     logo_dark: '',
     logo_positive_bw: '',
     logo_negative_bw: '',
+    favicon: '',
     safety_zone_image: '',
     icon_dark: '',
     cover_images: [],
@@ -528,6 +530,7 @@ export default function ProductosPage() {
       logo_dark: '',
       logo_positive_bw: '',
       logo_negative_bw: '',
+      favicon: '',
       safety_zone_image: '',
       icon_dark: '',
       cover_images: [],
@@ -782,6 +785,7 @@ export default function ProductosPage() {
       logo_dark: assetsData.logo_dark || '',
       logo_positive_bw: assetsData.logo_positive_bw || '',
       logo_negative_bw: assetsData.logo_negative_bw || '',
+      favicon: assetsData.favicon || '',
       safety_zone_image: assetsData.safety_zone_image || '',
       icon_dark: assetsData.icon_dark || '',
       cover_images: assetsData.cover_images || [],
@@ -2945,6 +2949,56 @@ export default function ProductosPage() {
                       ) : (
                         <div className="flex items-center flex-col opacity-80 hover:opacity-100 transition-opacity">
                           <FileUploader onUploadSuccess={(url) => setNewAssets({ ...newAssets, logo_negative_bw: url })} />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Favicon / Ícono de Navegador */}
+                  <div className="flex flex-col gap-2 p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-container sm:col-span-2">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-neutral-800 dark:text-neutral-200 block">
+                          {t('products.favicon', 'Favicon / Ícono de Navegador')}
+                        </span>
+                        <span className="text-[10px] text-neutral-500">
+                          {t('products.faviconHint', 'Formato .ico, .png o .svg para pestañas de navegador y accesos directos')}
+                        </span>
+                      </div>
+                      <span className="text-[10px] bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded font-mono font-bold border border-indigo-200 dark:border-indigo-800">
+                        Favicon
+                      </span>
+                    </div>
+                    <div className="h-32 rounded-lg bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] dark:bg-[radial-gradient(#334155_1px,transparent_1px)] bg-[size:12px_12px] bg-neutral-50 dark:bg-neutral-950/80 border border-neutral-200 dark:border-neutral-800 flex flex-col items-center justify-center overflow-hidden relative">
+                      {newAssets?.favicon ? (
+                        <div className="flex items-center gap-6">
+                          <div className="flex flex-col items-center gap-1.5">
+                            <div className="w-12 h-12 rounded-lg bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 flex items-center justify-center p-2 shadow-xs">
+                              <img src={newAssets.favicon} alt="Favicon" className="w-8 h-8 object-contain" />
+                            </div>
+                            <span className="text-[10px] text-neutral-500 font-mono">Vista 32px</span>
+                          </div>
+
+                          {/* Mock Tab Preview */}
+                          <div className="hidden sm:flex items-center gap-2 bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 px-3 py-1.5 rounded-t-lg shadow-xs">
+                            <img src={newAssets.favicon} alt="Tab Favicon" className="w-4 h-4 object-contain" />
+                            <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 max-w-[120px] truncate">
+                              {newTitle || 'Portal Docs'}
+                            </span>
+                            <span className="text-[10px] text-neutral-400 ml-1">×</span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => setNewAssets({ ...newAssets, favicon: '' })}
+                            className="absolute top-2 right-2 bg-white/90 dark:bg-neutral-900/90 hover:bg-white text-red-500 text-xs font-bold px-2 py-1 rounded shadow-xs transition-colors"
+                          >
+                            {t('products.removeAsset', 'Quitar')}
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center flex-col opacity-80 hover:opacity-100 transition-opacity">
+                          <FileUploader onUploadSuccess={(url) => setNewAssets({ ...newAssets, favicon: url })} />
                         </div>
                       )}
                     </div>

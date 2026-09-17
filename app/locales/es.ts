@@ -309,6 +309,8 @@ export const es = {
     isologoNegativeBw: "Blanco y Negro (Negativo)",
     isologoPositiveBwHint: "Para fondos claros / impresión en negro",
     isologoNegativeBwHint: "Para fondos oscuros / monocromático en blanco",
+    favicon: "Favicon / Ícono de Navegador",
+    faviconHint: "Formato .ico, .png o .svg para pestañas de navegador y accesos directos",
     iconDark: "Ícono / Isotipo (Oscuro)",
     safetyZoneSection: "5. Zona de Seguridad y Proporciones",
     safetyZoneDesc: "Carga una imagen con el diagrama de márgenes mínimos y zona de protección del logotipo.",

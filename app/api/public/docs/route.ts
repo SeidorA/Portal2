@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
+import { formatProductDocumentationBrand } from '@/utils/product-branding';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,10 +22,10 @@ export async function GET(request: NextRequest) {
 
     const supabase = createAdminClient();
 
-    // 1. Obtener producto
+    // 1. Obtener producto con assets e imágenes de marca
     const { data: product, error: prodError } = await supabase
       .from('products')
-      .select('id, title, slug, description, icon_name')
+      .select('id, title, slug, description, icon_name, light_image, dark_image, assets')
       .ilike('slug', productSlug)
       .single();
 
@@ -50,10 +51,12 @@ export async function GET(request: NextRequest) {
       (m) => Array.isArray(m.allowed_roles) && m.allowed_roles.includes('public')
     );
 
+    const formattedProduct = formatProductDocumentationBrand(product);
+
     if (publicModules.length === 0) {
       return NextResponse.json(
         {
-          product,
+          product: formattedProduct,
           modules: [],
           navigation: [],
           documents: [],
@@ -132,7 +135,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        product,
+        product: formattedProduct,
         modules: publicModules,
         navigation,
         total_documents: (docs || []).length,
