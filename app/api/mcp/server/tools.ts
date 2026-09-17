@@ -1,14 +1,17 @@
 import { createAdminClient } from '@/utils/supabase/admin';
+import { formatProductDocumentationBrand } from '@/utils/product-branding';
 
 export const MCP_TOOL_DEFINITIONS = [
   // 1. search_knowledge_base
   {
     name: 'search_knowledge_base',
-    description: 'Busca artículos y guías en la Base de Conocimientos técnica y funcional del portal usando palabras clave.',
+    description: 'Busca artículos y guías en la Base de Conocimientos técnica y funcional del portal usando palabras clave, con filtro opcional por producto y visibilidad pública.',
     inputSchema: {
       type: 'object',
       properties: {
         query: { type: 'string', description: 'Término o tema a buscar en la Base de Conocimientos' },
+        product_slug: { type: 'string', description: 'Slug del producto opcional para acotar la búsqueda (ej: "crestone", "portal")' },
+        public_only: { type: 'boolean', description: 'Si es true, solo retorna documentos pertenecientes a módulos de cabecera con rol público' },
       },
       required: ['query'],
     },
@@ -25,7 +28,42 @@ export const MCP_TOOL_DEFINITIONS = [
       required: ['id'],
     },
   },
-  // 3. edit_knowledge_base_article
+  // 3. get_public_product_docs
+  {
+    name: 'get_public_product_docs',
+    description: 'Obtiene toda la Base de Conocimientos pública de un producto (como Crestone), basada en los módulos de cabecera con visibilidad pública. Retorna el árbol de navegación, módulos y listado de artículos.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        product_slug: { type: 'string', description: 'Slug del producto (ej: "crestone", "portal")' },
+        include_content: { type: 'boolean', description: 'Si es true, incluye el contenido Markdown completo de cada artículo' },
+      },
+      required: ['product_slug'],
+    },
+  },
+  // 4. get_public_product_doc_by_slug
+  {
+    name: 'get_public_product_doc_by_slug',
+    description: 'Obtiene un documento público específico de un producto mediante su slug y el slug del producto, validando que pertenezca a un módulo de cabecera público.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        product_slug: { type: 'string', description: 'Slug del producto (ej: "crestone", "portal")' },
+        slug: { type: 'string', description: 'Slug del documento a consultar (ej: "introduccion")' },
+      },
+      required: ['product_slug', 'slug'],
+    },
+  },
+  // 5. list_products
+  {
+    name: 'list_products',
+    description: 'Lista los productos registrados en el portal con sus slugs, títulos y cantidad de módulos públicos en la cabecera.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  // 6. edit_knowledge_base_article
   {
     name: 'edit_knowledge_base_article',
     description: 'Edita el contenido (Markdown) de un artículo existente en la Base de Conocimientos del portal. REQUIERE ROL ADMIN.',
@@ -38,7 +76,7 @@ export const MCP_TOOL_DEFINITIONS = [
       required: ['id', 'content'],
     },
   },
-  // 4. list_a4_documents
+  // 7. list_a4_documents
   {
     name: 'list_a4_documents',
     description: 'Lista los documentos imprimibles tipo A4 y reportes multipágina disponibles en el portal con búsqueda opcional por título y paginación.',
@@ -167,29 +205,259 @@ export async function executeMcpTool(
   switch (toolName) {
     case 'search_knowledge_base':
     case 'search_docs': {
-      const { query } = args;
+      const { query, product_slug, public_only } = args;
       if (!query || typeof query !== 'string') {
         throw new Error('El parámetro query es requerido');
       }
 
-      const { data, error } = await supabase
+      let queryBuilder = supabase
         .from('documentation')
-        .select('id, title, slug, description, type, product_id, products(title)')
-        .or(`title.ilike.%${query}%,content.ilike.%${query}%,description.ilike.%${query}%`)
-        .limit(10);
+        .select('id, title, slug, description, type, status, product_id, module_id, products(id, title, slug), modules(id, title, allowed_roles)')
+        .or(`title.ilike.%${query}%,content.ilike.%${query}%,description.ilike.%${query}%`);
 
+      if (product_slug && typeof product_slug === 'string') {
+        const { data: prod } = await supabase
+          .from('products')
+          .select('id')
+          .ilike('slug', product_slug.trim())
+          .single();
+        if (prod) {
+          queryBuilder = queryBuilder.eq('product_id', prod.id);
+        }
+      }
+
+      const { data, error } = await queryBuilder.limit(20);
       if (error) throw new Error(`Error en búsqueda: ${error.message}`);
 
-      const results = (data || []).map((doc: any) => ({
-        id: doc.id,
-        title: doc.title,
-        slug: doc.slug,
-        description: doc.description,
-        type: doc.type,
-        product: doc.products?.title || 'General',
-      }));
+      let results = (data || []).map((doc: any) => {
+        const isPublicModule = Array.isArray(doc.modules?.allowed_roles) && doc.modules.allowed_roles.includes('public');
+        return {
+          id: doc.id,
+          title: doc.title,
+          slug: doc.slug,
+          description: doc.description,
+          type: doc.type,
+          status: doc.status,
+          product_title: doc.products?.title || 'General',
+          product_slug: doc.products?.slug || null,
+          module_title: doc.modules?.title || null,
+          is_public_header_module: isPublicModule,
+          is_public: isPublicModule && doc.status === 'published',
+        };
+      });
+
+      if (public_only) {
+        results = results.filter((r: any) => r.is_public);
+      }
 
       return { results, total: results.length };
+    }
+
+    case 'get_public_product_docs': {
+      const { product_slug, include_content = false } = args;
+      if (!product_slug || typeof product_slug !== 'string') {
+        throw new Error('El parámetro product_slug es requerido (ej: "crestone")');
+      }
+
+      // 1. Obtener producto
+      const { data: product, error: prodError } = await supabase
+        .from('products')
+        .select('id, title, slug, description, icon_name, light_image, dark_image, assets')
+        .ilike('slug', product_slug.trim())
+        .single();
+
+      if (prodError || !product) {
+        throw new Error(`Producto '${product_slug}' no encontrado`);
+      }
+
+      // 2. Obtener módulos de cabecera públicos
+      const { data: allModules, error: modError } = await supabase
+        .from('modules')
+        .select('id, title, slug, order_index, is_hidden, allowed_roles')
+        .eq('product_id', product.id)
+        .eq('is_hidden', false)
+        .order('order_index', { ascending: true });
+
+      if (modError) throw new Error(`Error al obtener módulos: ${modError.message}`);
+
+      const publicModules = (allModules || []).filter(
+        (m) => Array.isArray(m.allowed_roles) && m.allowed_roles.includes('public')
+      );
+
+      if (publicModules.length === 0) {
+        return {
+          product: formatProductDocumentationBrand(product),
+          modules: [],
+          navigation: [],
+          documents: [],
+          message: `El producto '${product.title}' no tiene módulos con visibilidad pública configurados en la cabecera.`,
+        };
+      }
+
+      const publicModuleIds = publicModules.map((m) => m.id);
+
+      // 3. Obtener documentos de los módulos públicos
+      const selectFields = include_content
+        ? 'id, product_id, module_id, title, slug, content, status, section, order_index, icon_name, type, description, created_at, updated_at'
+        : 'id, product_id, module_id, title, slug, status, section, order_index, icon_name, type, description, created_at, updated_at';
+
+      const { data: docs, error: docsError } = await supabase
+        .from('documentation')
+        .select(selectFields)
+        .in('module_id', publicModuleIds)
+        .eq('status', 'published')
+        .order('order_index', { ascending: true });
+
+      if (docsError) throw new Error(`Error al obtener documentos: ${docsError.message}`);
+
+      // 4. Construir navegación en árbol
+      const navigation = publicModules.map((module) => {
+        const moduleDocs = (docs || []).filter((d) => d.module_id === module.id);
+        const buildSectionTree = (parentId: string | null): any[] => {
+          return moduleDocs
+            .filter((doc) => {
+              if (!parentId) {
+                return (
+                  !doc.section ||
+                  doc.section === 'General' ||
+                  !moduleDocs.some((s) => s.type === 'section' && s.id === doc.section)
+                );
+              }
+              return doc.section === parentId;
+            })
+            .map((doc) => {
+              if (doc.type === 'section') {
+                return {
+                  id: doc.id,
+                  title: doc.title,
+                  slug: doc.slug,
+                  type: 'section',
+                  icon_name: doc.icon_name,
+                  order_index: doc.order_index,
+                  items: buildSectionTree(doc.id),
+                };
+              }
+              return {
+                id: doc.id,
+                title: doc.title,
+                slug: doc.slug,
+                type: doc.type,
+                icon_name: doc.icon_name,
+                order_index: doc.order_index,
+                url: `/documentacion/${doc.slug}`,
+              };
+            });
+        };
+
+        return {
+          id: module.id,
+          title: module.title,
+          slug: module.slug,
+          order_index: module.order_index,
+          items: buildSectionTree(null),
+        };
+      });
+
+      return {
+        product: formatProductDocumentationBrand(product),
+        public_header_modules: publicModules.map((m) => ({ id: m.id, title: m.title, slug: m.slug })),
+        navigation,
+        total_documents: (docs || []).length,
+        documents: docs || [],
+      };
+    }
+
+    case 'get_public_product_doc_by_slug': {
+      const { product_slug, slug } = args;
+      if (!product_slug || !slug) {
+        throw new Error('Faltan parámetros requeridos (product_slug, slug)');
+      }
+
+      const { data: product, error: prodError } = await supabase
+        .from('products')
+        .select('id, title, slug, description, icon_name, light_image, dark_image, assets')
+        .ilike('slug', product_slug.trim())
+        .single();
+
+      if (prodError || !product) {
+        throw new Error(`Producto '${product_slug}' no encontrado`);
+      }
+
+      const { data: publicModules } = await supabase
+        .from('modules')
+        .select('id, title, slug, allowed_roles')
+        .eq('product_id', product.id)
+        .eq('is_hidden', false);
+
+      const publicModuleIds = (publicModules || [])
+        .filter((m) => Array.isArray(m.allowed_roles) && m.allowed_roles.includes('public'))
+        .map((m) => m.id);
+
+      if (publicModuleIds.length === 0) {
+        throw new Error(`No hay módulos públicos configurados para el producto '${product.title}'`);
+      }
+
+      const { data: doc, error: docError } = await supabase
+        .from('documentation')
+        .select('*')
+        .in('module_id', publicModuleIds)
+        .eq('slug', slug)
+        .eq('status', 'published')
+        .single();
+
+      if (docError || !doc) {
+        throw new Error(`Documento '${slug}' no encontrado o no pertenece a un módulo público de '${product.title}'`);
+      }
+
+      const parentModule = publicModules?.find((m) => m.id === doc.module_id);
+
+      return {
+        document: {
+          id: doc.id,
+          title: doc.title,
+          slug: doc.slug,
+          content: doc.content,
+          type: doc.type,
+          icon_name: doc.icon_name,
+          section: doc.section,
+          description: doc.description,
+          order_index: doc.order_index,
+          created_at: doc.created_at,
+          updated_at: doc.updated_at,
+          product: formatProductDocumentationBrand(product),
+          module: parentModule ? { id: parentModule.id, title: parentModule.title, slug: parentModule.slug } : null,
+        },
+      };
+    }
+
+    case 'list_products': {
+      const { data: products, error: prodError } = await supabase
+        .from('products')
+        .select('id, title, slug, description, icon_name')
+        .order('title', { ascending: true });
+
+      if (prodError) throw new Error(`Error al listar productos: ${prodError.message}`);
+
+      const { data: modules } = await supabase
+        .from('modules')
+        .select('id, product_id, allowed_roles, is_hidden')
+        .eq('is_hidden', false);
+
+      const formattedProducts = (products || []).map((p: any) => {
+        const prodModules = (modules || []).filter((m: any) => m.product_id === p.id);
+        const publicModules = prodModules.filter((m: any) => Array.isArray(m.allowed_roles) && m.allowed_roles.includes('public'));
+        return {
+          id: p.id,
+          title: p.title,
+          slug: p.slug,
+          description: p.description,
+          total_modules: prodModules.length,
+          public_modules_count: publicModules.length,
+          has_public_docs: publicModules.length > 0,
+        };
+      });
+
+      return { products: formattedProducts, total: formattedProducts.length };
     }
 
     case 'get_knowledge_base_article':
