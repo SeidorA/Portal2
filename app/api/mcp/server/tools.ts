@@ -262,7 +262,7 @@ export async function executeMcpTool(
       // 1. Obtener producto
       const { data: product, error: prodError } = await supabase
         .from('products')
-        .select('id, title, slug, description, icon_name, light_image, dark_image, assets')
+        .select('*')
         .ilike('slug', product_slug.trim())
         .single();
 
@@ -375,7 +375,7 @@ export async function executeMcpTool(
 
       const { data: product, error: prodError } = await supabase
         .from('products')
-        .select('id, title, slug, description, icon_name, light_image, dark_image, assets')
+        .select('*')
         .ilike('slug', product_slug.trim())
         .single();
 
@@ -433,7 +433,7 @@ export async function executeMcpTool(
     case 'list_products': {
       const { data: products, error: prodError } = await supabase
         .from('products')
-        .select('id, title, slug, description, icon_name')
+        .select('*')
         .order('title', { ascending: true });
 
       if (prodError) throw new Error(`Error al listar productos: ${prodError.message}`);
@@ -450,6 +450,7 @@ export async function executeMcpTool(
           id: p.id,
           title: p.title,
           slug: p.slug,
+          version: p.version || '1.0.0',
           description: p.description,
           total_modules: prodModules.length,
           public_modules_count: publicModules.length,

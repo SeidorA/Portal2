@@ -186,6 +186,8 @@ export const es = {
     titlePlaceholder: "Ej: Crestone",
     slugField: "Título (Slug)",
     slugPlaceholder: "Ej: crestone",
+    versionField: "Versión Actual",
+    versionPlaceholder: "Ej: 1.0.0",
     descField: "Descripción",
     statusField: "Estado",
     statusPublished: "Publicada",

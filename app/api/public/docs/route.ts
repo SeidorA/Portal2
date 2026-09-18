@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     // 1. Obtener producto con assets e imágenes de marca
     const { data: product, error: prodError } = await supabase
       .from('products')
-      .select('id, title, slug, description, icon_name, light_image, dark_image, assets')
+      .select('*')
       .ilike('slug', productSlug)
       .single();
 

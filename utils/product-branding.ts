@@ -28,6 +28,7 @@ export interface FormattedProductBrand {
   id: string;
   title: string;
   slug: string;
+  version: string | null;
   description: string | null;
   icon_name: string | null;
   logo_light: string | null;
@@ -50,6 +51,7 @@ export function formatProductDocumentationBrand(product: any): FormattedProductB
       id: '',
       title: '',
       slug: '',
+      version: null,
       description: null,
       icon_name: null,
       logo_light: null,
@@ -141,6 +143,7 @@ export function formatProductDocumentationBrand(product: any): FormattedProductB
     id: product.id,
     title: product.title,
     slug: product.slug,
+    version: product.version || '1.0.0',
     description: product.description || null,
     icon_name: product.icon_name || null,
     logo_light: logoLight,

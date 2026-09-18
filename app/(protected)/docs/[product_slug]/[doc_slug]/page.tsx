@@ -104,7 +104,7 @@ export default async function DocumentViewerPage({
   // 1. Get Product with full assets
   const { data: product } = await supabase
     .from('products')
-    .select('id, title, slug, icon_name, features, link_demo, link_landing, link_docs, assets, light_image, dark_image')
+    .select('id, title, slug, version, icon_name, features, link_demo, link_landing, link_docs, assets, light_image, dark_image')
     .eq('slug', product_slug)
     .single();
 
@@ -460,8 +460,11 @@ export default async function DocumentViewerPage({
     <div className="h-full w-full">
       {/* TOP BAR (Ancestors / Modules) */}
       <header className="h-[60px] bg-container/50 border-b border-neutral-800/50 dark:border-neutral-800/50 backdrop-blur-md sticky top-0 z-10 flex items-end px-8 gap-6">
-        <div className="hidden md:!block font-bold font-poppins text-lg mr-4 border-r border-neutral-300 dark:border-neutral-700 pr-6 pb-4">
-          {product.title}
+        <div className="hidden md:!flex items-center gap-2 font-bold font-poppins text-lg mr-4 border-r border-neutral-300 dark:border-neutral-700 pr-6 pb-4">
+          <span>{product.title}</span>
+          <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-neutral-200/80 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-300/80 dark:border-neutral-700">
+            v{product.version || '1.0.0'}
+          </span>
         </div>
         <nav className="flex gap-1 items-center overflow-x-auto no-scrollbar">
           {topTabs.map((tab: any) => (

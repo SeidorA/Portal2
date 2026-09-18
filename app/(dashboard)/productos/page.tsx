@@ -376,6 +376,7 @@ export default function ProductosPage() {
 
   // Create Form State
   const [newTitle, setNewTitle] = useState('')
+  const [newVersion, setNewVersion] = useState('1.0.0')
   const [newStatus, setNewStatus] = useState('Publicada')
   const [newDesc, setNewDesc] = useState('')
   const [newLightImage, setNewLightImage] = useState('')
@@ -464,6 +465,7 @@ export default function ProductosPage() {
   const openCreateDrawer = () => {
     setEditingId(null)
     setNewTitle('')
+    setNewVersion('1.0.0')
     setNewStatus('Publicada')
     setNewDesc('')
     setNewLightImage('')
@@ -626,6 +628,7 @@ export default function ProductosPage() {
           .update({
             title: newTitle,
             slug: newLink,
+            version: newVersion.trim() || '1.0.0',
             status: newStatus,
             description: newDesc,
             link: newLink,
@@ -651,6 +654,7 @@ export default function ProductosPage() {
             {
               title: newTitle,
               slug: newLink,
+              version: newVersion.trim() || '1.0.0',
               status: newStatus,
               description: newDesc,
               link: newLink,
@@ -714,6 +718,7 @@ export default function ProductosPage() {
   const startEditing = async (p: any) => {
     setEditingId(p.id)
     setNewTitle(p.title || '')
+    setNewVersion(p.version || '1.0.0')
     setNewStatus(p.status || 'Publicada')
     setNewDesc(p.description || '')
     setNewLink(p.slug || p.link || '')
@@ -866,7 +871,12 @@ export default function ProductosPage() {
                   )}
 
                   <div className="flex-1 pr-12 flex flex-col justify-center ml-2">
-                    <h3 className="font-semibold font-poppins text-lg leading-tight">{p.title}</h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-semibold font-poppins text-lg leading-tight">{p.title}</h3>
+                      <span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 px-2 py-0.5 rounded font-mono font-medium">
+                        v{p.version || '1.0.0'}
+                      </span>
+                    </div>
 
                     <div className="flex flex-wrap gap-2 mt-1">
                       {p.link && <span className="text-[10px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 px-2 py-1 rounded">Link</span>}
@@ -971,8 +981,8 @@ export default function ProductosPage() {
                 </div>
               </div>
 
-              {/* Fila 3: Estado, Categoría */}
-              <div className="grid grid-cols-[auto_1fr_1fr] gap-4">
+              {/* Fila 3: Estado, Categoría, Versión */}
+              <div className="grid grid-cols-[auto_1fr_1fr_1fr] gap-4">
                 <div className="w-10 invisible"></div>
                 <Select
                   label={t('products.statusField', 'Estado')}
@@ -991,6 +1001,12 @@ export default function ProductosPage() {
                     { value: 'own_tech', label: 'Own Tech' },
                     { value: 'actin', label: 'Act-in' },
                   ]}
+                />
+                <Input
+                  label={t('products.versionField', 'Versión Actual')}
+                  value={newVersion}
+                  onChange={(e) => setNewVersion(e.target.value)}
+                  placeholder={t('products.versionPlaceholder', 'Ej: 1.0.0')}
                 />
               </div>
 

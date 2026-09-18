@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:sql": "node scripts/run_sql.mjs"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",

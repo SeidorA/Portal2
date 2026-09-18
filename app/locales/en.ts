@@ -188,6 +188,8 @@ export const en: Translations = {
     titlePlaceholder: "e.g., Crestone",
     slugField: "Title (Slug)",
     slugPlaceholder: "e.g., crestone",
+    versionField: "Current Version",
+    versionPlaceholder: "e.g., 1.0.0",
     descField: "Description",
     statusField: "Status",
     statusPublished: "Published",
