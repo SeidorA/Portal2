@@ -190,20 +190,20 @@ export default function TecnicaPage() {
           if (config.faq.en) loadedFaqDataMap[`${p.id}_en`] = config.faq.en;
           if (Array.isArray(config.faq.items)) loadedFaqEntriesMap[p.id] = config.faq.items;
         }
-        if (Array.isArray(config.releases)) {
+        if (Array.isArray(config.releases) && config.releases.length > 0) {
           loadedReleasesMap[p.id] = config.releases;
         }
-        if (Array.isArray(config.blog)) {
+        if (Array.isArray(config.blog) && config.blog.length > 0) {
           loadedBlogMap[p.id] = config.blog;
         }
       });
 
-      setIndexDataMap(prev => ({ ...loadedIndexDataMap, ...prev }));
-      setIndexEntriesMap(prev => ({ ...loadedIndexEntriesMap, ...prev }));
-      setFaqDataMap(prev => ({ ...loadedFaqDataMap, ...prev }));
-      setFaqEntriesMap(prev => ({ ...loadedFaqEntriesMap, ...prev }));
-      setProductReleasesMap(prev => ({ ...loadedReleasesMap, ...prev }));
-      setProductBlogMap(prev => ({ ...loadedBlogMap, ...prev }));
+      setIndexDataMap(prev => ({ ...prev, ...loadedIndexDataMap }));
+      setIndexEntriesMap(prev => ({ ...prev, ...loadedIndexEntriesMap }));
+      setFaqDataMap(prev => ({ ...prev, ...loadedFaqDataMap }));
+      setFaqEntriesMap(prev => ({ ...prev, ...loadedFaqEntriesMap }));
+      setProductReleasesMap(prev => ({ ...prev, ...loadedReleasesMap }));
+      setProductBlogMap(prev => ({ ...prev, ...loadedBlogMap }));
 
       setProducts(filteredProducts);
       if (filteredProducts.length > 0) {
@@ -237,8 +237,8 @@ export default function TecnicaPage() {
           en: faqDataMap[`${prodId}_en`] || getCurrentFaqDataForLang(prodId, 'en'),
           items: faqEntriesMap[prodId] || []
         },
-        releases: productReleasesMap[prodId] || [],
-        blog: productBlogMap[prodId] || []
+        releases: productReleasesMap[prodId] || getProductReleases(),
+        blog: productBlogMap[prodId] || getProductBlogEntries()
       };
 
       const { error } = await supabase
@@ -250,6 +250,8 @@ export default function TecnicaPage() {
 
       // Actualizar producto en la lista local
       setProducts(prev => prev.map(p => p.id === prodId ? { ...p, technical_docs_config: configPayload } : p));
+      setProductReleasesMap(prev => ({ ...prev, [prodId]: configPayload.releases }));
+      setProductBlogMap(prev => ({ ...prev, [prodId]: configPayload.blog }));
 
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
@@ -576,48 +578,55 @@ export default function TecnicaPage() {
   };
 
   // --- HANDLERS PARA RELEASE ---
+  const getDefaultReleases = (): ReleaseVersion[] => [
+    {
+      id: '1',
+      version: '1.97.02',
+      isPublished: true,
+      title: 'Actualización de motor Crestone v1.97.02',
+      description: 'Mejoras en el motor de sincronización en tiempo real, optimizaciones en los conectores de base de datos y reducción de latencia en webhooks.',
+      title_es: 'Actualización de motor Crestone v1.97.02',
+      title_en: 'Crestone Core Update v1.97.02',
+      description_es: 'Mejoras en el motor de sincronización en tiempo real, optimizaciones en los conectores de base de datos y reducción de latencia en webhooks.',
+      description_en: 'Real-time synchronization engine improvements, database connector optimizations, and reduced webhook latency.',
+      pngUrl: '',
+      gifUrl: ''
+    },
+    {
+      id: '2',
+      version: '1.97.01',
+      isPublished: false,
+      title: 'Hotfix de seguridad y tokens',
+      description: 'Actualización del middleware de tokens de acceso y soporte para rotación automática de claves API.',
+      title_es: 'Hotfix de seguridad y tokens',
+      title_en: 'Security and token hotfix',
+      description_es: 'Actualización del middleware de tokens de acceso y soporte para rotación automática de claves API.',
+      description_en: 'Access token middleware update and support for automatic API key rotation.',
+      pngUrl: '',
+      gifUrl: ''
+    },
+    {
+      id: '3',
+      version: '1.96.01',
+      isPublished: false,
+      title: 'Integración con docuportal',
+      description: 'Soporte para la API de consumo público y exportación de esquemas JSON.',
+      title_es: 'Integración con docuportal',
+      title_en: 'Integration with docuportal',
+      description_es: 'Soporte para la API de consumo público y exportación de esquemas JSON.',
+      description_en: 'Support for public consumption API and JSON schema export.',
+      pngUrl: '',
+      gifUrl: ''
+    }
+  ];
+
   const getProductReleases = (): ReleaseVersion[] => {
     if (!selectedProduct) return [];
-    const key = `${selectedProduct.id}_${releaseLang}`;
-    if (productReleasesMap[key]) {
-      return productReleasesMap[key];
+    const prodId = selectedProduct.id;
+    if (productReleasesMap[prodId]) {
+      return productReleasesMap[prodId];
     }
-    const defaultReleases: ReleaseVersion[] = [
-      {
-        id: '1',
-        version: '1.97.02',
-        isPublished: true,
-        title: releaseLang === 'es' ? 'Actualización de motor Crestone v1.97.02' : 'Crestone Core Update v1.97.02',
-        description: releaseLang === 'es'
-          ? 'Mejoras en el motor de sincronización en tiempo real, optimizaciones en los conectores de base de datos y reducción de latencia en webhooks.'
-          : 'Real-time synchronization engine improvements, database connector optimizations, and reduced webhook latency.',
-        pngUrl: '',
-        gifUrl: ''
-      },
-      {
-        id: '2',
-        version: '1.97.01',
-        isPublished: false,
-        title: releaseLang === 'es' ? 'Hotfix de seguridad y tokens' : 'Security and token hotfix',
-        description: releaseLang === 'es'
-          ? 'Actualización del middleware de tokens de acceso y soporte para rotación automática de claves API.'
-          : 'Access token middleware update and support for automatic API key rotation.',
-        pngUrl: '',
-        gifUrl: ''
-      },
-      {
-        id: '3',
-        version: '1.96.01',
-        isPublished: false,
-        title: releaseLang === 'es' ? 'Integración con docuportal' : 'Integration with docuportal',
-        description: releaseLang === 'es'
-          ? 'Soporte para la API de consumo público y exportación de esquemas JSON.'
-          : 'Support for public consumption API and JSON schema export.',
-        pngUrl: '',
-        gifUrl: ''
-      }
-    ];
-    return defaultReleases;
+    return getDefaultReleases();
   };
 
   const getActiveRelease = (): ReleaseVersion | null => {
@@ -630,12 +639,12 @@ export default function TecnicaPage() {
     }
 
     const title = releaseLang === 'en'
-      ? (found.title_en || found.title)
-      : (found.title_es || found.title);
+      ? (found.title_en || found.title || `Release ${found.version}`)
+      : (found.title_es || found.title || `Release ${found.version}`);
 
     const description = releaseLang === 'en'
-      ? (found.description_en ?? found.description)
-      : (found.description_es ?? found.description);
+      ? (found.description_en ?? found.description ?? '')
+      : (found.description_es ?? found.description ?? '');
 
     return {
       ...found,
@@ -646,25 +655,35 @@ export default function TecnicaPage() {
 
   const updateActiveRelease = (updates: Partial<ReleaseVersion>) => {
     if (!selectedProduct) return;
-    const key = `${selectedProduct.id}_${releaseLang}`;
+    const prodId = selectedProduct.id;
     const releases = getProductReleases();
     const active = getActiveRelease();
     if (!active) return;
 
     const payload: Partial<ReleaseVersion> = { ...updates };
     if (updates.title !== undefined) {
-      if (releaseLang === 'en') payload.title_en = updates.title;
-      else payload.title_es = updates.title;
+      if (releaseLang === 'en') {
+        payload.title_en = updates.title;
+        if (!active.title_es) payload.title_es = active.title;
+      } else {
+        payload.title_es = updates.title;
+        payload.title = updates.title;
+      }
     }
     if (updates.description !== undefined) {
-      if (releaseLang === 'en') payload.description_en = updates.description;
-      else payload.description_es = updates.description;
+      if (releaseLang === 'en') {
+        payload.description_en = updates.description;
+        if (!active.description_es) payload.description_es = active.description;
+      } else {
+        payload.description_es = updates.description;
+        payload.description = updates.description;
+      }
     }
 
     const updated = releases.map(r => r.id === active.id ? { ...r, ...payload } : r);
     setProductReleasesMap(prev => ({
       ...prev,
-      [key]: updated
+      [prodId]: updated
     }));
   };
 
@@ -672,7 +691,7 @@ export default function TecnicaPage() {
     e.preventDefault();
     if (!newVersionTag.trim() || !selectedProduct) return;
 
-    const key = `${selectedProduct.id}_${releaseLang}`;
+    const prodId = selectedProduct.id;
     const releases = getProductReleases();
 
     const newRelease: ReleaseVersion = {
@@ -680,14 +699,18 @@ export default function TecnicaPage() {
       version: newVersionTag.trim(),
       isPublished: true,
       title: `${selectedProduct.title || 'Product'} Release v${newVersionTag.trim()}`,
+      title_es: `${selectedProduct.title || 'Product'} Release v${newVersionTag.trim()}`,
+      title_en: `${selectedProduct.title || 'Product'} Release v${newVersionTag.trim()}`,
       description: '',
+      description_es: '',
+      description_en: '',
       pngUrl: '',
       gifUrl: ''
     };
 
     setProductReleasesMap(prev => ({
       ...prev,
-      [key]: [newRelease, ...releases]
+      [prodId]: [newRelease, ...releases]
     }));
     setSelectedVersionId(newRelease.id);
     setNewVersionTag('');
@@ -711,41 +734,38 @@ export default function TecnicaPage() {
   };
 
   // --- HANDLERS PARA BLOG ---
+  const getDefaultBlogEntries = (): BlogEntry[] => [
+    {
+      id: '1',
+      title: 'Arquitectura de Datos y Alta Disponibilidad',
+      slug: 'arquitectura-datos-alta-disponibilidad',
+      isPublished: true,
+      content: `# Arquitectura de Datos y Alta Disponibilidad\n\nEn esta publicación exploramos cómo estructurar pipelines de sincronización escalables, tolerantes a fallos y con mínima latencia.\n\n### Puntos clave:\n- **Conexiones resilientes** con reintentos exponenciales.\n- **Transformación de esquemas en caliente** sin bloquear transacciones.\n- Monitoreo continuo mediante endpoints de telemetría.`,
+      title_es: 'Arquitectura de Datos y Alta Disponibilidad',
+      title_en: 'Data Architecture and High Availability',
+      content_es: `# Arquitectura de Datos y Alta Disponibilidad\n\nEn esta publicación exploramos cómo estructurar pipelines de sincronización escalables, tolerantes a fallos y con mínima latencia.\n\n### Puntos clave:\n- **Conexiones resilientes** con reintentos exponenciales.\n- **Transformación de esquemas en caliente** sin bloquear transacciones.\n- Monitoreo continuo mediante endpoints de telemetría.`,
+      content_en: `# Data Architecture and High Availability\n\nIn this post we explore how to build scalable, fault-tolerant synchronization pipelines with minimal latency.\n\n### Key points:\n- **Resilient connections** with exponential backoff.\n- **Live schema transformation** without blocking transactions.\n- Continuous monitoring via telemetry endpoints.`
+    },
+    {
+      id: '2',
+      title: 'Guía rápida: Integración REST en 5 minutos',
+      slug: 'guia-rapida-integracion-rest',
+      isPublished: true,
+      content: `# Guía rápida: Integración REST en 5 minutos\n\nAprende a consumir la documentación y endpoints técnicos desde cualquier aplicación web o backend utilizando la API REST pública.\n\n\`\`\`javascript\nconst res = await fetch('/api/public/docs?product=crestone&include_content=true');\nconst data = await res.json();\nconsole.log(data);\n\`\`\``,
+      title_es: 'Guía rápida: Integración REST en 5 minutos',
+      title_en: 'Quick Guide: REST Integration in 5 Minutes',
+      content_es: `# Guía rápida: Integración REST en 5 minutos\n\nAprende a consumir la documentación y endpoints técnicos desde cualquier aplicación web o backend utilizando la API REST pública.\n\n\`\`\`javascript\nconst res = await fetch('/api/public/docs?product=crestone&include_content=true');\nconst data = await res.json();\nconsole.log(data);\n\`\`\``,
+      content_en: `# Quick Guide: REST Integration in 5 Minutes\n\nLearn how to consume documentation and technical endpoints from any web or backend application using the public REST API.\n\n\`\`\`javascript\nconst res = await fetch('/api/public/docs?product=crestone&include_content=true');\nconst data = await res.json();\nconsole.log(data);\n\`\`\``
+    }
+  ];
+
   const getProductBlogEntries = (): BlogEntry[] => {
     if (!selectedProduct) return [];
-    const key = `${selectedProduct.id}_${blogLang}`;
-    if (productBlogMap[key]) {
-      return productBlogMap[key];
+    const prodId = selectedProduct.id;
+    if (productBlogMap[prodId]) {
+      return productBlogMap[prodId];
     }
-    const defaultBlogEntries: BlogEntry[] = [
-      {
-        id: '1',
-        title: blogLang === 'es' ? 'Arquitectura de Datos y Alta Disponibilidad' : 'Data Architecture and High Availability',
-        slug: 'arquitectura-datos-alta-disponibilidad',
-        isPublished: true,
-        content: blogLang === 'es'
-          ? `# Arquitectura de Datos y Alta Disponibilidad\n\nEn esta publicación exploramos cómo estructurar pipelines de sincronización escalables, tolerantes a fallos y con mínima latencia.\n\n### Puntos clave:\n- **Conexiones resilientes** con reintentos exponenciales.\n- **Transformación de esquemas en caliente** sin bloquear transacciones.\n- Monitoreo continuo mediante endpoints de telemetría.`
-          : `# Data Architecture and High Availability\n\nIn this post we explore how to build scalable, fault-tolerant synchronization pipelines with minimal latency.\n\n### Key points:\n- **Resilient connections** with exponential backoff.\n- **Live schema transformation** without blocking transactions.\n- Continuous monitoring via telemetry endpoints.`,
-        title_es: 'Arquitectura de Datos y Alta Disponibilidad',
-        title_en: 'Data Architecture and High Availability',
-        content_es: `# Arquitectura de Datos y Alta Disponibilidad\n\nEn esta publicación exploramos cómo estructurar pipelines de sincronización escalables, tolerantes a fallos y con mínima latencia.\n\n### Puntos clave:\n- **Conexiones resilientes** con reintentos exponenciales.\n- **Transformación de esquemas en caliente** sin bloquear transacciones.\n- Monitoreo continuo mediante endpoints de telemetría.`,
-        content_en: `# Data Architecture and High Availability\n\nIn this post we explore how to build scalable, fault-tolerant synchronization pipelines with minimal latency.\n\n### Key points:\n- **Resilient connections** with exponential backoff.\n- **Live schema transformation** without blocking transactions.\n- Continuous monitoring via telemetry endpoints.`
-      },
-      {
-        id: '2',
-        title: blogLang === 'es' ? 'Guía rápida: Integración REST en 5 minutos' : 'Quick Guide: REST Integration in 5 Minutes',
-        slug: 'guia-rapida-integracion-rest',
-        isPublished: true,
-        content: blogLang === 'es'
-          ? `# Guía rápida: Integración REST en 5 minutos\n\nAprende a consumir la documentación y endpoints técnicos desde cualquier aplicación web o backend utilizando la API REST pública.\n\n\`\`\`javascript\nconst res = await fetch('/api/public/docs?product=crestone&include_content=true');\nconst data = await res.json();\nconsole.log(data);\n\`\`\``
-          : `# Quick Guide: REST Integration in 5 Minutes\n\nLearn how to consume documentation and technical endpoints from any web or backend application using the public REST API.\n\n\`\`\`javascript\nconst res = await fetch('/api/public/docs?product=crestone&include_content=true');\nconst data = await res.json();\nconsole.log(data);\n\`\`\``,
-        title_es: 'Guía rápida: Integración REST en 5 minutos',
-        title_en: 'Quick Guide: REST Integration in 5 Minutes',
-        content_es: `# Guía rápida: Integración REST en 5 minutos\n\nAprende a consumir la documentación y endpoints técnicos desde cualquier aplicación web o backend utilizando la API REST pública.\n\n\`\`\`javascript\nconst res = await fetch('/api/public/docs?product=crestone&include_content=true');\nconst data = await res.json();\nconsole.log(data);\n\`\`\``,
-        content_en: `# Quick Guide: REST Integration in 5 Minutes\n\nLearn how to consume documentation and technical endpoints from any web or backend application using the public REST API.\n\n\`\`\`javascript\nconst res = await fetch('/api/public/docs?product=crestone&include_content=true');\nconst data = await res.json();\nconsole.log(data);\n\`\`\``
-      }
-    ];
-    return defaultBlogEntries;
+    return getDefaultBlogEntries();
   };
 
   const getActiveBlog = (): BlogEntry | null => {
@@ -758,12 +778,12 @@ export default function TecnicaPage() {
     }
 
     const title = blogLang === 'en'
-      ? (found.title_en || found.title)
-      : (found.title_es || found.title);
+      ? (found.title_en || found.title || '')
+      : (found.title_es || found.title || '');
 
     const content = blogLang === 'en'
-      ? (found.content_en ?? found.content)
-      : (found.content_es ?? found.content);
+      ? (found.content_en ?? found.content ?? '')
+      : (found.content_es ?? found.content ?? '');
 
     return {
       ...found,
@@ -774,25 +794,35 @@ export default function TecnicaPage() {
 
   const updateActiveBlog = (updates: Partial<BlogEntry>) => {
     if (!selectedProduct) return;
-    const key = `${selectedProduct.id}_${blogLang}`;
+    const prodId = selectedProduct.id;
     const entries = getProductBlogEntries();
     const active = getActiveBlog();
     if (!active) return;
 
     const payload: Partial<BlogEntry> = { ...updates };
     if (updates.title !== undefined) {
-      if (blogLang === 'en') payload.title_en = updates.title;
-      else payload.title_es = updates.title;
+      if (blogLang === 'en') {
+        payload.title_en = updates.title;
+        if (!active.title_es) payload.title_es = active.title;
+      } else {
+        payload.title_es = updates.title;
+        payload.title = updates.title;
+      }
     }
     if (updates.content !== undefined) {
-      if (blogLang === 'en') payload.content_en = updates.content;
-      else payload.content_es = updates.content;
+      if (blogLang === 'en') {
+        payload.content_en = updates.content;
+        if (!active.content_es) payload.content_es = active.content;
+      } else {
+        payload.content_es = updates.content;
+        payload.content = updates.content;
+      }
     }
 
     const updated = entries.map(b => b.id === active.id ? { ...b, ...payload } : b);
     setProductBlogMap(prev => ({
       ...prev,
-      [key]: updated
+      [prodId]: updated
     }));
   };
 
@@ -800,7 +830,7 @@ export default function TecnicaPage() {
     e.preventDefault();
     if (!newBlogTitle.trim() || !selectedProduct) return;
 
-    const key = `${selectedProduct.id}_${blogLang}`;
+    const prodId = selectedProduct.id;
     const entries = getProductBlogEntries();
 
     const slug = newBlogSlug.trim() || newBlogTitle
@@ -822,7 +852,7 @@ export default function TecnicaPage() {
 
     setProductBlogMap(prev => ({
       ...prev,
-      [key]: [newEntry, ...entries]
+      [prodId]: [newEntry, ...entries]
     }));
     setSelectedBlogId(newEntry.id);
     setNewBlogTitle('');
@@ -832,12 +862,12 @@ export default function TecnicaPage() {
 
   const handleDeleteBlogEntry = (blogId: string) => {
     if (!selectedProduct) return;
-    const key = `${selectedProduct.id}_${blogLang}`;
+    const prodId = selectedProduct.id;
     const entries = getProductBlogEntries();
     const updated = entries.filter(b => b.id !== blogId);
     setProductBlogMap(prev => ({
       ...prev,
-      [key]: updated
+      [prodId]: updated
     }));
     if (selectedBlogId === blogId) {
       setSelectedBlogId(updated.length > 0 ? updated[0].id : null);
@@ -1827,7 +1857,9 @@ export default function TecnicaPage() {
                               }`}
                           >
                             <div className="flex items-center justify-between gap-2">
-                              <span className="truncate font-medium">{entry.title}</span>
+                              <span className="truncate font-medium">
+                                {blogLang === 'en' && entry.title_en ? entry.title_en : (entry.title_es || entry.title)}
+                              </span>
                               {entry.isPublished ? (
                                 <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${isActive ? 'bg-white/20 text-white' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400'
                                   }`}>
