@@ -51,6 +51,8 @@ export async function GET(request: NextRequest) {
     const formattedPosts = filteredPosts.map((p) => {
       const title = lang === 'en' && p.title_en ? p.title_en : (p.title_es || p.title || 'Untitled');
       const content = lang === 'en' && p.content_en ? p.content_en : (p.content_es || p.content || '');
+      const coverUrl = p.coverUrl || p.cover_url || p.cover_image || p.coverImage || p.cover || p.image || p.imageUrl || p.image_url || null;
+      const coverName = p.coverName || p.cover_name || null;
 
       return {
         id: p.id,
@@ -58,8 +60,15 @@ export async function GET(request: NextRequest) {
         is_published: p.isPublished ?? true,
         title,
         content,
-        cover_url: p.coverUrl || null,
-        cover_name: p.coverName || null,
+        cover_url: coverUrl,
+        cover_name: coverName,
+        coverUrl,
+        cover_image: coverUrl,
+        coverImage: coverUrl,
+        cover: coverUrl,
+        image: coverUrl,
+        imageUrl: coverUrl,
+        image_url: coverUrl,
       };
     });
 

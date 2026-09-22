@@ -51,6 +51,10 @@ export async function GET(request: NextRequest) {
     const formattedReleases = filteredReleases.map((r) => {
       const title = lang === 'en' && r.title_en ? r.title_en : (r.title_es || r.title || `Release ${r.version}`);
       const description = lang === 'en' && r.description_en ? r.description_en : (r.description_es || r.description || '');
+      const pngUrl = r.pngUrl || r.png_url || null;
+      const pngName = r.pngName || r.png_name || null;
+      const gifUrl = r.gifUrl || r.gif_url || null;
+      const gifName = r.gifName || r.gif_name || null;
 
       return {
         id: r.id,
@@ -58,10 +62,16 @@ export async function GET(request: NextRequest) {
         is_published: r.isPublished ?? true,
         title,
         description,
-        png_url: r.pngUrl || null,
-        png_name: r.pngName || null,
-        gif_url: r.gifUrl || null,
-        gif_name: r.gifName || null,
+        png_url: pngUrl,
+        pngUrl: pngUrl,
+        png_name: pngName,
+        pngName: pngName,
+        gif_url: gifUrl,
+        gifUrl: gifUrl,
+        gif_name: gifName,
+        gifName: gifName,
+        image_url: pngUrl || gifUrl,
+        imageUrl: pngUrl || gifUrl,
       };
     });
 

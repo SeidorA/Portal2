@@ -14,6 +14,52 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+function extractDocCover(doc: any): string | null {
+  if (!doc) return null;
+  if (doc.cover_image && typeof doc.cover_image === 'string') return doc.cover_image;
+  if (doc.cover_url && typeof doc.cover_url === 'string') return doc.cover_url;
+  if (doc.cover && typeof doc.cover === 'string') return doc.cover;
+  if (doc.image_url && typeof doc.image_url === 'string') return doc.image_url;
+
+  if (doc.content) {
+    if (typeof doc.content === 'object') {
+      const cover =
+        doc.content?.settings?.cover?.selectedCoverImage ||
+        doc.content?.metadata?.coverUrl ||
+        doc.content?.settings?.cover?.coverImage ||
+        doc.content?.cover ||
+        null;
+      if (cover) return cover;
+    } else if (typeof doc.content === 'string') {
+      try {
+        const parsed = JSON.parse(doc.content);
+        const cover =
+          parsed?.settings?.cover?.selectedCoverImage ||
+          parsed?.metadata?.coverUrl ||
+          parsed?.settings?.cover?.coverImage ||
+          parsed?.cover ||
+          null;
+        if (cover) return cover;
+      } catch {}
+    }
+  }
+
+  if (doc.description && typeof doc.description === 'string') {
+    try {
+      const parsed = JSON.parse(doc.description);
+      const cover =
+        parsed?.cover_image ||
+        parsed?.cover_url ||
+        parsed?.selectedCoverImage ||
+        parsed?.coverUrl ||
+        null;
+      if (cover) return cover;
+    } catch {}
+  }
+
+  return null;
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ slug: string }> }
@@ -73,7 +119,27 @@ export async function GET(
       );
     }
 
-    // 4. Obtener módulo padre
+    // 4. Buscar portada si está vinculada a portal_documents
+    let coverUrl = extractDocCover(doc);
+    if (!coverUrl) {
+      try {
+        const { data: portalDoc } = await supabase
+          .from('portal_documents')
+          .select('content')
+          .or(`id.eq.${doc.id},slug.eq.${doc.slug}`)
+          .maybeSingle();
+
+        if (portalDoc) {
+          coverUrl =
+            portalDoc.content?.settings?.cover?.selectedCoverImage ||
+            portalDoc.content?.metadata?.coverUrl ||
+            portalDoc.content?.settings?.cover?.coverImage ||
+            null;
+        }
+      } catch {}
+    }
+
+    // 5. Obtener módulo padre
     const parentModule = publicModules?.find((m) => m.id === doc.module_id);
 
     return NextResponse.json(
@@ -90,6 +156,8 @@ export async function GET(
           section: doc.section,
           description: doc.description,
           order_index: doc.order_index,
+          cover_image: coverUrl,
+          cover_url: coverUrl,
           created_at: doc.created_at,
           updated_at: doc.updated_at,
           product: formatProductDocumentationBrand(product),

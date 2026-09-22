@@ -14,6 +14,57 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+function extractDocCover(doc: any): string | null {
+  if (!doc) return null;
+  // 1. Direct properties
+  if (doc.cover_image && typeof doc.cover_image === 'string') return doc.cover_image;
+  if (doc.cover_url && typeof doc.cover_url === 'string') return doc.cover_url;
+  if (doc.cover && typeof doc.cover === 'string') return doc.cover;
+  if (doc.image_url && typeof doc.image_url === 'string') return doc.image_url;
+
+  // 2. From content if object or JSON string
+  if (doc.content) {
+    if (typeof doc.content === 'object') {
+      const cover =
+        doc.content?.settings?.cover?.selectedCoverImage ||
+        doc.content?.metadata?.coverUrl ||
+        doc.content?.settings?.cover?.coverImage ||
+        doc.content?.cover ||
+        null;
+      if (cover) return cover;
+    } else if (typeof doc.content === 'string') {
+      try {
+        const parsed = JSON.parse(doc.content);
+        const cover =
+          parsed?.settings?.cover?.selectedCoverImage ||
+          parsed?.metadata?.coverUrl ||
+          parsed?.settings?.cover?.coverImage ||
+          parsed?.cover ||
+          null;
+        if (cover) return cover;
+      } catch {
+        // Not JSON
+      }
+    }
+  }
+
+  // 3. From description if JSON
+  if (doc.description && typeof doc.description === 'string') {
+    try {
+      const parsed = JSON.parse(doc.description);
+      const cover =
+        parsed?.cover_image ||
+        parsed?.cover_url ||
+        parsed?.selectedCoverImage ||
+        parsed?.coverUrl ||
+        null;
+      if (cover) return cover;
+    } catch {}
+  }
+
+  return null;
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -68,38 +119,83 @@ export async function GET(request: NextRequest) {
 
     const publicModuleIds = publicModules.map((m) => m.id);
 
-    // 3. Obtener documentos de los módulos públicos
-    const selectFields = includeContent
-      ? 'id, product_id, module_id, title, sidename, slug, content, status, section, order_index, icon_name, type, description, created_at, updated_at'
-      : 'id, product_id, module_id, title, sidename, slug, status, section, order_index, icon_name, type, description, created_at, updated_at';
-
-    const { data: docs, error: docsError } = await supabase
+    // 3. Obtener documentos de los módulos públicos (consultamos todos los campos para extraer portadas)
+    const { data: rawDocs, error: docsError } = await supabase
       .from('documentation')
-      .select(selectFields)
+      .select('*')
       .in('module_id', publicModuleIds)
       .eq('status', 'published')
       .order('order_index', { ascending: true });
 
     if (docsError) throw docsError;
 
-    // 4. Construir árbol jerárquico de navegación por módulo
+    // 4. Buscar portadas adicionales de portal_documents vinculadas al producto
+    const portalDocCoverMap = new Map<string, string>();
+    try {
+      const { data: portalDocs } = await supabase
+        .from('portal_documents')
+        .select('id, title, slug, content')
+        .or(`product_id.eq.${product.id},content->metadata->>product_id.eq.${product.id}`);
+
+      (portalDocs || []).forEach((pd: any) => {
+        const cover =
+          pd.content?.settings?.cover?.selectedCoverImage ||
+          pd.content?.metadata?.coverUrl ||
+          pd.content?.settings?.cover?.coverImage;
+        if (cover) {
+          portalDocCoverMap.set(pd.id, cover);
+          if (pd.slug) portalDocCoverMap.set(pd.slug, cover);
+        }
+      });
+    } catch {
+      // ignore
+    }
+
+    // Mapeo de portadas por ID y Slug de documentación
+    const docCoverMap = new Map<string, string>();
+    const formattedDocs = (rawDocs || []).map((doc: any) => {
+      const coverUrl =
+        extractDocCover(doc) ||
+        portalDocCoverMap.get(doc.id) ||
+        portalDocCoverMap.get(doc.slug) ||
+        null;
+
+      if (coverUrl) {
+        docCoverMap.set(doc.id, coverUrl);
+        if (doc.slug) docCoverMap.set(doc.slug, coverUrl);
+      }
+
+      const docObj: any = {
+        ...doc,
+        cover_image: coverUrl,
+        cover_url: coverUrl,
+      };
+
+      if (!includeContent && 'content' in docObj) {
+        delete docObj.content;
+      }
+
+      return docObj;
+    });
+
+    // 5. Construir árbol jerárquico de navegación por módulo
     const navigation = publicModules.map((module) => {
-      const moduleDocs = (docs || []).filter((d) => d.module_id === module.id);
+      const moduleDocs = formattedDocs.filter((d: any) => d.module_id === module.id);
 
       // Función recursiva para armar secciones y páginas hijas
-      const buildSectionTree = (parentId: string | null) => {
+      const buildSectionTree = (parentId: string | null): any[] => {
         return moduleDocs
-          .filter((doc) => {
+          .filter((doc: any) => {
             if (!parentId) {
               return (
                 !doc.section ||
                 doc.section === 'General' ||
-                !moduleDocs.some((s) => s.type === 'section' && s.id === doc.section)
+                !moduleDocs.some((s: any) => s.type === 'section' && s.id === doc.section)
               );
             }
             return doc.section === parentId;
           })
-          .map((doc) => {
+          .map((doc: any) => {
             if (doc.type === 'section') {
               return {
                 id: doc.id,
@@ -109,6 +205,8 @@ export async function GET(request: NextRequest) {
                 type: 'section',
                 icon_name: doc.icon_name,
                 order_index: doc.order_index,
+                cover_image: doc.cover_image,
+                cover_url: doc.cover_url,
                 items: buildSectionTree(doc.id),
               };
             }
@@ -120,6 +218,8 @@ export async function GET(request: NextRequest) {
               type: doc.type,
               icon_name: doc.icon_name,
               order_index: doc.order_index,
+              cover_image: doc.cover_image,
+              cover_url: doc.cover_url,
               url: `/docs/${doc.slug}`,
             };
           });
@@ -134,15 +234,73 @@ export async function GET(request: NextRequest) {
       };
     });
 
+    // 6. Enriquecer technical_docs_config (index entries, blog y releases con portadas consistentes)
+    const techDocsConfig = { ...(product.technical_docs_config || {}) };
+    if (techDocsConfig.index && Array.isArray(techDocsConfig.index.entries)) {
+      techDocsConfig.index.entries = techDocsConfig.index.entries.map((entry: any) => {
+        let entryCover = entry.cover_image || entry.cover_url || entry.coverUrl || null;
+        if (!entryCover && entry.docId) {
+          entryCover = docCoverMap.get(entry.docId) || portalDocCoverMap.get(entry.docId) || null;
+        }
+        if (!entryCover && entry.docSlug) {
+          entryCover = docCoverMap.get(entry.docSlug) || portalDocCoverMap.get(entry.docSlug) || null;
+        }
+        return {
+          ...entry,
+          cover_image: entryCover,
+          cover_url: entryCover,
+          coverUrl: entryCover,
+          coverImage: entryCover,
+          cover: entryCover,
+          image: entryCover,
+        };
+      });
+    }
+
+    if (Array.isArray(techDocsConfig.blog)) {
+      techDocsConfig.blog = techDocsConfig.blog.map((b: any) => {
+        const coverUrl = b.coverUrl || b.cover_url || b.cover_image || b.coverImage || b.cover || b.image || b.imageUrl || b.image_url || null;
+        return {
+          ...b,
+          cover_url: coverUrl,
+          cover_image: coverUrl,
+          coverUrl,
+          coverImage: coverUrl,
+          cover: coverUrl,
+          image: coverUrl,
+          imageUrl: coverUrl,
+          image_url: coverUrl,
+        };
+      });
+    }
+
+    if (Array.isArray(techDocsConfig.releases)) {
+      techDocsConfig.releases = techDocsConfig.releases.map((r: any) => {
+        const pngUrl = r.pngUrl || r.png_url || null;
+        const gifUrl = r.gifUrl || r.gif_url || null;
+        return {
+          ...r,
+          png_url: pngUrl,
+          pngUrl: pngUrl,
+          gif_url: gifUrl,
+          gifUrl: gifUrl,
+          image_url: pngUrl || gifUrl,
+          imageUrl: pngUrl || gifUrl,
+          cover_url: pngUrl || gifUrl,
+          cover_image: pngUrl || gifUrl,
+        };
+      });
+    }
+
     return NextResponse.json(
       {
         success: true,
         product: formattedProduct,
         modules: publicModules,
         navigation,
-        technical_docs: product.technical_docs_config || {},
-        total_documents: (docs || []).length,
-        documents: docs || [],
+        technical_docs: techDocsConfig,
+        total_documents: formattedDocs.length,
+        documents: formattedDocs,
       },
       { headers: corsHeaders }
     );
