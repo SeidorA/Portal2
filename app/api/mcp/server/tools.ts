@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/utils/supabase/admin';
 import { formatProductDocumentationBrand } from '@/utils/product-branding';
+import { parseMultilingualContent } from '@/utils/multilingual-content';
 
 export const MCP_TOOL_DEFINITIONS = [
   // 1. search_knowledge_base
@@ -446,12 +447,15 @@ export async function executeMcpTool(
       const formattedProducts = (products || []).map((p: any) => {
         const prodModules = (modules || []).filter((m: any) => m.product_id === p.id);
         const publicModules = prodModules.filter((m: any) => Array.isArray(m.allowed_roles) && m.allowed_roles.includes('public'));
+        const parsedDesc = parseMultilingualContent(p.description || '');
         return {
           id: p.id,
           title: p.title,
           slug: p.slug,
           version: p.version || '1.0.0',
           description: p.description,
+          description_es: parsedDesc.es,
+          description_en: parsedDesc.en,
           total_modules: prodModules.length,
           public_modules_count: publicModules.length,
           has_public_docs: publicModules.length > 0,

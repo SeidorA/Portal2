@@ -7,11 +7,13 @@ import ReleaseNoteViewer from '@/app/components/ReleaseNoteViewer';
 import BattlecardViewer from '@/app/components/BattlecardViewer';
 import BrandbookViewer, { BrandbookPageType } from '@/app/components/BrandbookViewer';
 import Sidebar, { SidebarSection } from '@/app/components/Sidebar';
+import BookmarkButton from '@/app/components/BookmarkButton';
+import TableOfContents from '@/app/components/TableOfContents';
 import Link from 'next/link';
 import { Button } from 'caralstable';
-import TableOfContents from '@/app/components/TableOfContents';
-import BookmarkButton from '@/app/components/BookmarkButton';
 import { Metadata } from 'next';
+import { cookies } from 'next/headers';
+import { extractLanguageContent } from '@/utils/multilingual-content';
 import { CaralIcon, Brand } from 'iconcaral2';
 
 const BRANDBOOK_PAGES: Record<string, { pageType: BrandbookPageType; title: string; icon: string; order: number }> = {
@@ -87,9 +89,14 @@ export async function generateMetadata({
 
   if (!doc) return {};
 
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get('portal_lang')?.value as 'es' | 'en') || 'es';
+  const docTitle = extractLanguageContent(doc.title, lang);
+  const docDesc = extractLanguageContent(doc.description, lang);
+
   return {
-    title: `${doc.title} - ${product.title}`,
-    description: doc.description || `Documentación de ${doc.title} para ${product.title}`,
+    title: `${docTitle} - ${product.title}`,
+    description: docDesc || `Documentación de ${docTitle} para ${product.title}`,
   };
 }
 
@@ -100,6 +107,9 @@ export default async function DocumentViewerPage({
 }) {
   const supabase = await createClient();
   const { product_slug, doc_slug } = await params;
+
+  const cookieStore = await cookies();
+  const lang = (cookieStore.get('portal_lang')?.value as 'es' | 'en') || 'es';
 
   // 1. Get Product with full assets
   const { data: product } = await supabase
@@ -121,12 +131,33 @@ export default async function DocumentViewerPage({
   // Check auth for Edit button
   const { data: { user } } = await supabase.auth.getUser();
 
-  // 2. Fetch all docs for this product (to build Sidebar and Topbar)
-  const { data: allDocs, error: allDocsError } = await supabase
+  // 2. Fetch modules for this product to filter private modules
+  const { data: rawModules } = await supabase
+    .from('modules')
+    .select('id, title, order_index, is_hidden, allowed_roles')
+    .eq('product_id', product.id)
+    .eq('is_hidden', false)
+    .order('order_index', { ascending: true });
+
+  const modules = (rawModules || []).filter(
+    (m: any) => !Array.isArray(m.allowed_roles) || !m.allowed_roles.includes('public')
+  );
+  const privateModuleIds = new Set(modules.map((m: any) => m.id));
+
+  // 3. Fetch all docs for this product (to build Sidebar and Topbar)
+  const { data: rawAllDocs, error: allDocsError } = await supabase
     .from('documentation')
-    .select('id, title, slug, module_id, section, order_index, content, icon_name, use_brand, hide_toc, description, type, updated_at')
+    .select('id, title, sidename, slug, module_id, section, order_index, content, icon_name, use_brand, hide_toc, description, type, allowed_roles, updated_at')
     .eq('product_id', product.id)
     .order('order_index', { ascending: true });
+
+  // Filter docs to only private ones
+  const allDocs = (rawAllDocs || []).filter((doc: any) => {
+    if (doc.module_id) {
+      return privateModuleIds.has(doc.module_id);
+    }
+    return !Array.isArray(doc.allowed_roles) || !doc.allowed_roles.includes('public');
+  });
 
   if (!isBrandbookPage) {
     if (allDocsError || !allDocs || allDocs.length === 0) {
@@ -134,27 +165,19 @@ export default async function DocumentViewerPage({
     }
   }
 
-  // 3. Find current document (if not brandbook)
+  // 4. Find current document (if not brandbook)
   const currentDoc = (allDocs || []).find(d => d.slug === doc_slug);
   if (!isBrandbookPage && !currentDoc) notFound();
 
-  // Fetch modules for this product to build top tabs
-  const { data: modules } = await supabase
-    .from('modules')
-    .select('id, title, order_index, is_hidden')
-    .eq('product_id', product.id)
-    .eq('is_hidden', false)
-    .order('order_index', { ascending: true });
-
   const activeModule = isBrandbookPage ? 'recursos-graficos' : currentDoc?.module_id;
 
-  // 4. Build Top Bar Modules (Tabs)
+  // 5. Build Top Bar Modules (Tabs)
   const topTabs: any[] = (modules || []).map(mod => {
     const firstDocForModule = (allDocs || []).find(d => d.module_id === mod.id);
     if (!firstDocForModule) return null;
     return {
       id: mod.id,
-      title: mod.title,
+      title: extractLanguageContent(mod.title, lang),
       href: `/docs/${product_slug}/${firstDocForModule.slug}`,
       isActive: !isBrandbookPage && mod.id === activeModule
     };
@@ -287,18 +310,19 @@ export default async function DocumentViewerPage({
 
       return children.map(child => {
         const isSection = child.type === 'section' || activeModuleDocs.some(d => d.section === child.id);
+        const displayLabel = extractLanguageContent(child.sidename || child.title, lang);
         if (isSection) {
           return {
-            label: child.title,
+            label: displayLabel,
             icon: child.icon_name || null,
             isBrand: false,
             children: buildTree(child.id)
           };
         } else {
           return {
-            label: child.title,
+            label: displayLabel,
             icon: child.icon_name || null,
-            isBrand: false,
+            isBrand: Boolean(child.use_brand),
             href: `/docs/${product_slug}/${child.slug}`,
             variant: child.slug === doc_slug ? 'info' : 'ghost'
           };
@@ -547,12 +571,12 @@ export default async function DocumentViewerPage({
                             )}
                           </span>
                         )}
-                        {currentDoc.title}
+                        {extractLanguageContent(currentDoc.title, lang)}
                       </h1>
 
                       {currentDoc.description && currentDoc.type !== 'release_note' && (
                         <p className="text-lg text-neutral-600 dark:text-neutral-400 mb-6 leading-relaxed">
-                          {currentDoc.description}
+                          {extractLanguageContent(currentDoc.description, lang)}
                         </p>
                       )}
                     </div>
@@ -560,7 +584,7 @@ export default async function DocumentViewerPage({
                     <div className="flex items-center gap-2 shrink-0">
                       <BookmarkButton
                         url={`/docs/${product_slug}/${currentDoc.slug}`}
-                        title={currentDoc.title}
+                        title={extractLanguageContent(currentDoc.title, lang)}
                         category="Base de Conocimientos"
                         showText={true}
                         className="border border-neutral-200 dark:border-neutral-700 bg-white/80 dark:bg-neutral-800/80 shadow-2xs"
@@ -618,7 +642,7 @@ export default async function DocumentViewerPage({
 
             {/* TABLE OF CONTENTS (Right Sticky Sidebar) */}
             {!isBrandbookPage && !currentDoc?.hide_toc && currentDoc?.type !== 'release_note' && currentDoc?.type !== 'roadmap' && currentDoc?.type !== 'battlecard' && (
-              <TableOfContents toc={toc} rawContent={currentDoc?.content} />
+              <TableOfContents rawContent={currentDoc?.content} />
             )}
 
           </div>

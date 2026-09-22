@@ -9,6 +9,7 @@ import IconPickerModal from '@/app/components/IconPickerModal'
 import Input from '@/app/components/Input'
 import Select from '@/app/components/Select'
 import { useTranslation } from '@/app/context/LanguageContext'
+import { parseMultilingualContent, composeMultilingualContent, extractLanguageContent } from '@/utils/multilingual-content'
 
 const ApiFeaturePreview = ({ url, apiScript }: { url: string, apiScript?: string }) => {
   const [data, setData] = useState<any>(null)
@@ -316,7 +317,7 @@ const COLOR_PRESETS = [
 ]
 
 export default function ProductosPage() {
-  const { t } = useTranslation()
+  const { t, language } = useTranslation()
   const [products, setProducts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const supabase = createClient()
@@ -378,7 +379,9 @@ export default function ProductosPage() {
   const [newTitle, setNewTitle] = useState('')
   const [newVersion, setNewVersion] = useState('1.0.0')
   const [newStatus, setNewStatus] = useState('Publicada')
-  const [newDesc, setNewDesc] = useState('')
+  const [newDescEs, setNewDescEs] = useState('')
+  const [newDescEn, setNewDescEn] = useState('')
+  const [descLang, setDescLang] = useState<'es' | 'en'>('es')
   const [newLightImage, setNewLightImage] = useState('')
   const [newDarkImage, setNewDarkImage] = useState('')
   const [newLink, setNewLink] = useState('')
@@ -467,7 +470,9 @@ export default function ProductosPage() {
     setNewTitle('')
     setNewVersion('1.0.0')
     setNewStatus('Publicada')
-    setNewDesc('')
+    setNewDescEs('')
+    setNewDescEn('')
+    setDescLang('es')
     setNewLightImage('')
     setNewDarkImage('')
     setNewLink('')
@@ -621,6 +626,8 @@ export default function ProductosPage() {
         brand_is_color: newAssets.brand_is_color ?? true
       }
 
+      const finalDesc = composeMultilingualContent({ es: newDescEs, en: newDescEn })
+
       let productId = editingId
       if (editingId) {
         const { error } = await supabase
@@ -630,7 +637,7 @@ export default function ProductosPage() {
             slug: newLink,
             version: newVersion.trim() || '1.0.0',
             status: newStatus,
-            description: newDesc,
+            description: finalDesc,
             link: newLink,
             category: newCategory,
             is_super: newIsSuper,
@@ -656,7 +663,7 @@ export default function ProductosPage() {
               slug: newLink,
               version: newVersion.trim() || '1.0.0',
               status: newStatus,
-              description: newDesc,
+              description: finalDesc,
               link: newLink,
               category: newCategory,
               is_super: newIsSuper,
@@ -720,7 +727,10 @@ export default function ProductosPage() {
     setNewTitle(p.title || '')
     setNewVersion(p.version || '1.0.0')
     setNewStatus(p.status || 'Publicada')
-    setNewDesc(p.description || '')
+    const parsedDesc = parseMultilingualContent(p.description || '')
+    setNewDescEs(parsedDesc.es)
+    setNewDescEn(parsedDesc.en)
+    setDescLang('es')
     setNewLink(p.slug || p.link || '')
     setNewLinkDemo(p.link_demo || '')
     setNewLinkLanding(p.link_landing || '')
@@ -885,7 +895,7 @@ export default function ProductosPage() {
                       {p.link_docs && <span className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 px-2 py-1 rounded">Docs</span>}
                     </div>
 
-                    <p className="text-sm text-neutral-800 line-clamp-2 mt-2">{p.description}</p>
+                    <p className="text-sm text-neutral-800 line-clamp-2 mt-2">{extractLanguageContent(p.description, language)}</p>
 
                     <div className="flex gap-4 mt-3">
                       <Button
@@ -969,15 +979,58 @@ export default function ProductosPage() {
               <div className="grid grid-cols-[auto_1fr_1fr] gap-4">
                 <div className="w-10 invisible"></div>
                 <div className="col-span-2">
-                  <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300">
-                    {t('products.descField', 'Descripcion')}
-                  </label>
-                  <textarea
-                    value={newDesc}
-                    onChange={(e) => setNewDesc(e.target.value)}
-                    className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500 h-28 resize-none"
-                    placeholder={t('products.productDesc', 'Descripción del producto...')}
-                  />
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                      {t('products.descField', 'Descripcion')}
+                    </label>
+                    <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                      <button
+                        type="button"
+                        onClick={() => setDescLang('es')}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                          descLang === 'es'
+                            ? 'bg-white dark:bg-neutral-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                            : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                        }`}
+                      >
+                        <span>🇪🇸</span>
+                        <span>{t('products.descEs', 'Español')}</span>
+                        {newDescEs.trim().length > 0 && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Contenido presente"></span>
+                        )}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDescLang('en')}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                          descLang === 'en'
+                            ? 'bg-white dark:bg-neutral-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                            : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                        }`}
+                      >
+                        <span>🇬🇧</span>
+                        <span>{t('products.descEn', 'Inglés')}</span>
+                        {newDescEn.trim().length > 0 && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Contenido presente"></span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                  {descLang === 'es' ? (
+                    <textarea
+                      value={newDescEs}
+                      onChange={(e) => setNewDescEs(e.target.value)}
+                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500 h-28 resize-none"
+                      placeholder={t('products.productDescEs', 'Descripción del producto en español...')}
+                    />
+                  ) : (
+                    <textarea
+                      value={newDescEn}
+                      onChange={(e) => setNewDescEn(e.target.value)}
+                      className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-container text-sm focus:outline-none focus:border-blue-500 h-28 resize-none"
+                      placeholder={t('products.productDescEn', 'Product description in English...')}
+                    />
+                  )}
                 </div>
               </div>
 
@@ -2821,7 +2874,7 @@ export default function ProductosPage() {
                         opacity: 0.85
                       }}
                     >
-                      {newDesc || 'Descripción general del producto y capacidades del ecosistema corporativo.'}
+                      {(language === 'en' ? (newDescEn || newDescEs) : (newDescEs || newDescEn)) || 'Descripción general del producto y capacidades del ecosistema corporativo.'}
                     </p>
                   </div>
                 </div>

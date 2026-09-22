@@ -70,8 +70,8 @@ export async function GET(request: NextRequest) {
 
     // 3. Obtener documentos de los módulos públicos
     const selectFields = includeContent
-      ? 'id, product_id, module_id, title, slug, content, status, section, order_index, icon_name, type, description, created_at, updated_at'
-      : 'id, product_id, module_id, title, slug, status, section, order_index, icon_name, type, description, created_at, updated_at';
+      ? 'id, product_id, module_id, title, sidename, slug, content, status, section, order_index, icon_name, type, description, created_at, updated_at'
+      : 'id, product_id, module_id, title, sidename, slug, status, section, order_index, icon_name, type, description, created_at, updated_at';
 
     const { data: docs, error: docsError } = await supabase
       .from('documentation')
@@ -104,6 +104,7 @@ export async function GET(request: NextRequest) {
               return {
                 id: doc.id,
                 title: doc.title,
+                sidename: doc.sidename,
                 slug: doc.slug,
                 type: 'section',
                 icon_name: doc.icon_name,
@@ -114,6 +115,7 @@ export async function GET(request: NextRequest) {
             return {
               id: doc.id,
               title: doc.title,
+              sidename: doc.sidename,
               slug: doc.slug,
               type: doc.type,
               icon_name: doc.icon_name,
@@ -138,6 +140,7 @@ export async function GET(request: NextRequest) {
         product: formattedProduct,
         modules: publicModules,
         navigation,
+        technical_docs: product.technical_docs_config || {},
         total_documents: (docs || []).length,
         documents: docs || [],
       },

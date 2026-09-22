@@ -5,12 +5,12 @@ import { createClient } from '@/utils/supabase/client';
 import { Brand, CaralIcon } from 'iconcaral2';
 import { ProductItem } from '@/app/components/home/Products';
 import { Button, Drawer, Toggle } from 'caralstable';
-import FileUploader from '@/app/components/FileUploader';
 import { getBentoConfig, updateBentoConfig } from '@/app/actions/bentoConfig';
 import { useTranslation } from '@/app/context/LanguageContext';
+import { parseMultilingualContent, composeMultilingualContent, extractLanguageContent } from '@/utils/multilingual-content';
 
 export default function BentoEditorPage() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [ownTechProducts, setOwnTechProducts] = useState<ProductItem[]>([]);
   const [actinProducts, setActinProducts] = useState<ProductItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +28,9 @@ export default function BentoEditorPage() {
 
   // Quick Edit State
   const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
+  const [quickDescEs, setQuickDescEs] = useState('');
+  const [quickDescEn, setQuickDescEn] = useState('');
+  const [quickDescLang, setQuickDescLang] = useState<'es' | 'en'>('es');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -134,6 +137,10 @@ export default function BentoEditorPage() {
   };
 
   const openQuickEdit = (product: ProductItem) => {
+    const parsed = parseMultilingualContent(product.description || '');
+    setQuickDescEs(parsed.es);
+    setQuickDescEn(parsed.en);
+    setQuickDescLang('es');
     setEditingProduct({ ...product });
     setIsDrawerOpen(true);
   };
@@ -144,10 +151,11 @@ export default function BentoEditorPage() {
 
     setIsSaving(true);
     try {
+      const finalDesc = composeMultilingualContent({ es: quickDescEs, en: quickDescEn });
       const { error } = await supabase
         .from('products')
         .update({
-          description: editingProduct.description,
+          description: finalDesc,
           is_super: editingProduct.is_super,
           light_image: editingProduct.light_image,
           dark_image: editingProduct.dark_image
@@ -156,7 +164,7 @@ export default function BentoEditorPage() {
 
       if (error) throw error;
 
-      const updatedProduct = { ...editingProduct };
+      const updatedProduct = { ...editingProduct, description: finalDesc };
       if (updatedProduct.category === 'own_tech') {
         setOwnTechProducts(ownTechProducts.map(p => p.id === updatedProduct.id ? updatedProduct : p));
       } else {
@@ -344,7 +352,7 @@ export default function BentoEditorPage() {
                     </h3>
                   </div>
                   <p className="text-[14px] font-poppins m-0 opacity-90 leading-tight text-neutral-700 dark:text-neutral-300">
-                    {product.description}
+                    {extractLanguageContent(product.description, language)}
                   </p>
                 </div>
 
@@ -384,15 +392,58 @@ export default function BentoEditorPage() {
         {editingProduct && (
           <form onSubmit={handleQuickSave} className="flex flex-col gap-6 p-4 h-full">
             <div>
-              <label className="block text-sm font-medium mb-1 text-neutral-700 dark:text-neutral-300 font-poppins">
-                {t("bentoBuilder.description", "Descripción")}
-              </label>
-              <textarea
-                value={editingProduct.description || ''}
-                onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500 h-24 resize-none font-poppins text-neutral-900 dark:text-white"
-                placeholder={t("bentoBuilder.descriptionPlaceholder", "Descripción del producto...")}
-              />
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 font-poppins">
+                  {t("bentoBuilder.description", "Descripción")}
+                </label>
+                <div className="flex items-center gap-1 bg-neutral-100 dark:bg-neutral-800 p-0.5 rounded-lg border border-neutral-200 dark:border-neutral-700">
+                  <button
+                    type="button"
+                    onClick={() => setQuickDescLang('es')}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                      quickDescLang === 'es'
+                        ? 'bg-white dark:bg-neutral-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                        : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                    }`}
+                  >
+                    <span>🇪🇸</span>
+                    <span>{t('products.descEs', 'Español')}</span>
+                    {quickDescEs.trim().length > 0 && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Contenido presente"></span>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setQuickDescLang('en')}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 text-xs font-semibold rounded-md transition-all cursor-pointer ${
+                      quickDescLang === 'en'
+                        ? 'bg-white dark:bg-neutral-900 text-blue-600 dark:text-blue-400 shadow-xs'
+                        : 'text-neutral-500 hover:text-neutral-800 dark:hover:text-neutral-200'
+                    }`}
+                  >
+                    <span>🇬🇧</span>
+                    <span>{t('products.descEn', 'Inglés')}</span>
+                    {quickDescEn.trim().length > 0 && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" title="Contenido presente"></span>
+                    )}
+                  </button>
+                </div>
+              </div>
+              {quickDescLang === 'es' ? (
+                <textarea
+                  value={quickDescEs}
+                  onChange={(e) => setQuickDescEs(e.target.value)}
+                  className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500 h-24 resize-none font-poppins text-neutral-900 dark:text-white"
+                  placeholder={t("products.productDescEs", "Descripción del producto en español...")}
+                />
+              ) : (
+                <textarea
+                  value={quickDescEn}
+                  onChange={(e) => setQuickDescEn(e.target.value)}
+                  className="w-full rounded-md border border-neutral-300 dark:border-neutral-700 px-3 py-2 bg-white dark:bg-neutral-900 text-sm focus:outline-none focus:border-blue-500 h-24 resize-none font-poppins text-neutral-900 dark:text-white"
+                  placeholder={t("products.productDescEn", "Product description in English...")}
+                />
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">

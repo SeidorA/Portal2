@@ -6,7 +6,7 @@ import sidebarConfig from "../../sidebar.config.json";
 import { useSidebar, SidebarItem, SidebarSection } from "./SidebarProvider";
 import { createClient } from "@/utils/supabase/client";
 import { useTranslation, LanguageDropdown } from "../context/LanguageContext";
-
+import { extractLanguageContent } from "@/utils/multilingual-content";
 import { useRouter, usePathname } from "next/navigation";
 import { Brand, CaralIcon } from "iconcaral2";
 
@@ -39,6 +39,8 @@ const itemKeyMap: Record<string, string> = {
   "Base de conocimiento": "sidebar.knowledgeBase",
   "Base de conocimientos": "sidebar.knowledgeBase",
   "Knowledge Base": "sidebar.knowledgeBase",
+  "Técnica": "sidebar.tecnica",
+  "Technical Docs": "sidebar.tecnica",
   "Contenido": "sidebar.content",
   "Content": "sidebar.content",
   "Documentos": "sidebar.documents",
@@ -85,7 +87,7 @@ export const SidebarItemNode = ({
   onNavigate?: () => void;
 }) => {
   const [isOpen, setIsOpen] = React.useState(false);
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
 
   React.useEffect(() => {
     if (item.children) {
@@ -105,9 +107,10 @@ export const SidebarItemNode = ({
     }
   };
 
-  const translatedLabel = itemKeyMap[item.label]
-    ? t(itemKeyMap[item.label], item.label)
-    : item.label;
+  const localizedLabel = extractLanguageContent(item.label, language);
+  const translatedLabel = itemKeyMap[localizedLabel]
+    ? t(itemKeyMap[localizedLabel], localizedLabel)
+    : localizedLabel;
 
   return (
     <div className="w-full flex flex-col">

@@ -31,6 +31,7 @@ const ROUTE_CATEGORY_MAP: Record<string, { title: string; category: string; icon
   '/usuarios': { title: 'Usuarios', category: 'Gestión', icon: 'users' },
   '/roles': { title: 'Roles y Permisos', category: 'Gestión', icon: 'gear' },
   '/contenido': { title: 'Gestor de Contenido', category: 'Gestión', icon: 'edit' },
+  '/tecnica': { title: 'Documentación Técnica', category: 'Gestión', icon: 'code' },
   '/productos': { title: 'Productos', category: 'Gestión', icon: 'plus' },
   '/documentos': { title: 'Documentos A4 y Presentaciones', category: 'Documentos', icon: 'file' },
   '/perfil': { title: 'Perfil de Usuario', category: 'Preferencias', icon: 'user' },

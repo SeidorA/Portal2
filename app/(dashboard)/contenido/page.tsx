@@ -11,9 +11,10 @@ import { Button } from 'caralstable';
 import { CaralIcon } from 'iconcaral2';
 import { parseDocusaurusMarkdown } from '@/utils/docusaurus-parser';
 import { useTranslation } from '@/app/context/LanguageContext';
+import { extractLanguageContent } from '@/utils/multilingual-content';
 
 export default function ContenidoPage() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [products, setProducts] = useState<any[]>([]);
   const [modulesList, setModulesList] = useState<any[]>([]);
   const [docs, setDocs] = useState<any[]>([]);
@@ -489,7 +490,7 @@ export default function ContenidoPage() {
                           <div ref={provided.innerRef} {...provided.draggableProps}>
                             <ManagementItem
                               id={mod.id}
-                              title={mod.title}
+                              title={extractLanguageContent(mod.title, language)}
                               iconName="folder"
                               useBrand={false}
                               isHidden={mod.is_hidden}
@@ -590,7 +591,7 @@ export default function ContenidoPage() {
                           <div ref={provided.innerRef} {...provided.draggableProps}>
                             <ManagementItem
                               id={doc.id}
-                              title={doc.title}
+                              title={extractLanguageContent(doc.title, language)}
                               subtitle={doc.subtitle}
                               iconName={doc.icon_name || (doc.type === 'section' ? 'folder' : 'file')}
                               useBrand={doc.use_brand || false}
@@ -629,7 +630,9 @@ export default function ContenidoPage() {
                     className="text-neutral-500 -ml-2 shrink-0"
                   />
                 )}
-                <span className="truncate" title={currentSection?.title}>{currentSection?.title || t('content.documentsTitle', 'Documentos')}</span>
+                <span className="truncate" title={currentSection?.title ? extractLanguageContent(currentSection.title, language) : ''}>
+                  {currentSection?.title ? extractLanguageContent(currentSection.title, language) : t('content.documentsTitle', 'Documentos')}
+                </span>
               </div>
             }
             isOpen={!!currentSection}
@@ -699,7 +702,7 @@ export default function ContenidoPage() {
                           <div ref={provided.innerRef} {...provided.draggableProps}>
                             <ManagementItem
                               id={doc.id}
-                              title={doc.title}
+                              title={extractLanguageContent(doc.title, language)}
                               subtitle={doc.subtitle}
                               iconName={doc.icon_name || (doc.type === 'section' ? 'folder' : 'file')}
                               useBrand={doc.use_brand || false}
@@ -734,8 +737,11 @@ export default function ContenidoPage() {
           productId={selectedProduct}
           defaultDocType={defaultDocType}
           availableRoles={roles}
+          allDocs={docs}
+          currentModuleId={selectedModule}
           onClose={() => setIsDocModalOpen(false)}
           onSave={saveDoc}
+          onMoved={fetchData}
         />
       </div>
 

@@ -16,17 +16,33 @@ export default async function ProductDocsRedirect({ params }: { params: Promise<
     notFound();
   }
 
-  // 2. Find the first document for this product (usually in Recursos)
-  const { data: doc, error: docError } = await supabase
-    .from('documentation')
-    .select('slug')
+  // 2. Fetch private modules for this product
+  const { data: rawModules } = await supabase
+    .from('modules')
+    .select('id, allowed_roles')
     .eq('product_id', product.id)
-    .order('order_index', { ascending: true })
-    .limit(1)
-    .maybeSingle();
+    .eq('is_hidden', false)
+    .order('order_index', { ascending: true });
 
-  if (doc?.slug) {
-    redirect(`/docs/${product_slug}/${doc.slug}`);
+  const privateModules = (rawModules || []).filter(
+    (m: any) => !Array.isArray(m.allowed_roles) || !m.allowed_roles.includes('public')
+  );
+  const privateModuleIds = privateModules.map((m: any) => m.id);
+
+  // 3. Find the first private document for this product
+  const { data: rawDocs } = await supabase
+    .from('documentation')
+    .select('slug, module_id, allowed_roles')
+    .eq('product_id', product.id)
+    .order('order_index', { ascending: true });
+
+  const validDoc = (rawDocs || []).find((d: any) => {
+    if (d.module_id) return privateModuleIds.includes(d.module_id);
+    return !Array.isArray(d.allowed_roles) || !d.allowed_roles.includes('public');
+  });
+
+  if (validDoc?.slug) {
+    redirect(`/docs/${product_slug}/${validDoc.slug}`);
   }
 
   // If no regular docs exist, but graphic module is enabled, redirect to brandbook

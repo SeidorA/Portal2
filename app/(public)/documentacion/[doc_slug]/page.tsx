@@ -66,32 +66,45 @@ export default async function PortalDocumentViewerPage({
   // Check auth for Edit button
   const { data: { user } } = await supabase.auth.getUser();
 
-  // 2. Fetch all docs for this product (to build Sidebar and Topbar)
-  const { data: allDocs, error: allDocsError } = await supabase
+  // 2. Fetch public modules for this product
+  const { data: rawModules } = await supabase
+    .from('modules')
+    .select('id, title, order_index, is_hidden, allowed_roles')
+    .eq('product_id', product.id)
+    .eq('is_hidden', false)
+    .order('order_index', { ascending: true });
+
+  const modules = (rawModules || []).filter(
+    (m: any) => Array.isArray(m.allowed_roles) && m.allowed_roles.includes('public')
+  );
+  const publicModuleIds = new Set(modules.map((m: any) => m.id));
+
+  // 3. Fetch all docs for this product
+  const { data: rawAllDocs, error: allDocsError } = await supabase
     .from('documentation')
-    .select('id, title, slug, module_id, section, order_index, content, icon_name, use_brand, hide_toc, description, type')
+    .select('id, title, sidename, slug, module_id, section, order_index, content, icon_name, use_brand, hide_toc, description, type, allowed_roles, updated_at')
     .eq('product_id', product.id)
     .order('order_index', { ascending: true });
+
+  // Filter docs to only public ones
+  const allDocs = (rawAllDocs || []).filter((doc: any) => {
+    if (doc.module_id) {
+      return publicModuleIds.has(doc.module_id);
+    }
+    return Array.isArray(doc.allowed_roles) && doc.allowed_roles.includes('public');
+  });
 
   if (allDocsError || !allDocs || allDocs.length === 0) {
     notFound();
   }
 
-  // 3. Find current document
+  // 4. Find current document
   const currentDoc = allDocs.find(d => d.slug === doc_slug);
   if (!currentDoc) notFound();
 
-  // Fetch modules for this product to build top tabs
-  const { data: modules } = await supabase
-    .from('modules')
-    .select('id, title, order_index, is_hidden')
-    .eq('product_id', product.id)
-    .eq('is_hidden', false)
-    .order('order_index', { ascending: true });
-
   const activeModule = currentDoc.module_id;
 
-  // 4. Build Top Bar Modules (Tabs)
+  // 5. Build Top Bar Modules (Tabs)
   const topTabs = (modules || []).map(mod => {
     const firstDocForModule = allDocs.find(d => d.module_id === mod.id);
     if (!firstDocForModule) return null;
@@ -314,7 +327,7 @@ export default async function PortalDocumentViewerPage({
             </main>
 
             {!currentDoc.hide_toc && currentDoc.type !== 'release_note' && currentDoc.type !== 'roadmap' && currentDoc.type !== 'battlecard' && (
-              <TableOfContents toc={toc} rawContent={currentDoc.content} />
+              <TableOfContents rawContent={currentDoc.content} />
             )}
           </div>
         </div>

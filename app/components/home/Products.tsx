@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { Brand, CaralIcon } from 'iconcaral2';
 import { useTranslation } from '@/app/context/LanguageContext';
+import { extractLanguageContent } from '@/utils/multilingual-content';
 
 export type ProductItem = {
   id?: string;
@@ -20,7 +21,7 @@ export type ProductItem = {
 };
 
 export default function Products({ products = [], cols = 4 }: { products?: ProductItem[], cols?: number }) {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
@@ -83,7 +84,7 @@ export default function Products({ products = [], cols = 4 }: { products?: Produ
                   </h3>
                 </div>
                 <p className="text-[14px] font-poppins m-0 opacity-90 leading-tight">
-                  {product.description}
+                  {extractLanguageContent(product.description, language)}
                 </p>
               </div>
               <div className={`flex items-center justify-center ${product.is_super ? 'sm:w-full lg:w-auto' : 'w-full'}`}>

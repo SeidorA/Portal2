@@ -11,6 +11,7 @@ import { createClient } from "../../utils/supabase/client";
 import { searchGlobal, SearchResult } from "@/app/actions/searchAction";
 import { logSearchEvent } from "@/app/actions/logSearchClickAction";
 import { useTranslation } from "../context/LanguageContext";
+import { extractLanguageContent } from "@/utils/multilingual-content";
 import PortalNews from "./PortalNews";
 
 type NavChildMock = {
@@ -305,7 +306,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                             </div>
                             {child.description && (
                               <span className="text-xs text-neutral-800 mt-1 font-poppins leading-relaxed">
-                                {child.description}
+                                {extractLanguageContent(child.description, language)}
                               </span>
                             )}
                           </div>
@@ -319,7 +320,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                             )}
                             <div className="p-4 flex flex-col gap-2">
                               {child.title && <h4 className="font-semibold text-neutral-900 dark:text-white font-poppins text-sm">{child.title}</h4>}
-                              {child.description && <p className="text-xs text-neutral-600 dark:text-neutral-400 font-poppins leading-relaxed">{child.description}</p>}
+                              {child.description && <p className="text-xs text-neutral-600 dark:text-neutral-400 font-poppins leading-relaxed">{extractLanguageContent(child.description, language)}</p>}
                               {child.buttonText && (
                                 <Button
                                   variant="info"
@@ -764,7 +765,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                                             </span>
                                             {child.description && (
                                               <span className="text-xs text-neutral-600 dark:text-neutral-400 mt-0.5 line-clamp-2 leading-relaxed">
-                                                {child.description}
+                                                {extractLanguageContent(child.description, language)}
                                               </span>
                                             )}
                                           </div>
@@ -779,7 +780,7 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                                           )}
                                           <div className="p-3 flex flex-col gap-1.5">
                                             {child.title && <h4 className="font-semibold text-neutral-900 dark:text-white text-sm">{child.title}</h4>}
-                                            {child.description && <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">{child.description}</p>}
+                                            {child.description && <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">{extractLanguageContent(child.description, language)}</p>}
                                             {child.buttonText && (
                                               <Button
                                                 variant="info"
@@ -897,13 +898,13 @@ export default function Navbar({ showSidebarToggle = false }: NavbarProps) {
                       className="flex flex-col p-3 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-lg cursor-pointer transition-colors"
                     >
                       <div className="flex items-center justify-between mb-1">
-                        <span className="font-medium text-neutral-800 dark:text-neutral-200 text-sm">{res.title}</span>
+                        <span className="font-medium text-neutral-800 dark:text-neutral-200 text-sm">{extractLanguageContent(res.title, language)}</span>
                         <span className="text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded-full bg-neutral-500 text-neutral-800">
                           {res.type}
                         </span>
                       </div>
                       {res.snippet && (
-                        <span className="text-xs text-neutral-800 line-clamp-1">{res.snippet}</span>
+                        <span className="text-xs text-neutral-800 line-clamp-1">{extractLanguageContent(res.snippet, language)}</span>
                       )}
                     </div>
                   ))}

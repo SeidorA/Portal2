@@ -15,18 +15,34 @@ export default async function DocumentacionPage() {
     return <div className="p-8 text-center text-neutral-500">Aún no hay documentación disponible para Portal. Crea el producto 'Portal' (con slug 'portal') en la base de datos.</div>;
   }
 
-  // Fetch all docs for this product to find the first one
-  const { data: allDocs, error: allDocsError } = await supabase
-    .from('documentation')
-    .select('slug, order_index')
+  // 1. Fetch public modules for Portal
+  const { data: rawModules } = await supabase
+    .from('modules')
+    .select('id, allowed_roles')
     .eq('product_id', product.id)
-    .order('order_index', { ascending: true })
-    .limit(1);
+    .eq('is_hidden', false)
+    .order('order_index', { ascending: true });
 
-  if (allDocsError || !allDocs || allDocs.length === 0) {
-    return <div className="p-8 text-center text-neutral-500">No hay documentos publicados en el producto Portal.</div>;
+  const publicModules = (rawModules || []).filter(
+    (m: any) => Array.isArray(m.allowed_roles) && m.allowed_roles.includes('public')
+  );
+  const publicModuleIds = publicModules.map((m: any) => m.id);
+
+  // 2. Fetch all docs for this product to find the first public one
+  const { data: rawDocs, error: allDocsError } = await supabase
+    .from('documentation')
+    .select('slug, module_id, allowed_roles, order_index')
+    .eq('product_id', product.id)
+    .order('order_index', { ascending: true });
+
+  const validDoc = (rawDocs || []).find((d: any) => {
+    if (d.module_id) return publicModuleIds.includes(d.module_id);
+    return Array.isArray(d.allowed_roles) && d.allowed_roles.includes('public');
+  });
+
+  if (allDocsError || !validDoc) {
+    return <div className="p-8 text-center text-neutral-500">No hay documentos públicos publicados en el producto Portal.</div>;
   }
 
-  const firstDoc = allDocs[0];
-  redirect(`/documentacion/${firstDoc.slug}`);
+  redirect(`/documentacion/${validDoc.slug}`);
 }

@@ -82,6 +82,7 @@ export async function GET(
         document: {
           id: doc.id,
           title: doc.title,
+          sidename: doc.sidename,
           slug: doc.slug,
           content: doc.content,
           type: doc.type,

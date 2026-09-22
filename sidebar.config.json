@@ -55,6 +55,12 @@
         "variant": "ghost"
       },
       {
+        "label": "Técnica",
+        "icon": "upRightFromSquare",
+        "href": "/tecnica",
+        "variant": "ghost"
+      },
+      {
         "label": "Documentos",
         "icon": "file",
         "href": "/documentos",
