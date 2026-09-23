@@ -278,6 +278,17 @@ export async function GET(request: NextRequest) {
       techDocsConfig.releases = techDocsConfig.releases.map((r: any) => {
         const pngUrl = r.pngUrl || r.png_url || null;
         const gifUrl = r.gifUrl || r.gif_url || null;
+        const rawFeatures = Array.isArray(r.features) ? r.features : [];
+        const features = rawFeatures.map((f: any) => ({
+          ...f,
+          png_url: f.pngUrl || f.png_url || null,
+          pngUrl: f.pngUrl || f.png_url || null,
+          gif_url: f.gifUrl || f.gif_url || null,
+          gifUrl: f.gifUrl || f.gif_url || null,
+          image_url: f.pngUrl || f.gifUrl || null,
+          imageUrl: f.pngUrl || f.gifUrl || null,
+        }));
+
         return {
           ...r,
           png_url: pngUrl,
@@ -288,6 +299,7 @@ export async function GET(request: NextRequest) {
           imageUrl: pngUrl || gifUrl,
           cover_url: pngUrl || gifUrl,
           cover_image: pngUrl || gifUrl,
+          features,
         };
       });
     }

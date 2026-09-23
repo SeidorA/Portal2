@@ -56,6 +56,34 @@ export async function GET(request: NextRequest) {
       const gifUrl = r.gifUrl || r.gif_url || null;
       const gifName = r.gifName || r.gif_name || null;
 
+      const rawFeatures = Array.isArray(r.features) ? r.features : [];
+      const features = rawFeatures.map((f: any) => {
+        const featTitle = lang === 'en' && f.title_en ? f.title_en : (f.title_es || f.title || '');
+        const featDesc = lang === 'en' && f.description_en ? f.description_en : (f.description_es || f.description || '');
+        const fPngUrl = f.pngUrl || f.png_url || null;
+        const fPngName = f.pngName || f.png_name || null;
+        const fGifUrl = f.gifUrl || f.gif_url || null;
+        const fGifName = f.gifName || f.gif_name || null;
+
+        return {
+          id: f.id,
+          title: featTitle,
+          description: featDesc,
+          title_es: f.title_es || f.title || '',
+          title_en: f.title_en || f.title || '',
+          description_es: f.description_es || f.description || '',
+          description_en: f.description_en || f.description || '',
+          png_url: fPngUrl,
+          pngUrl: fPngUrl,
+          png_name: fPngName,
+          pngName: fPngName,
+          gif_url: fGifUrl,
+          gifUrl: fGifUrl,
+          gif_name: fGifName,
+          gifName: fGifName,
+        };
+      });
+
       return {
         id: r.id,
         version: r.version,
@@ -72,6 +100,7 @@ export async function GET(request: NextRequest) {
         gifName: gifName,
         image_url: pngUrl || gifUrl,
         imageUrl: pngUrl || gifUrl,
+        features,
       };
     });
 

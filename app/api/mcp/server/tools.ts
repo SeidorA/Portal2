@@ -183,6 +183,147 @@ export const MCP_TOOL_DEFINITIONS = [
       required: ['id'],
     },
   },
+  // 9. get_product_faqs
+  {
+    name: 'get_product_faqs',
+    description: 'Obtiene las preguntas frecuentes (FAQ) configuradas para un producto técnico (como Crestone o Portal Core) con filtro por idioma (es | en).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        product_slug: { type: 'string', description: 'Slug del producto (ej: "crestone", "portal")' },
+        lang: { type: 'string', enum: ['es', 'en'], description: 'Idioma de las preguntas frecuentes ("es" o "en", defecto: "es")' },
+      },
+      required: ['product_slug'],
+    },
+  },
+  // 10. edit_product_faqs
+  {
+    name: 'edit_product_faqs',
+    description: 'Crea, edita o actualiza las preguntas frecuentes (FAQ) de un producto técnico en español o inglés, o modifica el título y descripción del bloque FAQ.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        product_slug: { type: 'string', description: 'Slug del producto (ej: "crestone")' },
+        lang: { type: 'string', enum: ['es', 'en'], description: 'Idioma a modificar ("es" o "en")' },
+        title: { type: 'string', description: 'Título general de la sección FAQ (opcional)' },
+        description: { type: 'string', description: 'Descripción general de la sección FAQ (opcional)' },
+        items: {
+          type: 'array',
+          description: 'Lista completa de preguntas y respuestas para este idioma (opcional)',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', description: 'ID de la pregunta (opcional)' },
+              question: { type: 'string', description: 'Texto de la pregunta' },
+              answer: { type: 'string', description: 'Texto de la respuesta' },
+              docSlug: { type: 'string', description: 'Slug de documento vinculado (opcional)' },
+              docTitle: { type: 'string', description: 'Título de documento vinculado (opcional)' },
+            },
+            required: ['question', 'answer'],
+          },
+        },
+        add_item: {
+          type: 'object',
+          description: 'Pregunta individual para agregar a la lista existente (opcional)',
+          properties: {
+            question: { type: 'string', description: 'Texto de la pregunta' },
+            answer: { type: 'string', description: 'Texto de la respuesta' },
+            docSlug: { type: 'string', description: 'Slug de documento vinculado (opcional)' },
+            docTitle: { type: 'string', description: 'Título de documento vinculado (opcional)' },
+          },
+          required: ['question', 'answer'],
+        },
+        delete_item_id: { type: 'string', description: 'ID de la pregunta a eliminar (opcional)' },
+      },
+      required: ['product_slug', 'lang'],
+    },
+  },
+  // 11. get_product_releases
+  {
+    name: 'get_product_releases',
+    description: 'Obtiene el historial de versiones (releases) y novedades de un producto técnico, incluyendo su número, títulos, descripciones y features con imágenes PNG/JPG y GIF.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        product_slug: { type: 'string', description: 'Slug del producto (ej: "crestone")' },
+        lang: { type: 'string', enum: ['es', 'en'], description: 'Idioma para los textos ("es" o "en", defecto: "es")' },
+        version: { type: 'string', description: 'Filtrar por una versión específica (ej: "1.97.02") o "latest"' },
+        include_drafts: { type: 'boolean', description: 'Si es true, incluye versiones en estado borrador (defecto: true)' },
+      },
+      required: ['product_slug'],
+    },
+  },
+  // 12. edit_product_release
+  {
+    name: 'edit_product_release',
+    description: 'Crea o actualiza una versión de release para un producto técnico, configurando número de versión, título, descripción, estado de publicación y features con imágenes.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        product_slug: { type: 'string', description: 'Slug del producto (ej: "crestone")' },
+        version: { type: 'string', description: 'Número o tag semántico de la versión (ej: "1.97.02")' },
+        title_es: { type: 'string', description: 'Título de la versión en español (opcional)' },
+        title_en: { type: 'string', description: 'Título de la versión en inglés (opcional)' },
+        description_es: { type: 'string', description: 'Descripción general del release en español (opcional)' },
+        description_en: { type: 'string', description: 'Descripción general del release en inglés (opcional)' },
+        is_published: { type: 'boolean', description: 'Estado de publicación (true = publicada, false = borrador)' },
+        features: {
+          type: 'array',
+          description: 'Lista de features / novedades destacadas en esta versión (opcional)',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string', description: 'ID de la feature (opcional)' },
+              title_es: { type: 'string', description: 'Título de la feature en español' },
+              title_en: { type: 'string', description: 'Título de la feature en inglés' },
+              description_es: { type: 'string', description: 'Descripción de la feature en español' },
+              description_en: { type: 'string', description: 'Descripción de la feature en inglés' },
+              png_url: { type: 'string', description: 'URL o Data URL de la imagen estática PNG/JPG' },
+              gif_url: { type: 'string', description: 'URL o Data URL de la animación GIF' },
+            },
+          },
+        },
+        delete_release: { type: 'boolean', description: 'Si es true, elimina la versión especificada' },
+      },
+      required: ['product_slug', 'version'],
+    },
+  },
+  // 13. get_product_blog_posts
+  {
+    name: 'get_product_blog_posts',
+    description: 'Obtiene las publicaciones y artículos del blog técnico de un producto (como Crestone) con opción de filtro por idioma y slug.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        product_slug: { type: 'string', description: 'Slug del producto (ej: "crestone")' },
+        lang: { type: 'string', enum: ['es', 'en'], description: 'Idioma del contenido ("es" o "en", defecto: "es")' },
+        slug: { type: 'string', description: 'Filtrar por slug específico del post (opcional)' },
+        include_drafts: { type: 'boolean', description: 'Si es true, incluye posts en borrador (defecto: true)' },
+      },
+      required: ['product_slug'],
+    },
+  },
+  // 14. edit_product_blog_post
+  {
+    name: 'edit_product_blog_post',
+    description: 'Crea, actualiza o elimina una publicación en el blog técnico de un producto, configurando su título, slug, contenido Markdown (en ES y EN), portada y estado.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        product_slug: { type: 'string', description: 'Slug del producto (ej: "crestone")' },
+        slug: { type: 'string', description: 'Slug identificador del artículo (ej: "optimizacion-pipelines")' },
+        new_slug: { type: 'string', description: 'Nuevo slug si se desea renombrar (opcional)' },
+        title_es: { type: 'string', description: 'Título del artículo en español (opcional)' },
+        title_en: { type: 'string', description: 'Título del artículo en inglés (opcional)' },
+        content_es: { type: 'string', description: 'Contenido Markdown en español (opcional)' },
+        content_en: { type: 'string', description: 'Contenido Markdown en inglés (opcional)' },
+        cover_url: { type: 'string', description: 'URL o Data URL de la imagen de portada (opcional)' },
+        is_published: { type: 'boolean', description: 'Estado de publicación (true = publicado, false = borrador)' },
+        delete_post: { type: 'boolean', description: 'Si es true, elimina la publicación' },
+      },
+      required: ['product_slug', 'slug'],
+    },
+  },
 ];
 
 export async function executeMcpTool(
@@ -754,6 +895,414 @@ export async function executeMcpTool(
         message: 'Documento A4 duplicado exitosamente',
         original_id: originalDoc.id,
         document: duplicatedDoc,
+      };
+    }
+
+    case 'get_product_faqs': {
+      const { product_slug, lang = 'es' } = args;
+      if (!product_slug || typeof product_slug !== 'string') {
+        throw new Error('El parámetro product_slug es requerido (ej: "crestone")');
+      }
+
+      const { data: product, error: prodError } = await supabase
+        .from('products')
+        .select('id, title, slug, technical_docs_config')
+        .ilike('slug', product_slug.trim())
+        .single();
+
+      if (prodError || !product) {
+        throw new Error(`Producto '${product_slug}' no encontrado`);
+      }
+
+      const techConfig = product.technical_docs_config || {};
+      const faqConfig = techConfig.faq || {};
+      const langKey = (lang === 'en' ? 'en' : 'es') as 'es' | 'en';
+      const langData = faqConfig[langKey] || faqConfig.es || { title: 'Preguntas Frecuentes', description: '' };
+
+      const rawItems = (faqConfig[langKey] && Array.isArray(faqConfig[langKey].items))
+        ? faqConfig[langKey].items
+        : (Array.isArray(faqConfig[`items_${langKey}`])
+          ? faqConfig[`items_${langKey}`]
+          : (Array.isArray(faqConfig.items) ? faqConfig.items : []));
+
+      const items = rawItems.map((item: any) => ({
+        id: item.id,
+        question: item.question,
+        answer: item.answer,
+        docId: item.docId,
+        docSlug: item.docSlug,
+        docTitle: item.docTitle,
+      }));
+
+      return {
+        product: product.slug,
+        product_title: product.title,
+        lang: langKey,
+        title: langData.title || (langKey === 'en' ? 'Frequently Asked Questions' : 'Preguntas Frecuentes'),
+        description: langData.description || '',
+        total_items: items.length,
+        items,
+      };
+    }
+
+    case 'edit_product_faqs': {
+      const { product_slug, lang = 'es', title, description, items, add_item, delete_item_id } = args;
+      if (!product_slug) throw new Error('El parámetro product_slug es requerido');
+      const langKey = (lang === 'en' ? 'en' : 'es') as 'es' | 'en';
+
+      const { data: product, error: prodError } = await supabase
+        .from('products')
+        .select('id, title, slug, technical_docs_config')
+        .ilike('slug', product_slug.trim())
+        .single();
+
+      if (prodError || !product) throw new Error(`Producto '${product_slug}' no encontrado`);
+
+      const techConfig = JSON.parse(JSON.stringify(product.technical_docs_config || {}));
+      if (!techConfig.faq) techConfig.faq = {};
+      if (!techConfig.faq[langKey]) {
+        techConfig.faq[langKey] = {
+          title: langKey === 'en' ? 'Frequently Asked Questions' : 'Preguntas Frecuentes',
+          description: '',
+          items: [],
+        };
+      }
+
+      if (title !== undefined) techConfig.faq[langKey].title = title;
+      if (description !== undefined) techConfig.faq[langKey].description = description;
+
+      let currentItems: any[] = Array.isArray(techConfig.faq[langKey].items)
+        ? techConfig.faq[langKey].items
+        : (Array.isArray(techConfig.faq[`items_${langKey}`]) ? techConfig.faq[`items_${langKey}`] : []);
+
+      if (Array.isArray(items)) {
+        currentItems = items.map((it: any) => ({
+          id: it.id || Date.now().toString() + Math.random().toString(36).substr(2, 4),
+          question: it.question || '',
+          answer: it.answer || '',
+          docSlug: it.docSlug || undefined,
+          docTitle: it.docTitle || undefined,
+        }));
+      }
+
+      if (add_item && typeof add_item === 'object') {
+        currentItems.push({
+          id: add_item.id || Date.now().toString(),
+          question: add_item.question || '',
+          answer: add_item.answer || '',
+          docSlug: add_item.docSlug || undefined,
+          docTitle: add_item.docTitle || undefined,
+        });
+      }
+
+      if (delete_item_id) {
+        currentItems = currentItems.filter((it: any) => it.id !== delete_item_id);
+      }
+
+      techConfig.faq[langKey].items = currentItems;
+      techConfig.faq[`items_${langKey}`] = currentItems;
+      if (langKey === 'es') {
+        techConfig.faq.items = currentItems;
+      }
+
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ technical_docs_config: techConfig })
+        .eq('id', product.id);
+
+      if (updateError) throw new Error(`Error al actualizar FAQ: ${updateError.message}`);
+
+      return {
+        success: true,
+        message: `Preguntas frecuentes (${langKey.toUpperCase()}) actualizadas exitosamente`,
+        product: product.slug,
+        lang: langKey,
+        faq: techConfig.faq[langKey],
+      };
+    }
+
+    case 'get_product_releases': {
+      const { product_slug, lang = 'es', version, include_drafts = true } = args;
+      if (!product_slug) throw new Error('El parámetro product_slug es requerido');
+
+      const { data: product, error: prodError } = await supabase
+        .from('products')
+        .select('id, title, slug, technical_docs_config')
+        .ilike('slug', product_slug.trim())
+        .single();
+
+      if (prodError || !product) throw new Error(`Producto '${product_slug}' no encontrado`);
+
+      const techConfig = product.technical_docs_config || {};
+      const allReleases = (techConfig.releases || []) as any[];
+
+      let filtered = include_drafts ? allReleases : allReleases.filter((r) => r.isPublished);
+
+      if (version && version !== 'latest') {
+        filtered = filtered.filter((r) => r.version === version);
+      }
+
+      const formatted = filtered.map((r) => {
+        const title = lang === 'en' && r.title_en ? r.title_en : (r.title_es || r.title || `Release ${r.version}`);
+        const description = lang === 'en' && r.description_en ? r.description_en : (r.description_es || r.description || '');
+        const features = (Array.isArray(r.features) ? r.features : []).map((f: any) => ({
+          id: f.id,
+          title: lang === 'en' && f.title_en ? f.title_en : (f.title_es || f.title || ''),
+          description: lang === 'en' && f.description_en ? f.description_en : (f.description_es || f.description || ''),
+          title_es: f.title_es || f.title || '',
+          title_en: f.title_en || f.title || '',
+          description_es: f.description_es || f.description || '',
+          description_en: f.description_en || f.description || '',
+          png_url: f.pngUrl || f.png_url || null,
+          gif_url: f.gifUrl || f.gif_url || null,
+        }));
+
+        return {
+          id: r.id,
+          version: r.version,
+          is_published: r.isPublished ?? true,
+          title,
+          description,
+          title_es: r.title_es || r.title || '',
+          title_en: r.title_en || r.title || '',
+          description_es: r.description_es || r.description || '',
+          description_en: r.description_en || r.description || '',
+          features,
+        };
+      });
+
+      return {
+        product: product.slug,
+        product_title: product.title,
+        lang,
+        total_releases: formatted.length,
+        releases: formatted,
+      };
+    }
+
+    case 'edit_product_release': {
+      const {
+        product_slug,
+        version,
+        title_es,
+        title_en,
+        description_es,
+        description_en,
+        is_published,
+        features,
+        delete_release,
+      } = args;
+
+      if (!product_slug || !version) {
+        throw new Error('Los parámetros product_slug y version son requeridos');
+      }
+
+      const { data: product, error: prodError } = await supabase
+        .from('products')
+        .select('id, title, slug, technical_docs_config')
+        .ilike('slug', product_slug.trim())
+        .single();
+
+      if (prodError || !product) throw new Error(`Producto '${product_slug}' no encontrado`);
+
+      const techConfig = JSON.parse(JSON.stringify(product.technical_docs_config || {}));
+      let allReleases: any[] = Array.isArray(techConfig.releases) ? techConfig.releases : [];
+
+      if (delete_release === true) {
+        allReleases = allReleases.filter((r) => r.version !== version);
+      } else {
+        const existingIdx = allReleases.findIndex((r) => r.version === version);
+        const formattedFeatures = Array.isArray(features)
+          ? features.map((f: any) => ({
+            id: f.id || Date.now().toString() + Math.random().toString(36).substr(2, 4),
+            title: f.title_es || f.title || '',
+            title_es: f.title_es || f.title || '',
+            title_en: f.title_en || f.title || '',
+            description: f.description_es || f.description || '',
+            description_es: f.description_es || f.description || '',
+            description_en: f.description_en || f.description || '',
+            pngUrl: f.png_url || f.pngUrl || '',
+            gifUrl: f.gif_url || f.gifUrl || '',
+          }))
+          : undefined;
+
+        if (existingIdx >= 0) {
+          const target = allReleases[existingIdx];
+          if (title_es !== undefined) {
+            target.title_es = title_es;
+            target.title = title_es;
+          }
+          if (title_en !== undefined) target.title_en = title_en;
+          if (description_es !== undefined) {
+            target.description_es = description_es;
+            target.description = description_es;
+          }
+          if (description_en !== undefined) target.description_en = description_en;
+          if (is_published !== undefined) target.isPublished = is_published;
+          if (formattedFeatures !== undefined) target.features = formattedFeatures;
+        } else {
+          const newRelease = {
+            id: Date.now().toString(),
+            version: version.trim(),
+            isPublished: is_published ?? true,
+            title: title_es || `${product.title} Release v${version}`,
+            title_es: title_es || `${product.title} Release v${version}`,
+            title_en: title_en || `${product.title} Release v${version}`,
+            description: description_es || '',
+            description_es: description_es || '',
+            description_en: description_en || '',
+            features: formattedFeatures || [],
+          };
+          allReleases.unshift(newRelease);
+        }
+      }
+
+      techConfig.releases = allReleases;
+
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ technical_docs_config: techConfig })
+        .eq('id', product.id);
+
+      if (updateError) throw new Error(`Error al actualizar release: ${updateError.message}`);
+
+      return {
+        success: true,
+        message: delete_release ? `Versión '${version}' eliminada exitosamente` : `Versión '${version}' guardada exitosamente`,
+        product: product.slug,
+        releases: allReleases,
+      };
+    }
+
+    case 'get_product_blog_posts': {
+      const { product_slug, lang = 'es', slug, include_drafts = true } = args;
+      if (!product_slug) throw new Error('El parámetro product_slug es requerido');
+
+      const { data: product, error: prodError } = await supabase
+        .from('products')
+        .select('id, title, slug, technical_docs_config')
+        .ilike('slug', product_slug.trim())
+        .single();
+
+      if (prodError || !product) throw new Error(`Producto '${product_slug}' no encontrado`);
+
+      const techConfig = product.technical_docs_config || {};
+      const allPosts = (techConfig.blog || []) as any[];
+
+      let filtered = include_drafts ? allPosts : allPosts.filter((b) => b.isPublished);
+
+      if (slug) {
+        filtered = filtered.filter((b) => b.slug === slug);
+      }
+
+      const formatted = filtered.map((b) => {
+        const title = lang === 'en' && b.title_en ? b.title_en : (b.title_es || b.title);
+        const content = lang === 'en' && b.content_en ? b.content_en : (b.content_es || b.content || '');
+
+        return {
+          id: b.id,
+          title,
+          slug: b.slug,
+          is_published: b.isPublished ?? true,
+          content,
+          title_es: b.title_es || b.title || '',
+          title_en: b.title_en || b.title || '',
+          content_es: b.content_es || b.content || '',
+          content_en: b.content_en || b.content || '',
+          cover_url: b.coverUrl || b.cover_url || null,
+        };
+      });
+
+      return {
+        product: product.slug,
+        product_title: product.title,
+        lang,
+        total_posts: formatted.length,
+        posts: formatted,
+      };
+    }
+
+    case 'edit_product_blog_post': {
+      const {
+        product_slug,
+        slug,
+        new_slug,
+        title_es,
+        title_en,
+        content_es,
+        content_en,
+        cover_url,
+        is_published,
+        delete_post,
+      } = args;
+
+      if (!product_slug || !slug) {
+        throw new Error('Los parámetros product_slug y slug son requeridos');
+      }
+
+      const { data: product, error: prodError } = await supabase
+        .from('products')
+        .select('id, title, slug, technical_docs_config')
+        .ilike('slug', product_slug.trim())
+        .single();
+
+      if (prodError || !product) throw new Error(`Producto '${product_slug}' no encontrado`);
+
+      const techConfig = JSON.parse(JSON.stringify(product.technical_docs_config || {}));
+      let allPosts: any[] = Array.isArray(techConfig.blog) ? techConfig.blog : [];
+
+      if (delete_post === true) {
+        allPosts = allPosts.filter((b) => b.slug !== slug);
+      } else {
+        const existingIdx = allPosts.findIndex((b) => b.slug === slug);
+
+        if (existingIdx >= 0) {
+          const target = allPosts[existingIdx];
+          if (new_slug) target.slug = new_slug.trim();
+          if (title_es !== undefined) {
+            target.title_es = title_es;
+            target.title = title_es;
+          }
+          if (title_en !== undefined) target.title_en = title_en;
+          if (content_es !== undefined) {
+            target.content_es = content_es;
+            target.content = content_es;
+          }
+          if (content_en !== undefined) target.content_en = content_en;
+          if (cover_url !== undefined) target.coverUrl = cover_url;
+          if (is_published !== undefined) target.isPublished = is_published;
+        } else {
+          const finalSlug = new_slug || slug;
+          const newPost = {
+            id: Date.now().toString(),
+            title: title_es || 'Nueva publicación',
+            title_es: title_es || 'Nueva publicación',
+            title_en: title_en || title_es || 'New Post',
+            slug: finalSlug.trim(),
+            isPublished: is_published ?? true,
+            content: content_es || `# ${title_es || 'Nueva publicación'}\n\nContenido técnico...`,
+            content_es: content_es || `# ${title_es || 'Nueva publicación'}\n\nContenido técnico...`,
+            content_en: content_en || `# ${title_en || 'New Post'}\n\nTechnical content...`,
+            coverUrl: cover_url || '',
+          };
+          allPosts.unshift(newPost);
+        }
+      }
+
+      techConfig.blog = allPosts;
+
+      const { error: updateError } = await supabase
+        .from('products')
+        .update({ technical_docs_config: techConfig })
+        .eq('id', product.id);
+
+      if (updateError) throw new Error(`Error al actualizar blog: ${updateError.message}`);
+
+      return {
+        success: true,
+        message: delete_post ? `Artículo '${slug}' eliminado exitosamente` : `Artículo '${new_slug || slug}' guardado exitosamente`,
+        product: product.slug,
+        posts: allPosts,
       };
     }
 

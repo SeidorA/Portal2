@@ -37,7 +37,14 @@ export async function GET(request: NextRequest) {
     const techConfig = product.technical_docs_config || {};
     const faqConfig = techConfig.faq || {};
     const langData = faqConfig[lang] || faqConfig.es || { title: 'Preguntas Frecuentes', description: '' };
-    const items = (faqConfig.items || []).map((item: any) => ({
+
+    const rawItems = (faqConfig[lang] && Array.isArray(faqConfig[lang].items))
+      ? faqConfig[lang].items
+      : (Array.isArray(faqConfig[`items_${lang}`])
+        ? faqConfig[`items_${lang}`]
+        : (Array.isArray(faqConfig.items) ? faqConfig.items : []));
+
+    const items = rawItems.map((item: any) => ({
       id: item.id,
       question: item.question,
       answer: item.answer,

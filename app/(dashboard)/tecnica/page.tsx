@@ -29,6 +29,20 @@ export interface FaqEntry {
   docTitle?: string;
 }
 
+export interface ReleaseFeature {
+  id: string;
+  title: string;
+  description: string;
+  title_es?: string;
+  title_en?: string;
+  description_es?: string;
+  description_en?: string;
+  pngUrl?: string;
+  pngName?: string;
+  gifUrl?: string;
+  gifName?: string;
+}
+
 export interface ReleaseVersion {
   id: string;
   version: string;
@@ -43,6 +57,7 @@ export interface ReleaseVersion {
   pngName?: string;
   gifUrl?: string;
   gifName?: string;
+  features?: ReleaseFeature[];
 }
 
 export interface BlogEntry {
@@ -188,7 +203,12 @@ export default function TecnicaPage() {
         if (config.faq) {
           if (config.faq.es) loadedFaqDataMap[`${p.id}_es`] = config.faq.es;
           if (config.faq.en) loadedFaqDataMap[`${p.id}_en`] = config.faq.en;
-          if (Array.isArray(config.faq.items)) loadedFaqEntriesMap[p.id] = config.faq.items;
+
+          const esItems = config.faq.items_es || config.faq.es?.items || config.faq.items || [];
+          const enItems = config.faq.items_en || config.faq.en?.items || [];
+
+          if (Array.isArray(esItems)) loadedFaqEntriesMap[`${p.id}_es`] = esItems;
+          if (Array.isArray(enItems)) loadedFaqEntriesMap[`${p.id}_en`] = enItems;
         }
         if (Array.isArray(config.releases) && config.releases.length > 0) {
           loadedReleasesMap[p.id] = config.releases;
@@ -226,6 +246,9 @@ export default function TecnicaPage() {
       setIsSaving(true);
       const prodId = selectedProductId;
 
+      const esFaqItems = faqEntriesMap[`${prodId}_es`] || faqEntriesMap[prodId] || [];
+      const enFaqItems = faqEntriesMap[`${prodId}_en`] || [];
+
       const configPayload = {
         index: {
           es: indexDataMap[`${prodId}_es`] || getCurrentIndexDataForLang(prodId, 'es'),
@@ -233,9 +256,17 @@ export default function TecnicaPage() {
           entries: indexEntriesMap[prodId] || []
         },
         faq: {
-          es: faqDataMap[`${prodId}_es`] || getCurrentFaqDataForLang(prodId, 'es'),
-          en: faqDataMap[`${prodId}_en`] || getCurrentFaqDataForLang(prodId, 'en'),
-          items: faqEntriesMap[prodId] || []
+          es: {
+            ...(faqDataMap[`${prodId}_es`] || getCurrentFaqDataForLang(prodId, 'es')),
+            items: esFaqItems
+          },
+          en: {
+            ...(faqDataMap[`${prodId}_en`] || getCurrentFaqDataForLang(prodId, 'en')),
+            items: enFaqItems
+          },
+          items_es: esFaqItems,
+          items_en: enFaqItems,
+          items: esFaqItems
         },
         releases: productReleasesMap[prodId] || getProductReleases(),
         blog: productBlogMap[prodId] || getProductBlogEntries()
@@ -479,6 +510,17 @@ export default function TecnicaPage() {
     };
   };
 
+  const getCurrentFaqEntries = (): FaqEntry[] => {
+    if (!selectedProduct) return [];
+    const key = `${selectedProduct.id}_${faqLang}`;
+    if (faqEntriesMap[key]) return faqEntriesMap[key];
+    // Fallback inicial si solo existía la clave sin sufijo de idioma
+    if (faqLang === 'es' && faqEntriesMap[selectedProduct.id]) {
+      return faqEntriesMap[selectedProduct.id];
+    }
+    return [];
+  };
+
   const updateCurrentFaqData = (updates: Partial<{ title: string; description: string }>) => {
     if (!selectedProduct) return;
     const key = `${selectedProduct.id}_${faqLang}`;
@@ -525,7 +567,7 @@ export default function TecnicaPage() {
     if (!faqQuestion.trim() || !faqAnswer.trim() || !selectedProduct) return;
 
     const linkedDoc = publicDocs.find(d => d.id === faqLinkedDocId);
-    const prodKey = selectedProduct.id;
+    const prodKey = `${selectedProduct.id}_${faqLang}`;
 
     if (editingFaqId) {
       setFaqEntriesMap(prev => ({
@@ -564,7 +606,7 @@ export default function TecnicaPage() {
 
   const handleDeleteFaq = (faqId: string) => {
     if (!selectedProduct) return;
-    const prodKey = selectedProduct.id;
+    const prodKey = `${selectedProduct.id}_${faqLang}`;
     setFaqEntriesMap(prev => ({
       ...prev,
       [prodKey]: (prev[prodKey] || []).filter(f => f.id !== faqId)
@@ -590,7 +632,35 @@ export default function TecnicaPage() {
       description_es: 'Mejoras en el motor de sincronización en tiempo real, optimizaciones en los conectores de base de datos y reducción de latencia en webhooks.',
       description_en: 'Real-time synchronization engine improvements, database connector optimizations, and reduced webhook latency.',
       pngUrl: '',
-      gifUrl: ''
+      gifUrl: '',
+      features: [
+        {
+          id: 'f1',
+          title: 'Conector Snowflake de alta velocidad',
+          title_es: 'Conector Snowflake de alta velocidad',
+          title_en: 'High-speed Snowflake Connector',
+          description: 'Soporte nativo para stream ingestion con compresión Zstandard y balanceo de carga automático entre clusters.',
+          description_es: 'Soporte nativo para stream ingestion con compresión Zstandard y balanceo de carga automático entre clusters.',
+          description_en: 'Native stream ingestion support with Zstandard compression and automatic load balancing across clusters.',
+          pngUrl: '',
+          pngName: '',
+          gifUrl: '',
+          gifName: ''
+        },
+        {
+          id: 'f2',
+          title: 'Transformación de esquemas en caliente',
+          title_es: 'Transformación de esquemas en caliente',
+          title_en: 'Hot Schema Transformations',
+          description: 'Capacidad de mutar esquemas JSON en tránsito sin interrumpir el flujo activo de mensajes.',
+          description_es: 'Capacidad de mutar esquemas JSON en tránsito sin interrumpir el flujo activo de mensajes.',
+          description_en: 'Ability to mutate JSON schemas in transit without interrupting active message pipelines.',
+          pngUrl: '',
+          pngName: '',
+          gifUrl: '',
+          gifName: ''
+        }
+      ]
     },
     {
       id: '2',
@@ -603,7 +673,22 @@ export default function TecnicaPage() {
       description_es: 'Actualización del middleware de tokens de acceso y soporte para rotación automática de claves API.',
       description_en: 'Access token middleware update and support for automatic API key rotation.',
       pngUrl: '',
-      gifUrl: ''
+      gifUrl: '',
+      features: [
+        {
+          id: 'f3',
+          title: 'Rotación automática de tokens Bearer',
+          title_es: 'Rotación automática de tokens Bearer',
+          title_en: 'Automatic Bearer Token Rotation',
+          description: 'Renovación transparente de credenciales OAuth sin desautenticar sesiones activas.',
+          description_es: 'Renovación transparente de credenciales OAuth sin desautenticar sesiones activas.',
+          description_en: 'Seamless OAuth credential renewal without disconnecting active client sessions.',
+          pngUrl: '',
+          pngName: '',
+          gifUrl: '',
+          gifName: ''
+        }
+      ]
     },
     {
       id: '3',
@@ -616,7 +701,8 @@ export default function TecnicaPage() {
       description_es: 'Soporte para la API de consumo público y exportación de esquemas JSON.',
       description_en: 'Support for public consumption API and JSON schema export.',
       pngUrl: '',
-      gifUrl: ''
+      gifUrl: '',
+      features: []
     }
   ];
 
@@ -646,10 +732,17 @@ export default function TecnicaPage() {
       ? (found.description_en ?? found.description ?? '')
       : (found.description_es ?? found.description ?? '');
 
+    const features = (found.features || []).map(f => ({
+      ...f,
+      title: releaseLang === 'en' ? (f.title_en || f.title || '') : (f.title_es || f.title || ''),
+      description: releaseLang === 'en' ? (f.description_en ?? f.description ?? '') : (f.description_es ?? f.description ?? '')
+    }));
+
     return {
       ...found,
       title,
-      description
+      description,
+      features
     };
   };
 
@@ -705,7 +798,8 @@ export default function TecnicaPage() {
       description_es: '',
       description_en: '',
       pngUrl: '',
-      gifUrl: ''
+      gifUrl: '',
+      features: []
     };
 
     setProductReleasesMap(prev => ({
@@ -717,7 +811,84 @@ export default function TecnicaPage() {
     setIsAddVersionModalOpen(false);
   };
 
-  const handleFileUpload = (type: 'png' | 'gif', e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDeleteRelease = (releaseId: string) => {
+    if (!selectedProduct) return;
+    const prodId = selectedProduct.id;
+    const releases = getProductReleases();
+    const updated = releases.filter(r => r.id !== releaseId);
+    setProductReleasesMap(prev => ({
+      ...prev,
+      [prodId]: updated
+    }));
+    if (selectedVersionId === releaseId) {
+      setSelectedVersionId(updated.length > 0 ? updated[0].id : null);
+    }
+  };
+
+  const handleAddFeature = () => {
+    const active = getActiveRelease();
+    if (!active) return;
+    const currentFeatures = active.features || [];
+    const newFeature: ReleaseFeature = {
+      id: Date.now().toString(),
+      title: '',
+      title_es: '',
+      title_en: '',
+      description: '',
+      description_es: '',
+      description_en: '',
+      pngUrl: '',
+      pngName: '',
+      gifUrl: '',
+      gifName: ''
+    };
+    updateActiveRelease({
+      features: [...currentFeatures, newFeature]
+    });
+  };
+
+  const handleUpdateFeature = (featureId: string, updates: Partial<ReleaseFeature>) => {
+    const active = getActiveRelease();
+    if (!active) return;
+    const currentFeatures = active.features || [];
+
+    const updatedFeatures = currentFeatures.map(f => {
+      if (f.id !== featureId) return f;
+      const updated: ReleaseFeature = { ...f, ...updates };
+      if (updates.title !== undefined) {
+        if (releaseLang === 'en') {
+          updated.title_en = updates.title;
+          if (!f.title_es) updated.title_es = f.title;
+        } else {
+          updated.title_es = updates.title;
+          updated.title = updates.title;
+        }
+      }
+      if (updates.description !== undefined) {
+        if (releaseLang === 'en') {
+          updated.description_en = updates.description;
+          if (!f.description_es) updated.description_es = f.description;
+        } else {
+          updated.description_es = updates.description;
+          updated.description = updates.description;
+        }
+      }
+      return updated;
+    });
+
+    updateActiveRelease({ features: updatedFeatures });
+  };
+
+  const handleDeleteFeature = (featureId: string) => {
+    const active = getActiveRelease();
+    if (!active) return;
+    const currentFeatures = active.features || [];
+    updateActiveRelease({
+      features: currentFeatures.filter(f => f.id !== featureId)
+    });
+  };
+
+  const handleFeatureFileUpload = (featureId: string, type: 'png' | 'gif', e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -725,12 +896,20 @@ export default function TecnicaPage() {
     reader.onload = (event) => {
       const result = event.target?.result as string;
       if (type === 'png') {
-        updateActiveRelease({ pngUrl: result, pngName: file.name });
+        handleUpdateFeature(featureId, { pngUrl: result, pngName: file.name });
       } else {
-        updateActiveRelease({ gifUrl: result, gifName: file.name });
+        handleUpdateFeature(featureId, { gifUrl: result, gifName: file.name });
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleFeatureFileRemove = (featureId: string, type: 'png' | 'gif') => {
+    if (type === 'png') {
+      handleUpdateFeature(featureId, { pngUrl: '', pngName: '' });
+    } else {
+      handleUpdateFeature(featureId, { gifUrl: '', gifName: '' });
+    }
   };
 
   // --- HANDLERS PARA BLOG ---
@@ -1457,13 +1636,13 @@ export default function TecnicaPage() {
 
                 {/* Lista de preguntas y respuestas */}
                 <div className="flex flex-col gap-3">
-                  {selectedProduct && (faqEntriesMap[selectedProduct.id] || []).length === 0 ? (
+                  {selectedProduct && getCurrentFaqEntries().length === 0 ? (
                     <div className="p-8 text-center rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-800 text-sm text-neutral-500 dark:text-neutral-400">
-                      No hay preguntas agregadas todavía. Haz clic en <strong>Add question</strong> para agregar la primera.
+                      No hay preguntas agregadas todavía en {faqLang === 'es' ? 'Español' : 'Inglés'}. Haz clic en <strong>Add question</strong> para agregar la primera.
                     </div>
                   ) : (
                     selectedProduct &&
-                    (faqEntriesMap[selectedProduct.id] || []).map((faq, idx) => {
+                    getCurrentFaqEntries().map((faq, idx) => {
                       const isExpanded = expandedFaqIds.includes(faq.id);
                       return (
                         <div
@@ -1485,34 +1664,46 @@ export default function TecnicaPage() {
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0">
-                              <button
-                                type="button"
+                              <Button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleOpenEditFaqDrawer(faq);
                                 }}
-                                className="p-1.5 rounded-lg text-neutral-400 hover:text-sky-600 hover:bg-sky-50 dark:hover:bg-sky-950/30 transition-colors cursor-pointer"
-                                title="Editar"
-                              >
-                                <CaralIcon name="edit" size={15} />
-                              </button>
-                              <button
-                                type="button"
+                                iconName='edit'
+                                title='Editar'
+                                isIconButton
+                                variant='ghost'
+                                size='sm'
+                              />
+
+                              <Button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleDeleteFaq(faq.id);
                                 }}
-                                className="p-1.5 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
-                                title="Eliminar"
-                              >
-                                <CaralIcon name="trash" size={15} />
-                              </button>
-                              <div
+                                iconName='trash'
+                                title='Eliminar'
+                                isIconButton
+                                variant='danger'
+                                hasBorder
+                                size='sm'
+                              />
+
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleFaqExpand(faq.id);
+                                }}
+                                iconName={isExpanded ? 'chevronUp' : 'chevronDown'}
+                                title='Ver'
+                                isIconButton
+                                variant='ghost'
+                                size='sm'
                                 className={`text-neutral-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
                                   }`}
-                              >
-                                <CaralIcon name="chevronDown" size={16} />
-                              </div>
+                              />
+
+
                             </div>
                           </div>
 
@@ -1536,35 +1727,20 @@ export default function TecnicaPage() {
                     })
                   )}
                 </div>
-
-                {/* Botón Inferior: Copysection */}
-                <div className="w-full flex justify-center mt-6 pb-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const sectionCode = `<FaqSection product="${selectedProduct?.slug || 'crestone'}" lang="${faqLang}" />`;
-                      navigator.clipboard.writeText(sectionCode);
-                      setCopiedFaqSection(true);
-                      setTimeout(() => setCopiedFaqSection(false), 2000);
-                    }}
-                    className="px-6 py-2.5 rounded-xl bg-[#080e1b] hover:bg-[#11192e] text-white text-sm font-semibold flex items-center gap-2.5 shadow-lg border border-neutral-700/60 transition-all hover:scale-[1.02] cursor-pointer"
-                  >
-                    <CaralIcon name="code" size={18} className="text-sky-400" />
-                    <span>{copiedFaqSection ? '¡Sección FAQ Copiada!' : 'Copysection'}</span>
-                  </button>
-                </div>
               </div>
             )}
 
             {activeTab === 'release' && (
               <div className="flex flex-col gap-6 relative min-h-[500px]">
                 {/* Contenedor de 2 columnas según el diseño de Figma */}
-                <div className="flex gap-6 items-start w-full">
+                <div className="flex sm:flex-col md:flex-row gap-6 items-start w-full">
                   {/* Columna Izquierda: Lista de Versiones */}
-                  <div className="w-64 shrink-0 flex flex-col gap-2.5 border-b md:border-b-0 md:border-r border-neutral-200 dark:border-neutral-800 pb-4 md:pb-0 md:pr-6">
-                    <span className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-1">
-                      Versiones
-                    </span>
+                  <div className="sm:w-full md:w-64 shrink-0 flex flex-col gap-2.5 pb-4 md:pb-0 md:pr-6">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-bold uppercase tracking-wider text-neutral-800">
+                        Versiones ({getProductReleases().length})
+                      </span>
+                    </div>
 
                     {getProductReleases().map((rel) => {
                       const isActive = (getActiveRelease()?.id === rel.id);
@@ -1572,39 +1748,47 @@ export default function TecnicaPage() {
                         <div
                           key={rel.id}
                           onClick={() => setSelectedVersionId(rel.id)}
-                          className={`flex items-center justify-between p-3 rounded-xl transition-all cursor-pointer font-semibold text-sm ${isActive
-                            ? 'bg-sky-400/90 dark:bg-sky-500 text-white shadow-xs font-bold'
+                          className={`group flex items-center justify-between py-3 px-2 rounded-xl transition-all cursor-pointer font-semibold text-sm ${isActive
+                            ? 'bg-info-main text-white shadow-xs font-bold'
                             : 'bg-neutral-100/70 hover:bg-neutral-200/70 dark:bg-neutral-800/60 dark:hover:bg-neutral-700/70 text-neutral-800 dark:text-neutral-200'
                             }`}
                         >
-                          <span>{rel.version}</span>
-                          {rel.isPublished ? (
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${isActive ? 'bg-white/20 text-white' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400'
-                              }`}>
-                              Publicada
-                            </span>
-                          ) : (
-                            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${isActive ? 'bg-white/20 text-white' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400'
-                              }`}>
-                              Borrador
-                            </span>
-                          )}
+                          <div className="flex items-center gap-2 truncate">
+                            <span className="truncate">{rel.version}</span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            {rel.isPublished ? (
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${isActive ? 'bg-white/20 text-white' : 'bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400'
+                                }`}>
+                                Publicada
+                              </span>
+                            ) : (
+                              <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${isActive ? 'bg-white/20 text-white' : 'bg-neutral-200 dark:bg-neutral-700 text-neutral-600 dark:text-neutral-400'
+                                }`}>
+                                Borrador
+                              </span>
+                            )}
+
+
+                          </div>
                         </div>
                       );
                     })}
 
                     {/* Botón "+ Add Version" */}
-                    <button
-                      type="button"
+                    <Button
                       onClick={() => {
                         setNewVersionTag('');
                         setIsAddVersionModalOpen(true);
                       }}
-                      className="mt-2 w-full py-2.5 px-4 rounded-xl border border-dashed border-neutral-300 hover:border-sky-500 dark:border-neutral-700 dark:hover:border-sky-400 bg-white/40 dark:bg-neutral-900/40 text-neutral-700 dark:text-neutral-300 text-sm font-semibold flex items-center justify-center gap-2 hover:text-sky-600 dark:hover:text-sky-400 transition-all cursor-pointer shadow-2xs"
+                      variant='light'
+                      iconName='plus'
+                      className='border-neutral-800'
                     >
-                      <CaralIcon name="plus" size={16} />
-                      <span>Add Version</span>
-                    </button>
+                      Agregar Versión
+                    </Button>
+
                   </div>
 
                   {/* Columna Derecha: Detalle de la versión activa */}
@@ -1618,10 +1802,12 @@ export default function TecnicaPage() {
                       );
                     }
 
+                    const featuresList = activeRelease.features || [];
+
                     return (
-                      <div className="flex-1 w-full flex flex-col gap-5">
+                      <div className="flex-1 w-full flex flex-col gap-6">
                         {/* Barra Superior: Selector de Idioma y Publicar versión */}
-                        <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
+                        <div className="flex flex-col sm:flex-row gap-3 sm:items-center justify-between pb-2 border-b border-neutral-200/70 dark:border-neutral-800">
                           {/* Selector de idioma para la versión actual */}
                           <div className="relative w-fit">
                             <button
@@ -1669,164 +1855,302 @@ export default function TecnicaPage() {
                             )}
                           </div>
 
-                          {/* Switch Publicar versión */}
-                          <div className="bg-sky-100/90 dark:bg-sky-950/50 border border-sky-200/80 dark:border-sky-800/80 rounded-xl py-2 px-3.5 flex items-center gap-3 shadow-2xs w-fit">
-                            <span className="font-semibold text-xs text-sky-800 dark:text-sky-300">
-                              Publicar versión
-                            </span>
+                          {/* Controles de Publicación y Acciones */}
+                          <div className="flex items-center gap-3">
+                            <div className="bg-sky-100/90 dark:bg-sky-950/50 border border-sky-200/80 dark:border-sky-800/80 rounded-xl py-2 px-3.5 flex items-center gap-3 shadow-2xs w-fit">
+                              <span className="font-semibold text-xs text-sky-800 dark:text-sky-300">
+                                Publicar versión
+                              </span>
 
-                            <button
-                              type="button"
-                              onClick={() => updateActiveRelease({ isPublished: !activeRelease.isPublished })}
-                              className={`w-10 h-5.5 flex items-center rounded-full p-0.5 cursor-pointer transition-colors duration-300 ${activeRelease.isPublished ? 'bg-sky-500 justify-end' : 'bg-neutral-300 dark:bg-neutral-700 justify-start'
-                                }`}
-                              title={activeRelease.isPublished ? 'Despublicar versión' : 'Publicar versión'}
+                              <button
+                                type="button"
+                                onClick={() => updateActiveRelease({ isPublished: !activeRelease.isPublished })}
+                                className={`w-10 h-5.5 flex items-center rounded-full p-0.5 cursor-pointer transition-colors duration-300 ${activeRelease.isPublished ? 'bg-sky-500 justify-end' : 'bg-neutral-300 dark:bg-neutral-700 justify-start'
+                                  }`}
+                                title={activeRelease.isPublished ? 'Despublicar versión' : 'Publicar versión'}
+                              >
+                                <div className="bg-white w-4 h-4 rounded-full shadow-md transform transition-transform" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* 1. Datos Generales de la Versión (Número, Título, Descripción) */}
+                        <div className="flex flex-col gap-4 p-5 rounded-2xl bg-neutral-50/50 dark:bg-neutral-900/40 border border-neutral-200/80 dark:border-neutral-800">
+                          {/* Número de versión */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-xs uppercase tracking-wider text-neutral-800">
+                              1. Número de Versión
+                            </label>
+                            <input
+                              type="text"
+                              value={activeRelease.version}
+                              onChange={(e) => updateActiveRelease({ version: e.target.value })}
+                              placeholder="Ej. 1.97.02"
+                              className="font-mono text-xl font-bold text-neutral-900 p-2 rounded-xl border-transparent focus:outline-none focus:border-none bg-transparent  w-full"
+                            />
+                          </div>
+
+                          {/* Título del Release */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-xs uppercase tracking-wider text-neutral-800">
+                              2. Título de la Versión ({releaseLang.toUpperCase()})
+                            </label>
+                            <input
+                              type="text"
+                              value={activeRelease.title}
+                              onChange={(e) => updateActiveRelease({ title: e.target.value })}
+                              placeholder="Ej. Actualización de motor Crestone v1.97.02"
+                              className="font-mono text-xl font-bold text-neutral-900 p-2 rounded-xl border-transparent focus:outline-none focus:border-none bg-transparent  w-full"
+                            />
+                          </div>
+
+                          {/* Descripción general del Release */}
+                          <div className="flex flex-col gap-1.5">
+                            <label className="text-xs uppercase tracking-wider text-neutral-800">
+                              3. Descripción General ({releaseLang.toUpperCase()})
+                            </label>
+                            <textarea
+                              rows={3}
+                              value={activeRelease.description}
+                              onChange={(e) => updateActiveRelease({ description: e.target.value })}
+                              placeholder="Describe un resumen general de lo que incluye este release..."
+                              className="w-full text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed px-3 py-2 rounded-xl border border-neutral-300 dark:border-neutral-700 focus:border-sky-500 focus:outline-hidden resize-y transition-colors font-sans"
+                            />
+                          </div>
+                        </div>
+
+                        {/* 2. Sección de Features / Novedades de la Versión */}
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <CaralIcon name="lightning" size={20} className="text-sky-500" />
+                              <h4 className="font-bold text-base text-neutral-900 dark:text-neutral-100">
+                                Features / Novedades de la Versión
+                              </h4>
+                              <span className="text-xs px-2 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-600 dark:text-sky-400 font-bold">
+                                {featuresList.length}
+                              </span>
+                            </div>
+
+                            <Button
+                              variant="info"
+                              size="sm"
+                              iconName="plus"
+                              onClick={handleAddFeature}
+                              className="flex items-center gap-1.5"
                             >
-                              <div className="bg-white w-4 h-4 rounded-full shadow-md transform transition-transform" />
-                            </button>
+                              <span>Agregar Feature</span>
+                            </Button>
                           </div>
-                        </div>
 
-                        {/* Title editable */}
-                        <div className="flex flex-col gap-1">
-                          <input
-                            type="text"
-                            value={activeRelease.title}
-                            onChange={(e) => updateActiveRelease({ title: e.target.value })}
-                            placeholder="Title..."
-                            className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 bg-transparent border-b border-transparent hover:border-neutral-300 dark:hover:border-neutral-700 focus:border-sky-500 focus:outline-hidden transition-colors w-full py-1"
-                          />
-                        </div>
-
-                        {/* Description editable */}
-                        <div className="flex flex-col gap-1">
-                          <textarea
-                            rows={3}
-                            value={activeRelease.description}
-                            onChange={(e) => updateActiveRelease({ description: e.target.value })}
-                            placeholder="Description..."
-                            className="w-full text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed hover:border-neutral-300 dark:border-neutral-700 focus:border-sky-500 rounded-xl p-3.5 focus:outline-hidden resize-y transition-colors font-sans"
-                          />
-                        </div>
-
-                        {/* Caja 1: Add image.png */}
-                        <div className="flex flex-col gap-2">
-                          <label className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
-                            Imagen PNG
-                          </label>
-                          <div className="rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-100/70 dark:bg-neutral-800/50 p-4 flex flex-col items-center justify-center gap-3">
-                            {activeRelease.pngUrl ? (
-                              <div className="relative w-full flex flex-col items-center group">
-                                <img
-                                  src={activeRelease.pngUrl}
-                                  alt="Release PNG Preview"
-                                  className="max-h-48 rounded-lg object-contain border border-neutral-200 dark:border-neutral-700 shadow-sm"
-                                />
-                                <div className="mt-2 flex items-center gap-3">
-                                  <span className="text-xs text-neutral-500 font-mono truncate max-w-xs">
-                                    {activeRelease.pngName || 'image.png'}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => updateActiveRelease({ pngUrl: '', pngName: '' })}
-                                    className="text-xs text-red-500 hover:underline font-semibold cursor-pointer"
-                                  >
-                                    Eliminar
-                                  </button>
-                                </div>
+                          {featuresList.length === 0 ? (
+                            <div className="rounded-2xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-900/30 p-8 flex flex-col items-center justify-center text-center gap-3">
+                              <div className="w-10 h-10 rounded-xl bg-sky-100 dark:bg-sky-950/60 text-sky-500 flex items-center justify-center">
+                                <CaralIcon name="sparkles" size={22} />
                               </div>
-                            ) : (
-                              <label className="px-5 py-2.5 rounded-lg bg-[#07153a] hover:bg-[#0e2154] text-white text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-sm transition-all hover:scale-105">
-                                <CaralIcon name="plus" size={14} className="text-sky-400" />
-                                <span>Add image.png</span>
-                                <input
-                                  type="file"
-                                  accept="image/png,image/jpeg,image/webp"
-                                  className="hidden"
-                                  onChange={(e) => handleFileUpload('png', e)}
-                                />
-                              </label>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Caja 2: Add image.gif */}
-                        <div className="flex flex-col gap-2">
-                          <label className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
-                            Animación GIF
-                          </label>
-                          <div className="rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-neutral-100/70 dark:bg-neutral-800/50 p-4 flex flex-col items-center justify-center gap-3">
-                            {activeRelease.gifUrl ? (
-                              <div className="relative w-full flex flex-col items-center group">
-                                <img
-                                  src={activeRelease.gifUrl}
-                                  alt="Release GIF Preview"
-                                  className="max-h-48 rounded-lg object-contain border border-neutral-200 dark:border-neutral-700 shadow-sm"
-                                />
-                                <div className="mt-2 flex items-center gap-3">
-                                  <span className="text-xs text-neutral-500 font-mono truncate max-w-xs">
-                                    {activeRelease.gifName || 'image.gif'}
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() => updateActiveRelease({ gifUrl: '', gifName: '' })}
-                                    className="text-xs text-red-500 hover:underline font-semibold cursor-pointer"
-                                  >
-                                    Eliminar
-                                  </button>
-                                </div>
+                              <div className="flex flex-col gap-1 max-w-sm">
+                                <h5 className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
+                                  No hay features agregadas a esta versión
+                                </h5>
+                                <p className="text-xs text-neutral-500">
+                                  Agrega cada una de las funcionalidades destacadas de esta versión con su título, descripción y dos imágenes (GIF y PNG/JPG).
+                                </p>
                               </div>
-                            ) : (
-                              <label className="px-5 py-2.5 rounded-lg bg-[#07153a] hover:bg-[#0e2154] text-white text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-sm transition-all hover:scale-105">
-                                <CaralIcon name="plus" size={14} className="text-sky-400" />
-                                <span>Add image.gif</span>
-                                <input
-                                  type="file"
-                                  accept="image/gif"
-                                  className="hidden"
-                                  onChange={(e) => handleFileUpload('gif', e)}
-                                />
-                              </label>
-                            )}
-                          </div>
+                              <Button
+                                variant="info"
+                                size="sm"
+                                iconName="plus"
+                                onClick={handleAddFeature}
+                              >
+                                Agregar primera Feature
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-col gap-5">
+                              {featuresList.map((feat, fIdx) => (
+                                <div
+                                  key={feat.id || fIdx}
+                                  className="rounded-2xl border border-neutral-200/90 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-900/60 p-5 flex flex-col gap-4 shadow-2xs"
+                                >
+                                  {/* Cabecera de la Feature */}
+                                  <div className="flex items-center justify-between pb-3 border-b border-neutral-200/70 dark:border-neutral-800">
+                                    <div className="flex items-center gap-2.5">
+                                      <span className="w-6 h-6 rounded-full bg-sky-500 text-white text-xs font-bold flex items-center justify-center shrink-0">
+                                        {fIdx + 1}
+                                      </span>
+                                      <span className="font-bold text-sm text-neutral-900 dark:text-neutral-100">
+                                        Feature #{fIdx + 1}
+                                      </span>
+                                    </div>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteFeature(feat.id)}
+                                      className="p-1.5 rounded-lg text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
+                                      title="Eliminar Feature"
+                                    >
+                                      <CaralIcon name="trash" size={16} />
+                                    </button>
+                                  </div>
+
+                                  {/* Título de la Feature */}
+                                  <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
+                                      Título de la Feature * ({releaseLang.toUpperCase()})
+                                    </label>
+                                    <input
+                                      type="text"
+                                      value={feat.title}
+                                      onChange={(e) => handleUpdateFeature(feat.id, { title: e.target.value })}
+                                      placeholder="Ej. Conector Snowflake de alta velocidad"
+                                      className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 px-3.5 py-2 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 focus:border-sky-500 focus:outline-hidden transition-colors w-full"
+                                    />
+                                  </div>
+
+                                  {/* Descripción de la Feature */}
+                                  <div className="flex flex-col gap-1.5">
+                                    <label className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
+                                      Descripción de la Feature * ({releaseLang.toUpperCase()})
+                                    </label>
+                                    <textarea
+                                      rows={3}
+                                      value={feat.description}
+                                      onChange={(e) => handleUpdateFeature(feat.id, { description: e.target.value })}
+                                      placeholder="Describe los detalles, capacidades o mejoras de esta funcionalidad..."
+                                      className="w-full text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed px-3.5 py-2.5 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 focus:border-sky-500 focus:outline-hidden resize-y transition-colors font-sans"
+                                    />
+                                  </div>
+
+                                  {/* Subida de 2 Imágenes: PNG/JPG y GIF */}
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                                    {/* 1. Imagen Estática (PNG / JPG / WEBP) */}
+                                    <div className="flex flex-col gap-2">
+                                      <label className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 flex items-center gap-1.5">
+                                        <CaralIcon name="image" size={14} className="text-sky-500" />
+                                        <span>1. Imagen (PNG / JPG)</span>
+                                      </label>
+                                      <div className="rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-white/70 dark:bg-neutral-900/50 p-3.5 min-h-[140px] flex flex-col items-center justify-center gap-2">
+                                        {feat.pngUrl ? (
+                                          <div className="relative w-full flex flex-col items-center group">
+                                            <img
+                                              src={feat.pngUrl}
+                                              alt={`Feature ${fIdx + 1} PNG`}
+                                              className="max-h-32 rounded-lg object-contain border border-neutral-200 dark:border-neutral-700 shadow-2xs"
+                                            />
+                                            <div className="mt-2 flex items-center justify-between w-full px-1">
+                                              <span className="text-[11px] text-neutral-500 font-mono truncate max-w-[130px]">
+                                                {feat.pngName || 'image.png'}
+                                              </span>
+                                              <div className="flex items-center gap-2">
+                                                <label className="text-xs text-sky-600 dark:text-sky-400 hover:underline font-semibold cursor-pointer">
+                                                  Cambiar
+                                                  <input
+                                                    type="file"
+                                                    accept="image/png,image/jpeg,image/jpg,image/webp"
+                                                    className="hidden"
+                                                    onChange={(e) => handleFeatureFileUpload(feat.id, 'png', e)}
+                                                  />
+                                                </label>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleFeatureFileRemove(feat.id, 'png')}
+                                                  className="text-xs text-red-500 hover:underline font-semibold cursor-pointer"
+                                                >
+                                                  Eliminar
+                                                </button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <label className="px-4 py-2 rounded-lg bg-[#07153a] hover:bg-[#0e2154] text-white text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-2xs transition-all hover:scale-105">
+                                            <CaralIcon name="plus" size={14} className="text-sky-400" />
+                                            <span>Add image.png / jpg</span>
+                                            <input
+                                              type="file"
+                                              accept="image/png,image/jpeg,image/jpg,image/webp"
+                                              className="hidden"
+                                              onChange={(e) => handleFeatureFileUpload(feat.id, 'png', e)}
+                                            />
+                                          </label>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    {/* 2. Animación GIF (.gif) */}
+                                    <div className="flex flex-col gap-2">
+                                      <label className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400 flex items-center gap-1.5">
+                                        <CaralIcon name="video" size={14} className="text-amber-500" />
+                                        <span>2. Animación (.GIF)</span>
+                                      </label>
+                                      <div className="rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 bg-white/70 dark:bg-neutral-900/50 p-3.5 min-h-[140px] flex flex-col items-center justify-center gap-2">
+                                        {feat.gifUrl ? (
+                                          <div className="relative w-full flex flex-col items-center group">
+                                            <img
+                                              src={feat.gifUrl}
+                                              alt={`Feature ${fIdx + 1} GIF`}
+                                              className="max-h-32 rounded-lg object-contain border border-neutral-200 dark:border-neutral-700 shadow-2xs"
+                                            />
+                                            <div className="mt-2 flex items-center justify-between w-full px-1">
+                                              <span className="text-[11px] text-neutral-500 font-mono truncate max-w-[130px]">
+                                                {feat.gifName || 'image.gif'}
+                                              </span>
+                                              <div className="flex items-center gap-2">
+                                                <label className="text-xs text-sky-600 dark:text-sky-400 hover:underline font-semibold cursor-pointer">
+                                                  Cambiar
+                                                  <input
+                                                    type="file"
+                                                    accept="image/gif"
+                                                    className="hidden"
+                                                    onChange={(e) => handleFeatureFileUpload(feat.id, 'gif', e)}
+                                                  />
+                                                </label>
+                                                <button
+                                                  type="button"
+                                                  onClick={() => handleFeatureFileRemove(feat.id, 'gif')}
+                                                  className="text-xs text-red-500 hover:underline font-semibold cursor-pointer"
+                                                >
+                                                  Eliminar
+                                                </button>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ) : (
+                                          <label className="px-4 py-2 rounded-lg bg-[#07153a] hover:bg-[#0e2154] text-white text-xs font-semibold flex items-center gap-2 cursor-pointer shadow-2xs transition-all hover:scale-105">
+                                            <CaralIcon name="plus" size={14} className="text-sky-400" />
+                                            <span>Add image.gif</span>
+                                            <input
+                                              type="file"
+                                              accept="image/gif"
+                                              className="hidden"
+                                              onChange={(e) => handleFeatureFileUpload(feat.id, 'gif', e)}
+                                            />
+                                          </label>
+                                        )}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+
+                              {/* Botón inferior para agregar feature */}
+                              <button
+                                type="button"
+                                onClick={handleAddFeature}
+                                className="w-full py-3 rounded-xl border border-dashed border-neutral-300 dark:border-neutral-700 hover:border-sky-500 dark:hover:border-sky-400 bg-white/60 dark:bg-neutral-900/40 text-neutral-700 dark:text-neutral-300 text-sm font-semibold flex items-center justify-center gap-2 hover:text-sky-600 dark:hover:text-sky-400 transition-all cursor-pointer shadow-2xs"
+                              >
+                                <CaralIcon name="plus" size={16} />
+                                <span>Agregar otra Feature</span>
+                              </button>
+                            </div>
+                          )}
                         </div>
-
-                        {/* Divisor */}
-                        <div className="h-px bg-neutral-200 dark:bg-neutral-800 my-1" />
-
-                        {/* Botón "+ Add realece" */}
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setNewVersionTag('');
-                            setIsAddVersionModalOpen(true);
-                          }}
-                          className="w-full py-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-neutral-50/80 hover:bg-neutral-100 dark:bg-neutral-800/60 dark:hover:bg-neutral-800 text-sm font-semibold text-neutral-800 dark:text-neutral-200 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
-                        >
-                          <CaralIcon name="plus" size={18} className="text-neutral-600 dark:text-neutral-400" />
-                          <span>Add realece</span>
-                        </button>
                       </div>
                     );
                   })()}
                 </div>
 
-                {/* Botón Inferior: Copysection */}
-                <div className="w-full flex justify-center mt-6 pb-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const sectionCode = `<ReleaseNotesSection product="${selectedProduct?.slug || 'crestone'}" version="${getActiveRelease()?.version || 'latest'}" lang="${releaseLang}" />`;
-                      navigator.clipboard.writeText(sectionCode);
-                      setCopiedReleaseSection(true);
-                      setTimeout(() => setCopiedReleaseSection(false), 2000);
-                    }}
-                    className="px-6 py-2.5 rounded-xl bg-[#080e1b] hover:bg-[#11192e] text-white text-sm font-semibold flex items-center gap-2.5 shadow-lg border border-neutral-700/60 transition-all hover:scale-[1.02] cursor-pointer"
-                  >
-                    <CaralIcon name="code" size={18} className="text-sky-400" />
-                    <span>{copiedReleaseSection ? '¡Sección Release Copiada!' : 'Copysection'}</span>
-                  </button>
-                </div>
+
               </div>
             )}
 
