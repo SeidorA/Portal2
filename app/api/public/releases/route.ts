@@ -64,6 +64,8 @@ export async function GET(request: NextRequest) {
         const fPngName = f.pngName || f.png_name || null;
         const fGifUrl = f.gifUrl || f.gif_url || null;
         const fGifName = f.gifName || f.gif_name || null;
+        const iconName = f.iconName || f.icon_name || f.icon || null;
+        const isBrandIcon = f.isBrandIcon ?? f.is_brand_icon ?? f.isBrand ?? false;
 
         return {
           id: f.id,
@@ -73,6 +75,10 @@ export async function GET(request: NextRequest) {
           title_en: f.title_en || f.title || '',
           description_es: f.description_es || f.description || '',
           description_en: f.description_en || f.description || '',
+          icon_name: iconName,
+          iconName: iconName,
+          is_brand_icon: isBrandIcon,
+          isBrandIcon: isBrandIcon,
           png_url: fPngUrl,
           pngUrl: fPngUrl,
           png_name: fPngName,

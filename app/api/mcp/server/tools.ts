@@ -1053,6 +1053,10 @@ export async function executeMcpTool(
           title_en: f.title_en || f.title || '',
           description_es: f.description_es || f.description || '',
           description_en: f.description_en || f.description || '',
+          icon_name: f.iconName || f.icon_name || f.icon || null,
+          iconName: f.iconName || f.icon_name || f.icon || null,
+          is_brand_icon: f.isBrandIcon ?? f.is_brand_icon ?? f.isBrand ?? false,
+          isBrandIcon: f.isBrandIcon ?? f.is_brand_icon ?? f.isBrand ?? false,
           png_url: f.pngUrl || f.png_url || null,
           gif_url: f.gifUrl || f.gif_url || null,
         }));
@@ -1121,6 +1125,8 @@ export async function executeMcpTool(
             description: f.description_es || f.description || '',
             description_es: f.description_es || f.description || '',
             description_en: f.description_en || f.description || '',
+            iconName: f.iconName || f.icon_name || f.icon || '',
+            isBrandIcon: f.isBrandIcon ?? f.is_brand_icon ?? f.isBrand ?? false,
             pngUrl: f.png_url || f.pngUrl || '',
             gifUrl: f.gif_url || f.gifUrl || '',
           }))

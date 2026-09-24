@@ -8,6 +8,7 @@ import { createClient } from '@/utils/supabase/client';
 import Modal from '@/app/components/Modal';
 import Input from '@/app/components/Input';
 import Select from '@/app/components/Select';
+import IconPickerModal from '@/app/components/IconPickerModal';
 import { extractLanguageContent } from '@/utils/multilingual-content';
 import { MilkdownEditorWrapper } from '@/app/components/Editor/MilkdownEditor';
 
@@ -37,6 +38,8 @@ export interface ReleaseFeature {
   title_en?: string;
   description_es?: string;
   description_en?: string;
+  iconName?: string;
+  isBrandIcon?: boolean;
   pngUrl?: string;
   pngName?: string;
   gifUrl?: string;
@@ -113,6 +116,19 @@ export default function TecnicaPage() {
   // Modal para agregar nueva versión en Release
   const [isAddVersionModalOpen, setIsAddVersionModalOpen] = useState(false);
   const [newVersionTag, setNewVersionTag] = useState('');
+
+  // Modal selector de ícono para Release Features
+  const [featureIconPicker, setFeatureIconPicker] = useState<{
+    isOpen: boolean;
+    featureId: string | null;
+    initialIconName: string;
+    initialIsBrand: boolean;
+  }>({
+    isOpen: false,
+    featureId: null,
+    initialIconName: '',
+    initialIsBrand: false,
+  });
 
   // Estados para la pestaña Blog
   const [blogLang, setBlogLang] = useState<'es' | 'en'>('es');
@@ -642,6 +658,8 @@ export default function TecnicaPage() {
           description: 'Soporte nativo para stream ingestion con compresión Zstandard y balanceo de carga automático entre clusters.',
           description_es: 'Soporte nativo para stream ingestion con compresión Zstandard y balanceo de carga automático entre clusters.',
           description_en: 'Native stream ingestion support with Zstandard compression and automatic load balancing across clusters.',
+          iconName: 'database',
+          isBrandIcon: false,
           pngUrl: '',
           pngName: '',
           gifUrl: '',
@@ -655,6 +673,8 @@ export default function TecnicaPage() {
           description: 'Capacidad de mutar esquemas JSON en tránsito sin interrumpir el flujo activo de mensajes.',
           description_es: 'Capacidad de mutar esquemas JSON en tránsito sin interrumpir el flujo activo de mensajes.',
           description_en: 'Ability to mutate JSON schemas in transit without interrupting active message pipelines.',
+          iconName: 'code',
+          isBrandIcon: false,
           pngUrl: '',
           pngName: '',
           gifUrl: '',
@@ -683,6 +703,8 @@ export default function TecnicaPage() {
           description: 'Renovación transparente de credenciales OAuth sin desautenticar sesiones activas.',
           description_es: 'Renovación transparente de credenciales OAuth sin desautenticar sesiones activas.',
           description_en: 'Seamless OAuth credential renewal without disconnecting active client sessions.',
+          iconName: 'shield',
+          isBrandIcon: false,
           pngUrl: '',
           pngName: '',
           gifUrl: '',
@@ -735,7 +757,9 @@ export default function TecnicaPage() {
     const features = (found.features || []).map(f => ({
       ...f,
       title: releaseLang === 'en' ? (f.title_en || f.title || '') : (f.title_es || f.title || ''),
-      description: releaseLang === 'en' ? (f.description_en ?? f.description ?? '') : (f.description_es ?? f.description ?? '')
+      description: releaseLang === 'en' ? (f.description_en ?? f.description ?? '') : (f.description_es ?? f.description ?? ''),
+      iconName: f.iconName || '',
+      isBrandIcon: f.isBrandIcon || false,
     }));
 
     return {
@@ -837,6 +861,8 @@ export default function TecnicaPage() {
       description: '',
       description_es: '',
       description_en: '',
+      iconName: '',
+      isBrandIcon: false,
       pngUrl: '',
       pngName: '',
       gifUrl: '',
@@ -1994,18 +2020,63 @@ export default function TecnicaPage() {
                                     </button>
                                   </div>
 
-                                  {/* Título de la Feature */}
+                                  {/* Título e Ícono de la Feature */}
                                   <div className="flex flex-col gap-1.5">
                                     <label className="text-xs font-bold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
-                                      Título de la Feature * ({releaseLang.toUpperCase()})
+                                      Título e Ícono de la Feature * ({releaseLang.toUpperCase()})
                                     </label>
-                                    <input
-                                      type="text"
-                                      value={feat.title}
-                                      onChange={(e) => handleUpdateFeature(feat.id, { title: e.target.value })}
-                                      placeholder="Ej. Conector Snowflake de alta velocidad"
-                                      className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 px-3.5 py-2 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 focus:border-sky-500 focus:outline-hidden transition-colors w-full"
-                                    />
+                                    <div className="flex items-center gap-2">
+                                      {/* Selector de Ícono para la Feature */}
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          setFeatureIconPicker({
+                                            isOpen: true,
+                                            featureId: feat.id,
+                                            initialIconName: feat.iconName || '',
+                                            initialIsBrand: feat.isBrandIcon || false,
+                                          })
+                                        }
+                                        className="h-10 px-3 rounded-xl border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 hover:bg-neutral-100 dark:hover:bg-neutral-800 flex items-center gap-2 shrink-0 transition-colors cursor-pointer group shadow-2xs"
+                                        title={feat.iconName ? `Ícono: ${feat.iconName} (clic para cambiar)` : "Seleccionar ícono para esta feature"}
+                                      >
+                                        {feat.iconName ? (
+                                          feat.isBrandIcon ? (
+                                            <Brand name={feat.iconName as any} size={20} />
+                                          ) : (
+                                            <CaralIcon name={feat.iconName as any} size={20} className="text-sky-500" />
+                                          )
+                                        ) : (
+                                          <div className="w-5 h-5 rounded-lg border border-dashed border-neutral-400 dark:border-neutral-600 flex items-center justify-center text-neutral-400 group-hover:text-sky-500 group-hover:border-sky-500 transition-colors">
+                                            <CaralIcon name="plus" size={12} />
+                                          </div>
+                                        )}
+                                        <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 max-w-[100px] truncate">
+                                          {feat.iconName || "Elegir Ícono"}
+                                        </span>
+                                        {feat.iconName && (
+                                          <span
+                                            onClick={(e) => {
+                                              e.preventDefault();
+                                              e.stopPropagation();
+                                              handleUpdateFeature(feat.id, { iconName: '', isBrandIcon: false });
+                                            }}
+                                            className="p-1 rounded-md hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-400 hover:text-red-500 transition-colors"
+                                            title="Quitar ícono"
+                                          >
+                                            <CaralIcon name="x" size={12} />
+                                          </span>
+                                        )}
+                                      </button>
+
+                                      <input
+                                        type="text"
+                                        value={feat.title}
+                                        onChange={(e) => handleUpdateFeature(feat.id, { title: e.target.value })}
+                                        placeholder="Ej. Conector Snowflake de alta velocidad"
+                                        className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 px-3.5 py-2 rounded-xl bg-white dark:bg-neutral-900 border border-neutral-300 dark:border-neutral-700 focus:border-sky-500 focus:outline-hidden transition-colors w-full h-10"
+                                      />
+                                    </div>
                                   </div>
 
                                   {/* Descripción de la Feature */}
@@ -2799,6 +2870,22 @@ export default function TecnicaPage() {
           </div>
         </form>
       </Modal>
+      {/* Modal Selector de Ícono para Release Features */}
+      <IconPickerModal
+        isOpen={featureIconPicker.isOpen}
+        onClose={() => setFeatureIconPicker(prev => ({ ...prev, isOpen: false, featureId: null }))}
+        initialIconName={featureIconPicker.initialIconName}
+        initialIsBrand={featureIconPicker.initialIsBrand}
+        onSelect={(iconName, isBrand) => {
+          if (featureIconPicker.featureId) {
+            handleUpdateFeature(featureIconPicker.featureId, {
+              iconName,
+              isBrandIcon: isBrand,
+            });
+          }
+          setFeatureIconPicker(prev => ({ ...prev, isOpen: false, featureId: null }));
+        }}
+      />
     </div>
   );
 }
