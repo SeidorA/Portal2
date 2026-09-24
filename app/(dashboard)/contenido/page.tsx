@@ -12,6 +12,7 @@ import { CaralIcon } from 'iconcaral2';
 import { parseDocusaurusMarkdown } from '@/utils/docusaurus-parser';
 import { useTranslation } from '@/app/context/LanguageContext';
 import { extractLanguageContent } from '@/utils/multilingual-content';
+import { dispatchProductWebhooksAction } from '@/app/actions/webhookActions';
 
 export default function ContenidoPage() {
   const { t, language } = useTranslation();
@@ -271,6 +272,13 @@ export default function ContenidoPage() {
       }]);
       if (docError) throw docError;
 
+      if (selectedProduct) {
+        dispatchProductWebhooksAction(selectedProduct, 'docs.updated', {
+          title: releaseNoteTitle,
+          type: 'release_note',
+        }).catch(e => console.error('[Webhook Dispatch Error]', e));
+      }
+
       setIsReleaseNoteModalOpen(false);
       setReleaseNoteTitle('Release Notes');
       setReleaseNoteUrl('');
@@ -320,6 +328,15 @@ export default function ContenidoPage() {
         const { error } = await supabase.from('documentation').insert([{ order_index: visibleContent.length, ...fullPayload }]);
         if (error) throw error;
       }
+
+      if (selectedProduct) {
+        dispatchProductWebhooksAction(selectedProduct, 'docs.updated', {
+          docId: docToEdit?.id,
+          slug: payload.slug,
+          title: payload.title,
+        }).catch(e => console.error('[Webhook Dispatch Error]', e));
+      }
+
       setIsDocModalOpen(false);
       fetchData();
     } catch (error: any) {
@@ -363,6 +380,14 @@ export default function ContenidoPage() {
           alert(t('content.errorImportingFile', `Error al importar ${file.name}: ${error.message}`, { file: file.name, error: error.message }));
         }
       }
+
+      if (selectedProduct) {
+        dispatchProductWebhooksAction(selectedProduct, 'docs.updated', {
+          action: 'docusaurus_import',
+          count: files.length,
+        }).catch(e => console.error('[Webhook Dispatch Error]', e));
+      }
+
       setIsAddMenuOpen(false);
       setIsAddSubMenuOpen(false);
       fetchData();

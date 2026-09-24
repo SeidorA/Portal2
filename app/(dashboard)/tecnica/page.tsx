@@ -11,6 +11,8 @@ import Select from '@/app/components/Select';
 import IconPickerModal from '@/app/components/IconPickerModal';
 import { extractLanguageContent } from '@/utils/multilingual-content';
 import { MilkdownEditorWrapper } from '@/app/components/Editor/MilkdownEditor';
+import ProductWebhooksManager from '@/app/components/ProductWebhooksManager';
+import { dispatchProductWebhooksAction } from '@/app/actions/webhookActions';
 
 export interface IndexEntry {
   id: string;
@@ -299,6 +301,12 @@ export default function TecnicaPage() {
       setProducts(prev => prev.map(p => p.id === prodId ? { ...p, technical_docs_config: configPayload } : p));
       setProductReleasesMap(prev => ({ ...prev, [prodId]: configPayload.releases }));
       setProductBlogMap(prev => ({ ...prev, [prodId]: configPayload.blog }));
+
+      // Disparar Webhooks a todos los destinos configurados en segundo plano
+      dispatchProductWebhooksAction(prodId, 'config.updated', {
+        productSlug: selectedProduct?.slug,
+        tab: activeTab,
+      }).catch(e => console.error('[Webhook Dispatch Error]', e));
 
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 2500);
@@ -1399,6 +1407,15 @@ export default function TecnicaPage() {
                     />
                   </div>
                 </div>
+
+                {/* PASO 4: Webhooks para Sincronización Automática */}
+                {selectedProduct && (
+                  <ProductWebhooksManager
+                    productId={selectedProduct.id}
+                    productSlug={selectedProduct.slug}
+                    productTitle={selectedProduct.title}
+                  />
+                )}
               </div>
             )}
 
@@ -1898,6 +1915,13 @@ export default function TecnicaPage() {
                                 <div className="bg-white w-4 h-4 rounded-full shadow-md transform transition-transform" />
                               </button>
                             </div>
+                            <Button
+                              variant='danger'
+                              onClick={() => handleDeleteRelease(activeRelease.id)}
+                              title='Eliminar versión'
+                              iconName='trash'
+                              isIconButton
+                            />
                           </div>
                         </div>
 
@@ -2371,14 +2395,14 @@ export default function TecnicaPage() {
                             </div>
 
                             {/* Botón Eliminar entrada */}
-                            <button
-                              type="button"
+                            <Button
+                              variant='danger'
                               onClick={() => handleDeleteBlogEntry(activeBlog.id)}
-                              className="p-2 rounded-xl text-neutral-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
-                              title="Eliminar entrada de blog"
-                            >
-                              <CaralIcon name="trash" size={16} />
-                            </button>
+                              title='Eliminar'
+                              iconName='trash'
+                              isIconButton
+                            />
+
                           </div>
                         </div>
 
@@ -2392,6 +2416,8 @@ export default function TecnicaPage() {
                             className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 bg-transparent border-b border-transparent hover:border-neutral-300 dark:hover:border-neutral-700 focus:border-sky-500 focus:outline-hidden transition-colors w-full py-1"
                           />
                         </div>
+
+
 
                         {/* Slug editable */}
                         <div className="flex items-center gap-2 text-md text-neutral-800 bg-neutral-200 rounded-lg px-3 py-2 border border-neutral-200 dark:border-neutral-800">

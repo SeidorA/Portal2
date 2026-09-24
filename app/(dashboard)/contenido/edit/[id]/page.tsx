@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useTranslation } from '@/app/context/LanguageContext';
 import ContentEditor from '@/app/components/ContentEditor';
+import { dispatchProductWebhooksAction } from '@/app/actions/webhookActions';
 
 export default function EditDocumentPage({
   params
@@ -70,6 +71,14 @@ export default function EditDocumentPage({
         .eq('id', id);
 
       if (error) throw error;
+
+      if (docData?.product_id) {
+        dispatchProductWebhooksAction(docData.product_id, 'docs.updated', {
+          docId: id,
+          slug: payload.slug,
+          productSlug,
+        }).catch(e => console.error('[Webhook Dispatch Error]', e));
+      }
 
       alert(t('content.docUpdatedSuccess', 'Documento actualizado correctamente.'));
       if (productSlug && payload.slug) {
